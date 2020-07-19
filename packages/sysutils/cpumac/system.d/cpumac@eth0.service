@@ -1,0 +1,17 @@
+[Unit]
+Description=Set %i MAC address from cpumac-config
+Wants=network-pre.target
+Before=network-pre.target
+BindsTo=sys-subsystem-net-devices-%i.device
+After=sys-subsystem-net-devices-%i.device
+After=cpumac.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=/run/libreelec/cpumac-%i
+ExecStart=/usr/sbin/ip link set dev %i down
+ExecStart=/usr/sbin/ip link set dev %i address $MAC
+ExecStart=/usr/sbin/ip link set dev %i up
+
+[Install]
+WantedBy=multi-user.target

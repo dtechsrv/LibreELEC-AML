@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2018-present Team LibreELEC (https://libreelec.tv)
+
+COMPATIBLE=$(cat /proc/device-tree/compatible | tr -d '\000' | sed -n -e 's/.*\(amlogic\|rockchip\).*/\1/p')
+
+case $COMPATIBLE in
+  amlogic)
+    SERIAL=$(cat /sys/bus/platform/devices/firmware\:secure-monitor/serial)
+    ;;
+  rockchip)
+    SERIAL=$(cat /proc/cpuinfo | awk '/Serial/ {print $3}')
+    ;;
+esac
+
+case $1 in
+  eth0)
+    MAC=$(echo "$SERIAL" | sed 's/\(..\)/\1:/g' | cut -b-16)
+    echo "MAC=${MAC}a" > /run/libreelec/cpumac-eth0
+    ;;
+  wlan0)
+    MAC=$(echo "$SERIAL" | sed 's/\(..\)/\1:/g' | cut -b-16)
+    echo "MAC=${MAC}b" > /run/libreelec/cpumac-wlan0
+    ;;
+esac

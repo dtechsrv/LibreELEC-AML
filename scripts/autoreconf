@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2009-2016 Stephan Raue (stephan@openelec.tv)
+# Copyright (C) 2018-present Team LibreELEC (https://libreelec.tv)
+
+. config/options "${1}"
+
+if [ ! -f "${PKG_BUILD}/configure.in" \
+    -a ! -f "${PKG_BUILD}/configure.ac" ]; then
+  die "configure.in or configure.ac not found"
+fi
+
+if [ ! -f "${PKG_BUILD}/.autoreconf-done" ]; then
+  touch "${PKG_BUILD}/NEWS" "${PKG_BUILD}/AUTHORS" "${PKG_BUILD}/ChangeLog"
+  mkdir -p "${PKG_BUILD}/m4"
+
+  build_msg "CLR_AUTORECONF" "AUTORECONF" "${1}" "indent"
+
+  do_autoreconf "${PKG_BUILD}"
+  touch "${PKG_BUILD}/.autoreconf-done"
+fi

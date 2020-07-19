@@ -1,0 +1,1 @@
+DISTRO=LibreELEC PROJECT=S8X2 DEVICE=M8S-Plus ARCH=arm make image -j8

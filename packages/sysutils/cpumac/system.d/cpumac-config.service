@@ -1,0 +1,11 @@
+[Unit]
+Description=Configure MAC address from a unique CPU serial
+Wants=network-pre.target
+Before=network-pre.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c "/usr/bin/cpumac-config eth0"
+
+[Install]
+WantedBy=multi-user.target

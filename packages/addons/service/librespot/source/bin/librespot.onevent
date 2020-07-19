@@ -1,0 +1,2 @@
+#!/bin/sh
+echo -e "$STATE\n$TRACK_ID" > "$LS_FIFO"
