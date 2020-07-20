@@ -1,0 +1,13 @@
+diff --git a/include/linux/netfilter.h b/include/linux/netfilter.h
+index bacf8cd..205a849 100644
+--- a/include/linux/netfilter.h
++++ b/include/linux/netfilter.h
+@@ -6,7 +6,7 @@
+ #ifndef _NETINET_IN_H
+ #include <linux/in.h>
+ #endif
+-#include <linux/in6.h>
++/* #include <linux/in6.h> */
+ #include <limits.h>
+ 
+ /* Responses from hook functions. */
