@@ -1,4 +1,4 @@
-# OTT M8S+ Edition (AP6330)
+# OTT M8S+ Edition
 
 Based on [S802-LE/LibreELEC.tv](https://github.com/S802-LE/LibreELEC.tv).
 
