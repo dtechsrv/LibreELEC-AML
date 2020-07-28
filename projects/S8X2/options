@@ -65,9 +65,7 @@
 
   # Kernel to use. values can be:
   # default:  default mainline kernel
-    LINUX="custom"
-    KERNEL_VERSION="1be06c2"
-    KERNEL_URL="https://github.com/kszaq/linux/archive/$KERNEL_VERSION.tar.gz"
+    LINUX="amlogic-3.10"
 
 ################################################################################
 # setup build defaults
@@ -147,13 +145,9 @@
   # driver addons to install:
   # for a list of additinoal drivers see packages/linux-driver-addons
   # Space separated list is supported,
-    DRIVER_ADDONS="crazycat"
+    DRIVER_ADDONS="crazycat_aml"
 
   # additional packages to install:
   # Space separated list is supported,
   # e.g. ADDITIONAL_PACKAGES="PACKAGE1 PACKAGE2"
     ADDITIONAL_PACKAGES="u-boot-tools-aml dtc"
-
-  # set the addon dirs
-    ADDON_PATH="$ADDON_VERSION/WeTek_Play/$TARGET_ARCH"
-    ADDON_URL="$ADDON_SERVER_URL/$ADDON_PATH"

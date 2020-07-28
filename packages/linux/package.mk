@@ -16,9 +16,9 @@ PKG_PATCH_DIRS="$LINUX"
 
 case "$LINUX" in
   amlogic-3.10)
-    PKG_VERSION="95ba9d626c0fce672caa296f5911ab9190881642"
-    PKG_SHA256="df34b086993fd3552efae92d84d28990a61a1ca79a8703a4b64241ab80e3b6db"
-    PKG_URL="https://github.com/LibreELEC/linux-amlogic/archive/$PKG_VERSION.tar.gz"
+    PKG_VERSION="1be06c2371eb3cc3376b282cf77b4d4dee50f01f"
+    PKG_SHA256="658084e610f19c121d098e1577dd7ff84d669bc289a94146d81e6666d8c290d8"
+    PKG_URL="https://github.com/kszaq/linux/archive/$PKG_VERSION.tar.gz"
     PKG_SOURCE_NAME="linux-$LINUX-$PKG_VERSION.tar.gz"
     PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET aml-dtbtools:host u-boot-tools-aml:host"
     PKG_BUILD_PERF="no"
@@ -42,12 +42,6 @@ case "$LINUX" in
     PKG_SHA256="37c97f4b21d813569f33b2190e7c28be5053ea080b792b504b77ddf8f9f4a67c"
     PKG_URL="https://github.com/raspberrypi/linux/archive/$PKG_VERSION.tar.gz"
     PKG_SOURCE_NAME="linux-$LINUX-$PKG_VERSION.tar.gz"
-    ;;
-  custom)
-    PKG_VERSION="$KERNEL_VERSION"
-    PKG_URL="$KERNEL_URL"
-    PKG_SOURCE_DIR="$KERNEL_SOURCE_DIR"
-    PKG_PATCH_DIRS="$KERNEL_PATCH_DIRS"
     ;;
   *)
     PKG_VERSION="4.19.36"
