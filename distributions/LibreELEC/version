@@ -1,5 +1,5 @@
 # VERSION: set full version, use "devel" for development version
-  LIBREELEC_VERSION="9.0.2"
+  LIBREELEC_VERSION="9.0.2_Kodi-18.5_Build-20200804"
 
 # OS_VERSION: OS Version
   OS_VERSION="9.0"
