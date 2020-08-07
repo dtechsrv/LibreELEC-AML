@@ -1,4 +1,4 @@
-# OTT M8S+ Edition
+# OTT M8S (m8m2-n200C) and M8S+ (m8m2_KII) Edition
 
 Based on [S802-LE/LibreELEC.tv](https://github.com/S802-LE/LibreELEC.tv).
 
