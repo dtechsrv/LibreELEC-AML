@@ -1,23 +1,30 @@
-# SPDX-License-Identifier: GPL-2.0
+# SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2016-present Team LibreELEC (https://libreelec.tv)
 
 PKG_NAME="crazycat"
-PKG_VERSION="f77791e13e0a29edeb775383f89e37bb1ed80416"
-PKG_SHA256="524a5cdbbb653b0db46d20b56249953e473302bd20e8097bf06e3918e5c0a35f"
+PKG_VERSION="2017-12-06"
+PKG_SHA256="779c7d42e5fd4dfac8f53654ce8af467d22a81b6c0b21e24f14aaaed033c6eb1"
+PKG_ARCH="any"
 PKG_LICENSE="GPL"
-PKG_SITE="https://bitbucket.org/CrazyCat/media_build"
-PKG_URL="https://bitbucket.org/CrazyCat/media_build/get/$PKG_VERSION.tar.gz"
-PKG_DEPENDS_TARGET="toolchain linux media_tree_cc"
-PKG_NEED_UNPACK="$LINUX_DEPENDS media_tree_cc"
+PKG_SITE="https://github.com/crazycat69/linux_media"
+PKG_URL="$DISTRO_SRC/$PKG_NAME-$PKG_VERSION.tar.xz"
+PKG_DEPENDS_TARGET="toolchain linux"
+PKG_NEED_UNPACK="$LINUX_DEPENDS"
 PKG_SECTION="driver.dvb"
-PKG_LONGDESC="DVB driver for TBS cards with CrazyCats additions"
+PKG_LONGDESC="DVB driver for TBS cards with CrazyCats additions."
 
 PKG_IS_ADDON="embedded"
 PKG_IS_KERNEL_PKG="yes"
 PKG_ADDON_IS_STANDALONE="yes"
-PKG_ADDON_NAME="DVB drivers for TBS"
+PKG_ADDON_NAME="DVB drivers for TBS (CrazyCat)"
 PKG_ADDON_TYPE="xbmc.service"
 PKG_ADDON_VERSION="${ADDON_VERSION}.${PKG_REV}"
+
+if [ $LINUX = "amlogic-3.10" ]; then
+  PKG_PATCH_DIRS="amlogic-3.10"
+elif [ $LINUX = "amlogic-3.14" ]; then
+  PKG_PATCH_DIRS="amlogic-3.14"
+fi
 
 pre_make_target() {
   export KERNEL_VER=$(get_module_dir)
@@ -25,15 +32,26 @@ pre_make_target() {
 }
 
 make_target() {
-  cp -RP $(get_build_dir media_tree_cc)/* $PKG_BUILD/linux
+  kernel_make SRCDIR=$(kernel_path) untar
 
-  # make config all
-  kernel_make VER=$KERNEL_VER SRCDIR=$(kernel_path) allyesconfig
+  # copy config file
+  if [ "$PROJECT" = Generic ]; then
+    if [ -f $PKG_DIR/config/generic.config ]; then
+      cp $PKG_DIR/config/generic.config v4l/.config
+    fi
+  else
+    if [ -f $PKG_DIR/config/usb.config ]; then
+      cp $PKG_DIR/config/usb.config v4l/.config
+    fi
+  fi
 
   # hack to workaround media_build bug
-  if [ "$PROJECT" = Rockchip ]; then
-    sed -e 's/CONFIG_DVB_CXD2820R=m/# CONFIG_DVB_CXD2820R is not set/g' -i v4l/.config
+  if [ $LINUX = "amlogic-3.14" -o $LINUX = "amlogic-3.10" ]; then
+    sed -e 's/CONFIG_VIDEO_TVP5150=m/# CONFIG_VIDEO_TVP5150 is not set/g' -i v4l/.config
     sed -e 's/CONFIG_DVB_LGDT3306A=m/# CONFIG_DVB_LGDT3306A is not set/g' -i v4l/.config
+    if [ $LINUX = "amlogic-3.10" ]; then
+      sed -e 's/CONFIG_IR_NUVOTON=m/# CONFIG_IR_NUVOTON is not set/g' -i v4l/.config
+    fi
   fi
 
   # add menuconfig to edit .config
