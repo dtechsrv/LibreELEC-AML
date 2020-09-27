@@ -159,6 +159,3 @@
   # add custom tag to os version name
     LIBREELEC_TAG="DVB"
     LIBREELEC_VERSION+="-$PROJECT-$LIBREELEC_TAG"
-
-  # add build date to pretty name
-    PRETTY_NAME+=" (Build date: $(date +%Y-%m-%d))"
