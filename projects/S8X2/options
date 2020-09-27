@@ -60,8 +60,8 @@
   # Additional kernel make parameters (for example to specify the u-boot loadaddress)
     KERNEL_MAKE_EXTRACMD=""
 
-  # kernel image name
-    KERNEL_NAME="kernel.img" 
+  # Kernel image name
+    KERNEL_NAME="kernel.img"
 
   # Kernel to use. values can be:
   # default:  default mainline kernel
@@ -155,3 +155,10 @@
   # set the addon dirs
     ADDON_PATH="$ADDON_VERSION/WeTek_Play/$TARGET_ARCH"
     ADDON_URL="$ADDON_SERVER_URL/$ADDON_PATH"
+
+  # add custom tag to os version name
+    LIBREELEC_TAG="DVB"
+    LIBREELEC_VERSION+="-$PROJECT-$LIBREELEC_TAG"
+
+  # add build date to pretty name
+    PRETTY_NAME+=" (Build date: $(date +%Y-%m-%d))"
