@@ -151,3 +151,7 @@
   # Space separated list is supported,
   # e.g. ADDITIONAL_PACKAGES="PACKAGE1 PACKAGE2"
     ADDITIONAL_PACKAGES="u-boot-tools-aml dtc"
+
+  # set the addon dirs
+    ADDON_PATH="$ADDON_VERSION/WeTek_Play/$TARGET_ARCH"
+    ADDON_URL="$ADDON_SERVER_URL/$ADDON_PATH"
