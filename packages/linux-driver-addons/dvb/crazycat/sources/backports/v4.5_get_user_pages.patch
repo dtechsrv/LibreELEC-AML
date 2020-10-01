@@ -1,0 +1,52 @@
+diff --git a/drivers/media/pci/ivtv/ivtv-udma.c b/drivers/media/pci/ivtv/ivtv-udma.c
+index 4769469fe842..24152accc66c 100644
+--- a/drivers/media/pci/ivtv/ivtv-udma.c
++++ b/drivers/media/pci/ivtv/ivtv-udma.c
+@@ -124,8 +124,8 @@ int ivtv_udma_setup(struct ivtv *itv, unsigned long ivtv_dest_addr,
+ 	}
+ 
+ 	/* Get user pages for DMA Xfer */
+-	err = get_user_pages_unlocked(user_dma.uaddr, user_dma.page_count, 0,
+-			1, dma->map);
++	err = get_user_pages_unlocked(current, current->mm,
++			user_dma.uaddr, user_dma.page_count, 0, 1, dma->map);
+ 
+ 	if (user_dma.page_count != err) {
+ 		IVTV_DEBUG_WARN("failed to map user pages, returned %d instead of %d\n",
+diff --git a/drivers/media/pci/ivtv/ivtv-yuv.c b/drivers/media/pci/ivtv/ivtv-yuv.c
+index b094054cda6e..2b8e7b2f2b86 100644
+--- a/drivers/media/pci/ivtv/ivtv-yuv.c
++++ b/drivers/media/pci/ivtv/ivtv-yuv.c
+@@ -75,12 +75,14 @@ static int ivtv_yuv_prep_user_dma(struct ivtv *itv, struct ivtv_user_dma *dma,
+ 	ivtv_udma_get_page_info (&uv_dma, (unsigned long)args->uv_source, 360 * uv_decode_height);
+ 
+ 	/* Get user pages for DMA Xfer */
+-	y_pages = get_user_pages_unlocked(y_dma.uaddr,
+-			y_dma.page_count, 0, 1, &dma->map[0]);
++	y_pages = get_user_pages_unlocked(current, current->mm,
++				y_dma.uaddr, y_dma.page_count, 0, 1,
++				&dma->map[0]);
+ 	uv_pages = 0; /* silence gcc. value is set and consumed only if: */
+ 	if (y_pages == y_dma.page_count) {
+-		uv_pages = get_user_pages_unlocked(uv_dma.uaddr,
+-				uv_dma.page_count, 0, 1, &dma->map[y_pages]);
++		uv_pages = get_user_pages_unlocked(current, current->mm,
++					uv_dma.uaddr, uv_dma.page_count, 0, 1,
++					&dma->map[y_pages]);
+ 	}
+ 
+ 	if (y_pages != y_dma.page_count || uv_pages != uv_dma.page_count) {
+diff --git a/drivers/media/v4l2-core/videobuf-dma-sg.c b/drivers/media/v4l2-core/videobuf-dma-sg.c
+index df4c052c6bd6..f669cedca8bd 100644
+--- a/drivers/media/v4l2-core/videobuf-dma-sg.c
++++ b/drivers/media/v4l2-core/videobuf-dma-sg.c
+@@ -181,7 +181,8 @@ static int videobuf_dma_init_user_locked(struct videobuf_dmabuf *dma,
+ 	dprintk(1, "init user [0x%lx+0x%lx => %d pages]\n",
+ 		data, size, dma->nr_pages);
+ 
+-	err = get_user_pages(data & PAGE_MASK, dma->nr_pages,
++	err = get_user_pages(current, current->mm,
++			     data & PAGE_MASK, dma->nr_pages,
+ 			     rw == READ, 1, /* force */
+ 			     dma->pages, NULL);
+ 

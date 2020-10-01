@@ -2,8 +2,8 @@
 # Copyright (C) 2017-present Team LibreELEC (https://libreelec.tv)
 
 PKG_NAME="media_tree"
-PKG_VERSION="2018-12-07-e159b6074c82"
-PKG_SHA256="8df4e76878239881cf69bddab2f1c69be698c25682d114b706d75123972c95b7"
+PKG_VERSION="2019-07-11-22be8233b34f"
+PKG_SHA256="14363b1aacfe59805a1fe93739caed53036879e7b871f1d8d7061527c3cb9eb8"
 PKG_LICENSE="GPL"
 PKG_SITE="https://git.linuxtv.org/media_tree.git"
 PKG_URL="http://linuxtv.org/downloads/drivers/linux-media-${PKG_VERSION}.tar.bz2"
@@ -16,6 +16,21 @@ unpack() {
   mkdir -p $PKG_BUILD/
   tar -xf $SOURCES/$PKG_NAME/$PKG_NAME-$PKG_VERSION.tar.bz2 -C $PKG_BUILD/
 
+  # hack/workaround to make aml work
+  if [ $LINUX = "amlogic-3.10" ]; then
+
+    # Copy amlvideodri module
+    mkdir -p $PKG_BUILD/drivers/media/amlogic/
+    cp -a "$(kernel_path)/drivers/amlogic/video_dev" "$PKG_BUILD/drivers/media/amlogic"
+    sed -i 's,common/,,g; s,"trace/,",g' `find $PKG_BUILD/drivers/media/amlogic/video_dev/ -type f`
+
+    # Copy videobuf-res module
+    cp -a "$(kernel_path)/drivers/media/v4l2-core/videobuf-res.c" "$PKG_BUILD/drivers/media/v4l2-core/"
+    cp -a "$(kernel_path)/include/media/videobuf-res.h" "$PKG_BUILD/include/media/"
+  fi
+}
+
+post_unpack() {
   # hack/workaround for borked upstream kernel/media_build
   # without removing atomisp there a lot additional includes that 
   # slowdown build process after modpost from 3min to 6min
