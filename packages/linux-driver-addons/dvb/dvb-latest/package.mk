@@ -19,7 +19,7 @@ PKG_ADDON_NAME="DVB drivers from the latest kernel"
 PKG_ADDON_TYPE="xbmc.service"
 PKG_ADDON_VERSION="${ADDON_VERSION}.${PKG_REV}"
 
-if [ "$LINUX" = "amlogic-3.10" ]; then
+if [ $LINUX = "amlogic-3.10" ]; then
   PKG_PATCH_DIRS="amlogic-3.10"
 fi
 

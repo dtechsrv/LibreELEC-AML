@@ -15,11 +15,11 @@ PKG_LONGDESC="DVB driver for TBS cards with CrazyCats additions"
 PKG_IS_ADDON="embedded"
 PKG_IS_KERNEL_PKG="yes"
 PKG_ADDON_IS_STANDALONE="yes"
-PKG_ADDON_NAME="DVB drivers for TBS"
+PKG_ADDON_NAME="DVB drivers for TBS (CrazyCat)"
 PKG_ADDON_TYPE="xbmc.service"
 PKG_ADDON_VERSION="${ADDON_VERSION}.${PKG_REV}"
 
-if [ "$LINUX" = "amlogic-3.10" ]; then
+if [ $LINUX = "amlogic-3.10" ]; then
   PKG_PATCH_DIRS="amlogic-3.10"
 fi
 
