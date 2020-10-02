@@ -31,16 +31,23 @@ pre_make_target() {
 make_target() {
   cp -RP $(get_build_dir media_tree_cc)/* $PKG_BUILD/linux
 
-  # make config all
-  kernel_make VER=$KERNEL_VER SRCDIR=$(kernel_path) allyesconfig
+  # copy config file
+  if [ "$PROJECT" = Generic ]; then
+    if [ -f $PKG_DIR/config/generic.config ]; then
+      cp $PKG_DIR/config/generic.config v4l/.config
+    fi
+  else
+    if [ -f $PKG_DIR/config/usb.config ]; then
+      cp $PKG_DIR/config/usb.config v4l/.config
+    fi
+  fi
 
   # hack to workaround media_build bug
-  if [ "$PROJECT" = Rockchip ]; then
-    sed -e 's/CONFIG_DVB_CXD2820R=m/# CONFIG_DVB_CXD2820R is not set/g' -i v4l/.config
-    sed -e 's/CONFIG_DVB_LGDT3306A=m/# CONFIG_DVB_LGDT3306A is not set/g' -i v4l/.config
-  elif [ $LINUX = "amlogic-3.10" ]; then
-    sed -e 's/CONFIG_VIDEO_S5C73M3=m/# CONFIG_VIDEO_S5C73M3 is not set/g' -i $PKG_BUILD/v4l/.config
-    sed -e 's/CONFIG_V4L_AMLOGIC_VIDEO2=m/# CONFIG_V4L_AMLOGIC_VIDEO2 is not set/g' -i v4l/.config
+  if [ $LINUX = "amlogic-3.10" ]; then
+    sed -e 's/CONFIG_VIDEO_TVP5150=m/# CONFIG_VIDEO_TVP5150 is not set/g' -i v4l/.config
+    sed -e 's/CONFIG_DVB_M88DS3103=m/# CONFIG_DVB_M88DS3103 is not set/g' -i v4l/.config
+    sed -e 's/CONFIG_IR_NUVOTON=m/# CONFIG_IR_NUVOTON is not set/g' -i v4l/.config
+    sed -e 's/CONFIG_DVB_AF9013=m/# CONFIG_DVB_AF9013 is not set/g' -i v4l/.config
   fi
 
   # add menuconfig to edit .config
