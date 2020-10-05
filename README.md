@@ -1,6 +1,20 @@
-# OTT M8S (m8m2-n200C) and M8S+ (m8m2_KII) Edition
+# OTT M8S* Edition
 
 Based on [S802-LE/LibreELEC.tv](https://github.com/S802-LE/LibreELEC.tv).
+
+**Start LibreELEC from SD Card**
+
+If you want to boot the device from an SD Card, you need to perform the toothpick method: disconnect the power plug, insert the prepared SD Card on, which the image file is written (img.gz), and then press and hold the reset button located behind the A/V connector. Wait for the LibreELEC logo to appear before releasing the button.
+
+**Install image from SD Card to internal memory (eMMC or onboard NAND Flash):**
+
+If you want to install the firmware into the internal memory, you need to log in to the device via SSH and run the 'installtointernal' command. The default password for the root user is 'LibreELEC'.
+
+*NOTICE: The command will completely overwrite the previously installed firmware, so it will no longer be possible to boot the originally installed system.*
+
+**Install an update package:**
+
+To install the update, you must copy the 'tar' file to the Update folder via SMB, and then restart the device. The update process will start automatically after the restart.
 
 # LibreELEC
 
