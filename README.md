@@ -1,4 +1,4 @@
-# OTT M8S* Edition
+# LibreELEC - OTT M8S* Edition
 
 Unofficial community sources and firmware binaries for some Amlogic S805 and S812 based devices.
 
@@ -23,7 +23,7 @@ If you want to boot the device from an SD Card, you need to perform the toothpic
 
 **Install image from SD Card to internal memory (eMMC or onboard NAND Flash)**
 
-If you want to install the firmware into the internal memory, you need to log in to the device via SSH and run the 'installtointernal' command. The default password for the root user is 'LibreELEC'.
+If you want to install the firmware into the internal memory, you need to log in to the device via SSH and run the 'installtointernal' command. The default password for the root user is 'libreelec'.
 
 *NOTICE: The command will completely overwrite the previously installed firmware, so it will no longer be possible to boot the originally installed system.*
 
