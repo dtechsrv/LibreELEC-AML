@@ -15,7 +15,11 @@ Unofficial community sources and firmware binaries for some Amlogic S805 and S81
 
 This repository is based on [S802-LE/LibreELEC.tv](https://github.com/S802-LE/LibreELEC.tv).
 
-# How to start, install and update the firmware
+# How to crate bootable media, start, install and update the firmware
+
+**Create bootable SD Card**
+
+To create bootable SD card media you need to download the [LibreELEC USB-SD Creator](https://libreelec.tv/downloads_new/) tool from the LibreELEC website. Then click on the 'Select file' button and browse the previously downloaded 'img.gz' disk image.
 
 **Start LibreELEC from SD Card**
 
