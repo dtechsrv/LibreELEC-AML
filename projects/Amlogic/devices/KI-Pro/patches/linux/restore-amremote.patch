@@ -1,0 +1,3280 @@
+diff --git a/drivers/amlogic/input/remote/Kconfig b/drivers/amlogic/input/remote/Kconfig
+index 83b3df3..84e8241 100644
+--- a/drivers/amlogic/input/remote/Kconfig
++++ b/drivers/amlogic/input/remote/Kconfig
+@@ -1,18 +1,18 @@
+ #
+ # Remote control drivers
+ #
+-menuconfig AMLOGIC_REMOTE
++menuconfig MESON_NEW_INPUT_REMOTE
+ 	bool "GX Remotes"
+-	default n
++	default y
+ 	help
+ 	  Say Y here, and a list of supported remote controls will be displayed.
+ 	  This option doesn't affect the kernel.
+ 
+ 	  If unsure, say Y.
+ 
+-if AMLOGIC_REMOTE
++if MESON_NEW_INPUT_REMOTE
+ 
+-config MESON_REMOTE
++config NEW_AM_REMOTE
+ 	tristate "GX IR remote control support"
+ 	default n
+ 	help
+@@ -20,4 +20,4 @@ config MESON_REMOTE
+ 
+ 
+ 
+-endif # AMLOGIC_REMOTE
++endif # MESON_INPUT_REMOTE
+diff --git a/drivers/amlogic/input/remote/Makefile b/drivers/amlogic/input/remote/Makefile
+index 7cd11a2..e657f83 100644
+--- a/drivers/amlogic/input/remote/Makefile
++++ b/drivers/amlogic/input/remote/Makefile
+@@ -4,7 +4,5 @@
+ 
+ # Each configuration option enables a list of files.
+ 
+-obj-$(CONFIG_MESON_REMOTE)		+= remote.o
+-#remote-objs := remote_main.o remote_func.o
+-
+-remote-objs := remote_core.o remote_meson.o sysfs.o remote_cdev.o remote_raw.o remote_decoder_xmp.o remote_regmap.o
++obj-$(CONFIG_NEW_AM_REMOTE)		+= remote.o
++remote-objs := remote_main.o remote_func.o
+diff --git a/drivers/amlogic/input/remote/remote_cdev.c b/drivers/amlogic/input/remote/remote_cdev.c
+deleted file mode 100644
+index 38b40a5..0000000
+--- a/drivers/amlogic/input/remote/remote_cdev.c
++++ /dev/null
+@@ -1,185 +0,0 @@
+-#include <linux/kernel.h>
+-#include <linux/module.h>
+-#include <linux/init.h>
+-#include <linux/types.h>
+-#include <linux/uaccess.h>
+-#include <linux/slab.h>
+-#include <linux/list.h>
+-#include <linux/fs.h>
+-#include <linux/interrupt.h>
+-#include "remote_meson.h"
+-#include "sysfs.h"
+-
+-#define AML_REMOTE_NAME "amremote"
+-
+-static int remote_open(struct inode *inode, struct file *file)
+-{
+-	struct remote_chip *chip;
+-
+-	chip = container_of(inode->i_cdev, struct remote_chip, chrdev);
+-	file->private_data = chip;
+-	disable_irq(chip->irqno);
+-	return 0;
+-}
+-static long remote_ioctl(struct file *file, unsigned int cmd,
+-				unsigned long arg)
+-{
+-	struct remote_chip *chip = (struct remote_chip *)file->private_data;
+-	struct ir_sw_decode_para sw_data;
+-	struct ir_map_tab_list *ir_map;
+-	struct ir_map_tab_list *ptable;
+-	void __user *parg = (void __user *)arg;
+-	unsigned long flags;
+-	u32 value;
+-	int retval = 0;
+-
+-	if (!parg) {
+-		dev_err(chip->dev, "%s invalid user space pointer\n", __func__);
+-		return -EINVAL;
+-	}
+-
+-	mutex_lock(&chip->file_lock);
+-	switch (cmd) {
+-	case REMOTE_IOC_GET_DATA_VERSION:
+-		if (copy_to_user(parg, SHARE_DATA_VERSION,
+-						sizeof(SHARE_DATA_VERSION))) {
+-			retval = -EFAULT;
+-			goto err;
+-		}
+-	break;
+-
+-	case REMOTE_IOC_SET_KEY_NUMBER:
+-		if (copy_from_user(&value, parg, sizeof(u32))) {
+-			chip->key_num.update_flag = false;
+-			retval = -EFAULT;
+-			goto err;
+-		}
+-		chip->key_num.update_flag = true;
+-		chip->key_num.value = value;
+-		break;
+-
+-	case REMOTE_IOC_SET_KEY_MAPPING_TAB:
+-		if (chip->key_num.update_flag) {
+-			ir_map = kzalloc(sizeof(struct ir_map_tab_list) +
+-				chip->key_num.value * sizeof(union _codemap),
+-			    GFP_KERNEL);
+-		    if (!ir_map) {
+-				dev_err(chip->dev, "%s ir map table alloc err\n",
+-						__func__);
+-				retval = -ENOMEM;
+-				goto err;
+-			}
+-			if (copy_from_user(&ir_map->tab, parg,
+-				sizeof(struct ir_map_tab) +
+-				chip->key_num.value * sizeof(union _codemap))) {
+-				ir_tab_free(ir_map);
+-				retval = -EFAULT;
+-				goto err;
+-			}
+-
+-			/* Check data whether valid or not*/
+-			if (chip->key_num.value != ir_map->tab.map_size) {
+-				ir_tab_free(ir_map);
+-				retval = -EFAULT;
+-				goto err;
+-			}
+-			/*scancode sort*/
+-			ir_scancode_sort(&ir_map->tab);
+-
+-			/*overwrite the old map table or insert new map table*/
+-			spin_lock_irqsave(&chip->slock, flags);
+-			ptable = seek_map_tab(chip, ir_map->tab.custom_code);
+-			if (ptable) {
+-				if (ptable == chip->cur_tab)
+-					chip->cur_tab = ir_map;
+-				list_del(&ptable->list);
+-				ir_tab_free(ptable);
+-			}
+-			list_add_tail(&ir_map->list, &chip->map_tab_head);
+-			spin_unlock_irqrestore(&chip->slock, flags);
+-			chip->key_num.update_flag = false;
+-		}
+-		break;
+-
+-	case REMOTE_IOC_SET_SW_DECODE_PARA:
+-		if (copy_from_user(&sw_data, parg,
+-				sizeof(struct ir_sw_decode_para))) {
+-			retval = -EFAULT;
+-			goto err;
+-		}
+-		chip->r_dev->max_frame_time = sw_data.max_frame_time;
+-		break;
+-
+-	default:
+-		retval = -ENOTTY;
+-		goto err;
+-	}
+-err:
+-	mutex_unlock(&chip->file_lock);
+-	return retval;
+-}
+-static int remote_release(struct inode *inode, struct file *file)
+-{
+-	struct remote_chip *chip = (struct remote_chip *)file->private_data;
+-
+-	enable_irq(chip->irqno);
+-	file->private_data = NULL;
+-	return 0;
+-}
+-
+-static const struct file_operations remote_fops = {
+-	.owner = THIS_MODULE,
+-	.open = remote_open,
+-#ifdef CONFIG_COMPAT
+-	.compat_ioctl = remote_ioctl,
+-#endif
+-	.unlocked_ioctl = remote_ioctl,
+-	.release = remote_release,
+-};
+-
+-int ir_cdev_init(struct remote_chip *chip)
+-{
+-	int ret = 0;
+-
+-	chip->dev_name  = AML_REMOTE_NAME;
+-	ret = alloc_chrdev_region(&chip->chr_devno,
+-		0, 1, AML_REMOTE_NAME);
+-	if (ret < 0) {
+-		dev_err(chip->dev, "failed to allocate major number\n");
+-		ret = -ENODEV;
+-		goto err_end;
+-	}
+-	cdev_init(&chip->chrdev, &remote_fops);
+-	chip->chrdev.owner = THIS_MODULE;
+-	ret = cdev_add(&chip->chrdev, chip->chr_devno, 1);
+-	if (ret < 0) {
+-		dev_err(chip->dev, "failed to cdev_add\n");
+-		goto err_cdev_add;
+-	}
+-
+-	ret = ir_sys_device_attribute_init(chip);
+-	if (ret < 0) {
+-		dev_err(chip->dev, "failed to ir_sys create %d\n", ret);
+-		goto err_ir_sys;
+-	}
+-	return 0;
+-
+-err_ir_sys:
+-	dev_err(chip->dev, "err_ir_sys\n");
+-	cdev_del(&chip->chrdev);
+-err_cdev_add:
+-	dev_err(chip->dev, "err_cdev_add\n");
+-	unregister_chrdev_region(chip->chr_devno, 1);
+-err_end:
+-	return ret;
+-}
+-EXPORT_SYMBOL(ir_cdev_init);
+-
+-void ir_cdev_free(struct remote_chip *chip)
+-{
+-	ir_sys_device_attribute_sys(chip);
+-	cdev_del(&chip->chrdev);
+-	unregister_chrdev_region(chip->chr_devno, 1);
+-}
+-EXPORT_SYMBOL(ir_cdev_free);
+-
+diff --git a/drivers/amlogic/input/remote/remote_core.c b/drivers/amlogic/input/remote/remote_core.c
+deleted file mode 100644
+index f93c8a7..0000000
+--- a/drivers/amlogic/input/remote/remote_core.c
++++ /dev/null
+@@ -1,251 +0,0 @@
+-/*
+- * drivers/amlogic/input/remote/remote_core.c
+- *
+- * Copyright (C) 2015 Amlogic, Inc. All rights reserved.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+- * more details.
+- *
+-*/
+-
+-#include <linux/module.h>
+-#include <linux/init.h>
+-#include <linux/interrupt.h>
+-#include <linux/irq.h>
+-#include <linux/types.h>
+-#include <linux/input.h>
+-#include <linux/kernel.h>
+-#include <linux/delay.h>
+-#include <linux/platform_device.h>
+-#include <linux/mutex.h>
+-#include <linux/errno.h>
+-#include <asm/irq.h>
+-#include <linux/io.h>
+-
+-/*#include <mach/pinmux.h>*/
+-#include <linux/major.h>
+-#include <linux/slab.h>
+-#include <linux/uaccess.h>
+-#include <linux/pinctrl/consumer.h>
+-#include <linux/of_platform.h>
+-#include <linux/amlogic/cpu_version.h>
+-#include <linux/amlogic/pm.h>
+-#include <linux/of_address.h>
+-#include "remote_core.h"
+-
+-/**
+-  *global variable for debug
+-  *disable: 0
+-  *enable: 1
+-  */
+-static bool remote_debug_enable;
+-
+-void remote_repeat(struct remote_dev *dev)
+-{
+-
+-}
+-
+-void remote_debug_set_enable(bool enable)
+-{
+-	remote_debug_enable = enable;
+-}
+-
+-bool remote_debug_get_enable(void)
+-{
+-	return remote_debug_enable;
+-}
+-
+-static void ir_do_keyup(struct remote_dev *dev)
+-{
+-	input_report_key(dev->input_device, dev->last_keycode, 0);
+-	input_sync(dev->input_device);
+-	dev->keypressed = false;
+-	dev->last_scancode = -1;
+-	remote_dbg(dev->dev, "keyup!!\n");
+-}
+-
+-static void ir_timer_keyup(unsigned long cookie)
+-{
+-	struct remote_dev *dev = (struct remote_dev *)cookie;
+-	unsigned long flags;
+-
+-	if (!dev->keypressed)
+-		return;
+-	spin_lock_irqsave(&dev->keylock, flags);
+-	if (dev->is_next_repeat(dev)) {
+-		dev->keyup_jiffies = jiffies +
+-			msecs_to_jiffies(dev->keyup_delay);
+-		mod_timer(&dev->timer_keyup, dev->keyup_jiffies);
+-		dev->wait_next_repeat = 1;
+-		remote_dbg(dev->dev, "wait for repeat\n");
+-	} else {
+-		if (time_is_before_eq_jiffies(dev->keyup_jiffies))
+-			ir_do_keyup(dev);
+-		dev->wait_next_repeat = 0;
+-	}
+-	spin_unlock_irqrestore(&dev->keylock, flags);
+-}
+-
+-static void ir_do_keydown(struct remote_dev *dev, int scancode,
+-			  u32 keycode)
+-{
+-	remote_dbg(dev->dev, "keypressed=0x%x\n", dev->keypressed);
+-
+-	if (dev->keypressed)
+-		ir_do_keyup(dev);
+-
+-	if (KEY_RESERVED != keycode) {
+-		dev->keypressed = true;
+-		dev->last_scancode = scancode;
+-		dev->last_keycode = keycode;
+-		input_report_key(dev->input_device, keycode, 1);
+-		input_sync(dev->input_device);
+-		remote_dbg(dev->dev, "report key!!\n");
+-	} else {
+-		dev_err(dev->dev, "no valid key to handle");
+-	}
+-}
+-
+-void remote_keydown(struct remote_dev *dev, int scancode, int status)
+-{
+-	unsigned long flags;
+-	u32 keycode;
+-
+-	if (REMOTE_REPEAT != status) {
+-		if (dev->is_valid_custom &&
+-			(false == dev->is_valid_custom(dev))) {
+-			dev_err(dev->dev, "invalid custom:0x%x\n",
+-				dev->cur_hardcode);
+-			return;
+-		}
+-	}
+-
+-	spin_lock_irqsave(&dev->keylock, flags);
+-	/**
+-	 *only a few keys which be set in key map table support
+-	 *report relative axes event in mouse mode, other keys
+-	 *will continue to report key event.
+-	 */
+-	if (status == REMOTE_NORMAL ||
+-			status == REMOTE_REPEAT) {
+-		/*to report relative axes event*/
+-		if (0 == dev->ir_report_rel(dev, scancode, status)) {
+-			spin_unlock_irqrestore(&dev->keylock, flags);
+-			return;
+-		}
+-	}
+-
+-	if (status == REMOTE_NORMAL) {
+-		keycode = dev->getkeycode(dev, scancode);
+-		/*to report key event*/
+-		ir_do_keydown(dev, scancode, keycode);
+-	}
+-
+-	if (dev->keypressed) {
+-		dev->wait_next_repeat = 0;
+-		dev->keyup_jiffies = jiffies +
+-			msecs_to_jiffies(dev->keyup_delay);
+-		mod_timer(&dev->timer_keyup, dev->keyup_jiffies);
+-	}
+-	spin_unlock_irqrestore(&dev->keylock, flags);
+-}
+-
+-EXPORT_SYMBOL(remote_keydown);
+-
+-struct remote_dev *remote_allocate_device(void)
+-{
+-	struct remote_dev *dev;
+-
+-	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
+-	if (!dev)
+-		return NULL;
+-
+-	dev->input_device = input_allocate_device();
+-	if (!dev->input_device) {
+-		kfree(dev);
+-		return NULL;
+-	}
+-	input_set_drvdata(dev->input_device, dev);
+-
+-	setup_timer(&dev->timer_keyup, ir_timer_keyup, (unsigned long)dev);
+-
+-	spin_lock_init(&dev->keylock);
+-
+-	dev->wait_next_repeat = 0;
+-	return dev;
+-}
+-EXPORT_SYMBOL(remote_allocate_device);
+-
+-void remote_free_device(struct remote_dev *dev)
+-{
+-	input_free_device(dev->input_device);
+-	kfree(dev);
+-}
+-EXPORT_SYMBOL(remote_free_device);
+-
+-
+-int remote_register_device(struct remote_dev *dev)
+-{
+-	int i;
+-	int ret;
+-
+-	if (MULTI_IR_SOFTWARE_DECODE(dev->rc_type)) {
+-		remote_raw_init();
+-		remote_raw_event_register(dev);
+-	}
+-
+-	__set_bit(EV_KEY, dev->input_device->evbit);
+-	__set_bit(EV_REP, dev->input_device->evbit);
+-
+-	for (i = 0; i < KEY_MAX; i++)
+-		__set_bit(i, dev->input_device->keybit);
+-
+-	__set_bit(BTN_MOUSE, dev->input_device->keybit);
+-	__set_bit(BTN_LEFT, dev->input_device->keybit);
+-	__set_bit(BTN_RIGHT, dev->input_device->keybit);
+-	__set_bit(BTN_MIDDLE, dev->input_device->keybit);
+-
+-	__set_bit(EV_REL, dev->input_device->evbit);
+-	__set_bit(REL_X, dev->input_device->relbit);
+-	__set_bit(REL_Y, dev->input_device->relbit);
+-	__set_bit(REL_WHEEL, dev->input_device->relbit);
+-
+-	dev->input_device->keycodesize = sizeof(unsigned short);
+-	dev->input_device->keycodemax = 0x1ff;
+-
+-	ret = input_register_device(dev->input_device);
+-
+-	dev->debug_current     = 0;
+-	dev->debug_buffer_size = 4096;
+-	dev->debug_buffer = kzalloc(dev->debug_buffer_size, GFP_KERNEL);
+-	if (!dev->debug_buffer) {
+-		dev_err(dev->dev, "kzalloc debug_buffer error!\n");
+-		ret = -ENOMEM;
+-	}
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL(remote_register_device);
+-
+-
+-void remote_unregister_device(struct remote_dev *dev)
+-{
+-	if (MULTI_IR_SOFTWARE_DECODE(dev->rc_type))
+-		remote_raw_event_unregister(dev);
+-
+-	input_unregister_device(dev->input_device);
+-	kfree(dev->debug_buffer);
+-}
+-EXPORT_SYMBOL(remote_unregister_device);
+-
+-MODULE_AUTHOR("AMLOGIC");
+-MODULE_DESCRIPTION("Remote Driver");
+-MODULE_LICENSE("GPL");
+-
+diff --git a/drivers/amlogic/input/remote/remote_core.h b/drivers/amlogic/input/remote/remote_core.h
+deleted file mode 100644
+index 0dbf2c2..0000000
+--- a/drivers/amlogic/input/remote/remote_core.h
++++ /dev/null
+@@ -1,208 +0,0 @@
+-/*
+- * drivers/amlogic/input/remote/remote_core.h
+- *
+- * Copyright (C) 2015 Amlogic, Inc. All rights reserved.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+- * more details.
+- *
+-*/
+-
+-#ifndef _REMOTE_MAIN_MY_H
+-#define _REMOTE_MAIN_MY_H
+-
+-#include <linux/slab.h>
+-#include <linux/spinlock.h>
+-#include <linux/kfifo.h>
+-#include <linux/device.h>
+-#include <dt-bindings/input/meson_rc.h>
+-
+-#define MULTI_IR_TYPE_MASK(type) (type & 0xff)  /*8bit*/
+-#define LEGACY_IR_TYPE_MASK(type) ((type >> 8) & 0xff) /*8bit*/
+-/*bit[7] identify whether software decode or not*/
+-#define MULTI_IR_SOFTWARE_DECODE(type) ((MULTI_IR_TYPE_MASK(type) >> 7) == 0x1)
+-#define ENABLE_LEGACY_IR(type) (LEGACY_IR_TYPE_MASK(type) == 0xff)
+-
+-#define remote_dbg(dev, format, arg...)     \
+-do {                                        \
+-	if (remote_debug_get_enable()) {        \
+-		if (likely(dev))                    \
+-			dev_info(dev, format, ##arg);   \
+-		else                                \
+-			pr_info(format, ##arg);         \
+-	}                                       \
+-} while (0)
+-
+-enum remote_status {
+-	REMOTE_NORMAL = 0x00,
+-	REMOTE_REPEAT = 1<<0,
+-	REMOTE_CUSTOM_ERROR = 1<<1,
+-	REMOTE_DATA_ERROR = 1<<2,
+-	REMOTE_FRAME_ERROR = 1<<3,
+-	REMOTE_CHECKSUM_ERROR = 1<<4,
+-	REMOTE_CUSTOM_DATA    = 1<<5
+-};
+-
+-enum raw_event_type {
+-	RAW_SPACE        = (1 << 0),
+-	RAW_PULSE        = (1 << 1),
+-	RAW_START_EVENT  = (1 << 2),
+-	RAW_STOP_EVENT   = (1 << 3),
+-};
+-
+-
+-
+-struct remote_raw_handle;
+-struct remote_dev {
+-	struct device *dev;
+-	struct input_dev *input_device;
+-	struct list_head reg_list;
+-	struct list_head aml_list;
+-	struct remote_raw_handle *raw;
+-	spinlock_t keylock;
+-
+-	struct timer_list timer_keyup;
+-	unsigned long keyup_jiffies;
+-	unsigned long keyup_delay;
+-	bool keypressed;
+-
+-	u32 last_scancode;
+-	u32 last_keycode;
+-	int rc_type;
+-	u32 cur_hardcode;
+-	u32 cur_customcode;
+-	u32 repeat_time;
+-	u32 max_frame_time;
+-	int wait_next_repeat;
+-	void *platform_data;
+-
+-	/*debug*/
+-	char *debug_buffer;
+-	int debug_buffer_size;
+-	int debug_current;
+-
+-	u32 (*getkeycode)(struct remote_dev *, u32);
+-	int (*ir_report_rel)(struct remote_dev *, u32, int);
+-	bool (*set_custom_code)(struct remote_dev *, u32);
+-	bool (*is_valid_custom)(struct remote_dev *);
+-	bool (*is_next_repeat)(struct remote_dev *);
+-};
+-
+-struct remote_raw_handle {
+-	struct list_head list;
+-	struct remote_dev *dev;
+-	struct task_struct *thread;
+-	struct kfifo_rec_ptr_1 kfifo;/* fifo for the pulse/space durations */
+-	spinlock_t lock;
+-
+-	enum raw_event_type last_type;
+-	unsigned long jiffies_old;
+-	unsigned long repeat_time;
+-	unsigned long max_frame_time;
+-};
+-
+-struct remote_map_table {
+-	u32 scancode;
+-	u32 keycode;
+-};
+-
+-struct remote_map {
+-	struct remote_map_table *scan;
+-	int rc_type;
+-	const char *name;
+-	u32 size;
+-};
+-
+-struct remote_map_list {
+-	struct list_head     list;
+-	struct remote_map    map;
+-};
+-
+-enum {
+-	SCAN_CODE_REPEAT,
+-	SCAN_CODE_NORMAL
+-};
+-
+-struct remote_raw_event {
+-	u32             duration;
+-	unsigned        pulse:1;
+-	unsigned        reset:1;
+-	unsigned        timeout:1;
+-};
+-
+-#define DEFINE_REMOTE_RAW_EVENT(event) \
+-	struct remote_raw_event event = { \
+-		.duration = 0  , \
+-		.pulse = 0, \
+-		.reset = 0, \
+-		.timeout = 0}
+-
+-
+-
+-struct remote_raw_handler {
+-	struct list_head list;
+-
+-	int protocols;
+-	void *data;
+-	int (*decode)(struct remote_dev *dev, struct remote_raw_event event,
+-		void *data_dec);
+-};
+-
+-
+-/* macros for IR decoders */
+-static inline bool geq_margin(unsigned d1, unsigned d2, unsigned margin)
+-{
+-	return d1 > (d2 - margin);
+-}
+-
+-static inline bool eq_margin(unsigned d1, unsigned d2, unsigned margin)
+-{
+-	return (d1 > (d2 - margin)) && (d1 < (d2 + margin));
+-}
+-
+-static inline bool is_transition(struct remote_raw_event *x,
+-	struct remote_raw_event *y)
+-{
+-	return x->pulse != y->pulse;
+-}
+-
+-static inline void decrease_duration(struct remote_raw_event *ev,
+-		unsigned duration)
+-{
+-	if (duration > ev->duration)
+-		ev->duration = 0;
+-	else
+-		ev->duration -= duration;
+-}
+-
+-int remote_register_device(struct remote_dev *dev);
+-void remote_free_device(struct remote_dev *dev);
+-void remote_unregister_device(struct remote_dev *dev);
+-struct remote_dev *remote_allocate_device(void);
+-void remote_keydown(struct remote_dev *dev, int scancode, int status);
+-
+-int remote_raw_event_store(struct remote_dev *dev, struct remote_raw_event *ev);
+-int remote_raw_event_register(struct remote_dev *dev);
+-void remote_raw_event_unregister(struct remote_dev *dev);
+-int remote_raw_handler_register(struct remote_raw_handler *handler);
+-void remote_raw_handler_unregister(struct remote_raw_handler *handler);
+-void remote_raw_event_handle(struct remote_dev *dev);
+-int remote_raw_event_store_edge(struct remote_dev *dev,
+-	enum raw_event_type type, u32 duration);
+-void remote_raw_init(void);
+-
+-/*debug printk */
+-void remote_debug_set_enable(bool enable);
+-bool remote_debug_get_enable(void);
+-int debug_log_printk(struct remote_dev *dev, const char *fmt);
+-
+-#endif
+-
+-
+diff --git a/drivers/amlogic/input/remote/remote_decoder_xmp.c b/drivers/amlogic/input/remote/remote_decoder_xmp.c
+deleted file mode 100644
+index aeb98f2..0000000
+--- a/drivers/amlogic/input/remote/remote_decoder_xmp.c
++++ /dev/null
+@@ -1,256 +0,0 @@
+-/*
+- * drivers/amlogic/input/remote/remote_decoder_xmp.c
+- *
+- * Copyright (C) 2015 Amlogic, Inc. All rights reserved.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+- * more details.
+- *
+-*/
+-
+-#include <linux/bitrev.h>
+-#include <linux/module.h>
+-#include "remote_meson.h"
+-
+-#define XMP_UNIT		  136000 /* ns */
+-#define XMP_LEADER		  210000 /* ns */
+-#define XMP_NIBBLE_PREFIX	  760000 /* ns */
+-#define	XMP_HALFFRAME_SPACE	13800000 /* ns */
+-
+-/* should be 80ms but not all dureation
+-   supliers can go that high */
+-#define	XMP_TRAILER_SPACE	20000000
+-
+-enum xmp_state {
+-	STATE_INACTIVE,
+-	STATE_LEADER_PULSE,
+-	STATE_NIBBLE_SPACE,
+-};
+-
+-struct nibble_win {
+-	u8 value;
+-	int min;
+-	int max;
+-};
+-
+-struct xmp_dec {
+-	int state;
+-	unsigned count;
+-	u32 durations[16];
+-};
+-
+-static const struct nibble_win nibble_windows[] = {
+-	{0, 690000, 826000},   /*758000*/
+-	{1, 827000, 963000},   /*895000*/
+-	{2, 964000, 1100000},   /*1032000*/
+-	{3, 1110000, 1237000},   /*1169000*/
+-	{4, 1238000, 1374000},   /*1306000*/
+-	{5, 1375000, 1511000},   /*1443000*/
+-	{6, 1512000, 1648000},   /*1580000*/
+-	{7, 1649000, 1785000},   /*1717000*/
+-	{8, 1786000, 1922000},   /*1854000*/
+-	{9, 1923000, 2059000},   /*1991000*/
+-	{0xa, 2060000, 2196000}, /*2128000*/
+-	{0xb, 2197000, 2333000}, /*2265000*/
+-	{0xc, 2334000, 2470000}, /*2402000*/
+-	{0xd, 2471000, 2607000}, /*2539000*/
+-	{0xe, 2608000, 2744000}, /*2676000*/
+-	{0x0f, 2745000, 2881000}, /*2813000*/
+-	{0xff, 11800000, 16800000} /*13800000 ,half frame space*/
+-};
+-
+-int decode_xmp(struct remote_dev *dev,
+-	struct xmp_dec *data, struct remote_raw_event *ev)
+-{
+-	int  i;
+-	u8 addr, subaddr, subaddr2, toggle, oem, obc1, obc2, sum1, sum2;
+-	u32 *n;
+-	u32 scancode;
+-	int custom_code;
+-	int nb = 0;
+-	char buf[512];
+-
+-	if (data->count != 16) {
+-		sprintf(buf, "rx TRAILER c=%d, d=%d\n",
+-			data->count, ev->duration);
+-		debug_log_printk(dev, buf);
+-		data->state = STATE_INACTIVE;
+-		return -EINVAL;
+-	}
+-
+-	n = data->durations;
+-	for (i = 0; i < 16; i++) {
+-		for (nb = 0; nb < 16; nb++) {
+-			if (n[i] >= nibble_windows[nb].min &&
+-				n[i] <= nibble_windows[nb].max) {
+-				n[i] = nibble_windows[nb].value;
+-			}
+-		}
+-	}
+-	sum1 = (15 + n[0] + n[1] + n[2] + n[3] +
+-		n[4] + n[5] + n[6] + n[7]) % 16;
+-	sum2 = (15 + n[8] + n[9] + n[10] + n[11] +
+-		n[12] + n[13] + n[14] + n[15]) % 16;
+-
+-	if (sum1 != 15 || sum2 != 15) {
+-		debug_log_printk(dev, "checksum err\n");
+-		data->state = STATE_INACTIVE;
+-		return -EINVAL;
+-	}
+-
+-	subaddr	= n[0] << 4 | n[2];
+-	subaddr2 = n[8] << 4 | n[11];
+-	oem = n[4] << 4 | n[5];
+-	addr = n[6] << 4 | n[7];
+-	toggle = n[10];
+-	obc1 = n[12] << 4 | n[13];
+-	obc2 = n[14] << 4 | n[15];
+-
+-	if (subaddr != subaddr2) {
+-		sprintf(buf, "s1!=s2\n");
+-		debug_log_printk(dev, buf);
+-		data->state = STATE_INACTIVE;
+-		return -EINVAL;
+-	}
+-	scancode = obc1;
+-	custom_code =  oem << 8 | addr;
+-	sprintf(buf, "custom_code=%d\n", custom_code);
+-	debug_log_printk(dev, buf);
+-	sprintf(buf, "scancode=0x%x,t=%d\n", scancode, toggle);
+-	debug_log_printk(dev, buf);
+-	dev->set_custom_code(dev, custom_code);
+-	if (toggle == 0)
+-		remote_keydown(dev, scancode, REMOTE_NORMAL);
+-	else
+-		remote_keydown(dev, scancode, REMOTE_REPEAT);
+-
+-	data->state = STATE_INACTIVE;
+-	return 0;
+-}
+-
+-/**
+- * ir_xmp_decode() - Decode one XMP pulse or space
+- * @dev:	the struct rc_dev descriptor of the device
+- * @duration:	the struct ir_raw_event descriptor of the pulse/space
+- *
+- * This function returns -EINVAL if the pulse violates the state machine
+- */
+-static int ir_xmp_decode(struct remote_dev *dev, struct remote_raw_event ev,
+-				void *data_dec)
+-{
+-	struct xmp_dec *data = data_dec;
+-	char buf[512];
+-
+-	if (ev.reset) {
+-		data->state = STATE_INACTIVE;
+-		return 0;
+-	}
+-
+-	sprintf(buf, "dr:%d,s=%d, c=%d\n",
+-		ev.duration, data->state, data->count);
+-	debug_log_printk(dev, buf);
+-
+-	switch (data->state) {
+-
+-	case STATE_INACTIVE:
+-		if (eq_margin(ev.duration, XMP_LEADER, XMP_UNIT / 2)) {
+-			data->count = 0;
+-			data->state = STATE_NIBBLE_SPACE;
+-		}
+-
+-		return 0;
+-
+-	case STATE_LEADER_PULSE:
+-		debug_log_printk(dev, "STATE_LEADER_PULSE\n");
+-
+-		if (eq_margin(ev.duration, XMP_LEADER, XMP_UNIT / 2))
+-			data->state = STATE_NIBBLE_SPACE;
+-
+-		if (data->count == 16)
+-			return decode_xmp(dev, data, &ev);
+-		return 0;
+-
+-	case STATE_NIBBLE_SPACE:
+-		if (geq_margin(ev.duration,
+-			XMP_TRAILER_SPACE, XMP_NIBBLE_PREFIX)) {
+-			return decode_xmp(dev, data, &ev);
+-		} else if (geq_margin(ev.duration, XMP_HALFFRAME_SPACE,
+-							XMP_NIBBLE_PREFIX)) {
+-			/* Expect 8 or 16 nibble pulses. 16
+-				 in case of 'final' frame */
+-			if (data->count == 16) {
+-				/*
+-				 * TODO: for now go back to half frame position
+-				 *	 so trailer can be found and key press
+-				 *	 can be handled.
+-				 */
+-				debug_log_printk(dev, "over pulses\n");
+-				data->count = 8;
+-			} else if (data->count != 8)
+-				debug_log_printk(dev, "half frame\n");
+-			data->state = STATE_LEADER_PULSE;
+-			return 0;
+-
+-		} else if (geq_margin(ev.duration,
+-			XMP_NIBBLE_PREFIX, XMP_UNIT)) {
+-			/* store nibble raw data, decode after trailer */
+-			if (data->count == 16) {
+-				debug_log_printk(dev, "over pulses\n");
+-				data->state = STATE_INACTIVE;
+-				return -EINVAL;
+-			}
+-			data->durations[data->count] = ev.duration;
+-			data->count++;
+-			data->state = STATE_LEADER_PULSE;
+-			return 0;
+-		}
+-
+-		break;
+-	}
+-	debug_log_printk(dev, "dec failed\n");
+-
+-	data->state = STATE_INACTIVE;
+-	return -EINVAL;
+-}
+-
+-static struct remote_raw_handler xmp_handler = {
+-	.protocols	= REMOTE_TYPE_RAW_XMP_1,
+-	.decode		= ir_xmp_decode,
+-};
+-
+-static int __init ir_xmp_decode_init(void)
+-{
+-	xmp_handler.data = kzalloc(sizeof(struct xmp_dec), GFP_KERNEL);
+-	if (!xmp_handler.data) {
+-		pr_err("%s: ir_xmp_decode_init alloc xmp_dec failure\n",
+-					DRIVER_NAME);
+-		return -1;
+-	}
+-	remote_raw_handler_register(&xmp_handler);
+-
+-	pr_info("%s: IR XMP protocol handler initialized\n", DRIVER_NAME);
+-	return 0;
+-}
+-
+-static void __exit ir_xmp_decode_exit(void)
+-{
+-	remote_raw_handler_unregister(&xmp_handler);
+-	if (!xmp_handler.data)
+-		kfree(xmp_handler.data);
+-}
+-
+-module_init(ir_xmp_decode_init);
+-module_exit(ir_xmp_decode_exit);
+-
+-MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("AMLOGIC");
+-MODULE_DESCRIPTION("XMP IR PROTOCOL DECODER");
+-
+-
+diff --git a/drivers/amlogic/input/remote/remote_main.c b/drivers/amlogic/input/remote/remote_main.c
+index 8b5fd62..a004fa7 100644
+--- a/drivers/amlogic/input/remote/remote_main.c
++++ b/drivers/amlogic/input/remote/remote_main.c
+@@ -500,7 +500,7 @@ static long remote_config_ioctl(struct file *filp, unsigned int cmd,
+ 	unsigned int ret;
+ 
+ 	if (args)
+-		ret = copy_from_user(&val, argp, sizeof(unsigned int));
++		ret = copy_from_user(&val, argp, sizeof(unsigned long));
+ 	mutex_lock(&remote_file_mutex);
+ 	switch (cmd) {
+ 	case REMOTE_IOC_INFCODE_CONFIG:
+@@ -536,35 +536,35 @@ static long remote_config_ioctl(struct file *filp, unsigned int cmd,
+ 		break;
+ 	case REMOTE_IOC_SET_RELT_DELAY:
+ 		ret = copy_from_user(&remote->relt_delay[remote->map_num],
+-					argp, sizeof(int));
++					argp, sizeof(long));
+ 		break;
+ 	case REMOTE_IOC_SET_REPEAT_DELAY:
+ 		ret = copy_from_user(&remote->repeat_delay[remote->map_num],
+ 					argp,
+-					sizeof(int));
++					sizeof(long));
+ 		break;
+ 	case REMOTE_IOC_SET_REPEAT_PERIOD:
+ 		ret = copy_from_user(&remote->repeat_peroid[remote->map_num],
+ 					argp,
+-					sizeof(int));
++					sizeof(long));
+ 		break;
+ 	case REMOTE_IOC_SET_REPEAT_ENABLE:
+ 		ret = copy_from_user(&remote->repeat_enable, argp,
+-					sizeof(int));
++					sizeof(long));
+ 		break;
+ 	case REMOTE_IOC_SET_DEBUG_ENABLE:
+ 		ret = copy_from_user(&remote->debug_enable, argp,
+-							sizeof(int));
++							sizeof(long));
+ 		break;
+ 	case REMOTE_IOC_SET_MODE:
+-		ret = copy_from_user(&remote->work_mode, argp, sizeof(int));
++		ret = copy_from_user(&remote->work_mode, argp, sizeof(long));
+ 		break;
+ 	case REMOTE_IOC_SET_BIT_COUNT:
+-		ret = copy_from_user(&remote->bit_count, argp, sizeof(int));
++		ret = copy_from_user(&remote->bit_count, argp, sizeof(long));
+ 		break;
+ 	case REMOTE_IOC_SET_CUSTOMCODE:
+ 		ret = copy_from_user(&remote->custom_code[remote->map_num],
+-							argp, sizeof(int));
++							argp, sizeof(long));
+ 		break;
+ 	case REMOTE_IOC_SET_REG_BASE_GEN:
+ 		am_remote_write_reg(OPERATION_CTRL_REG0, val);
+@@ -587,7 +587,7 @@ static long remote_config_ioctl(struct file *filp, unsigned int cmd,
+ 	case REMOTE_IOC_SET_RELEASE_DELAY:
+ 		ret = copy_from_user(&remote->release_delay[remote->map_num],
+ 					argp,
+-				sizeof(int));
++				sizeof(long));
+ 		break;
+ 	/*SW*/
+ 	case REMOTE_IOC_SET_TW_LEADER_ACT:
+@@ -649,7 +649,7 @@ static long remote_config_ioctl(struct file *filp, unsigned int cmd,
+ 	case REMOTE_IOC_GET_TW_BIT0_TIME:
+ 	case REMOTE_IOC_GET_TW_BIT1_TIME:
+ 	case REMOTE_IOC_GET_TW_REPEATE_LEADER:
+-		ret = copy_to_user(argp, &val, sizeof(int));
++		ret = copy_to_user(argp, &val, sizeof(long));
+ 		break;
+ 	case REMOTE_IOC_GET_POWERKEY:
+ 		ret = scpi_get_usr_data(SCPI_CL_POWER, &val, 1);
+@@ -909,11 +909,6 @@ static int remote_resume(struct platform_device *pdev)
+ 	if (is_meson_m8m2_cpu()) {
+ #define  AO_RTI_STATUS_REG2 ((0x00 << 10) | (0x02 << 2))
+ 		if (aml_read_aobus(AO_RTI_STATUS_REG2) == 0x1234abcd) {
+-			input_event(gp_remote->input, EV_KEY, KEY_POWER, 1);
+-			input_sync(gp_remote->input);
+-			input_event(gp_remote->input, EV_KEY, KEY_POWER, 0);
+-			input_sync(gp_remote->input);
+-
+ 			/*aml_write_reg32(P_AO_RTC_ADDR0,
+ 			(aml_read_reg32(P_AO_RTC_ADDR0) | (0x0000f000)));*/
+ 			aml_write_aobus(AO_RTI_STATUS_REG2, 0);
+@@ -921,17 +916,6 @@ static int remote_resume(struct platform_device *pdev)
+ 	} else {
+ 		if (get_resume_method() == REMOTE_WAKEUP) {
+ 			input_dbg("remote_wakeup\n");
+-			input_event(gp_remote->input, EV_KEY, KEY_POWER, 1);
+-			input_sync(gp_remote->input);
+-			input_event(gp_remote->input, EV_KEY, KEY_POWER, 0);
+-			input_sync(gp_remote->input);
+-		}
+-
+-		if (get_resume_method() == REMOTE_CUS_WAKEUP) {
+-			input_event(gp_remote->input, EV_KEY, 133, 1);
+-			input_sync(gp_remote->input);
+-			input_event(gp_remote->input, EV_KEY, 133, 0);
+-			input_sync(gp_remote->input);
+ 		}
+ 		if (get_resume_method() == ETH_PHY_WAKEUP) {
+ 			input_dbg("ethernet_wakeup\n");
+diff --git a/drivers/amlogic/input/remote/remote_meson.c b/drivers/amlogic/input/remote/remote_meson.c
+deleted file mode 100644
+index 2f810b8..0000000
+--- a/drivers/amlogic/input/remote/remote_meson.c
++++ /dev/null
+@@ -1,761 +0,0 @@
+-/*
+- * drivers/amlogic/input/remote/remote_meson.c
+- *
+- * Copyright (C) 2015 Amlogic, Inc. All rights reserved.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+- * more details.
+- *
+-*/
+-
+-
+-#include <linux/module.h>
+-#include <linux/init.h>
+-#include <linux/interrupt.h>
+-#include <linux/irq.h>
+-#include <linux/types.h>
+-#include <linux/input.h>
+-#include <linux/kernel.h>
+-#include <linux/delay.h>
+-#include <linux/platform_device.h>
+-#include <linux/mutex.h>
+-#include <linux/errno.h>
+-#include <asm/irq.h>
+-#include <linux/io.h>
+-#include <linux/major.h>
+-#include <linux/slab.h>
+-#include <linux/list.h>
+-#include <linux/uaccess.h>
+-#include <linux/pinctrl/consumer.h>
+-#include <linux/of_platform.h>
+-#include <linux/amlogic/cpu_version.h>
+-#include <linux/amlogic/pm.h>
+-#include <linux/of_address.h>
+-
+-
+-#include "remote_meson.h"
+-
+-#include <linux/amlogic/iomap.h>
+-
+-static void amlremote_tasklet(unsigned long data);
+-
+-
+-DECLARE_TASKLET_DISABLED(tasklet, amlremote_tasklet, 0);
+-
+-int remote_reg_read(struct remote_chip *chip, unsigned char id,
+-	unsigned int reg, unsigned int *val)
+-{
+-	if (id >= IR_ID_MAX) {
+-		dev_err(chip->dev, "invalid id:[%d] in %s\n", id, __func__);
+-		return -EINVAL;
+-	}
+-
+-	*val = readl((chip->ir_contr[id].remote_regs+reg));
+-
+-	return 0;
+-}
+-
+-int remote_reg_write(struct remote_chip *chip, unsigned char id,
+-	unsigned int reg, unsigned int val)
+-{
+-	if (id >= IR_ID_MAX) {
+-		dev_err(chip->dev, "invalid id:[%d] in %s\n", id, __func__);
+-		return -EINVAL;
+-	}
+-
+-	writel(val, (chip->ir_contr[id].remote_regs+reg));
+-
+-	return 0;
+-}
+-
+-int ir_scancode_sort(struct ir_map_tab *ir_map)
+-{
+-	bool is_sorted;
+-	u32 tmp;
+-	int i;
+-	int j;
+-
+-	for (i = 0; i < ir_map->map_size - 1; i++) {
+-		is_sorted = true;
+-		for (j = 0; j < ir_map->map_size - i - 1; j++) {
+-			if (ir_map->codemap[j].map.scancode >
+-					ir_map->codemap[j+1].map.scancode) {
+-				is_sorted = false;
+-				tmp = ir_map->codemap[j].code;
+-				ir_map->codemap[j].code  =
+-						ir_map->codemap[j+1].code;
+-				ir_map->codemap[j+1].code = tmp;
+-			}
+-		}
+-		if (is_sorted)
+-			break;
+-	}
+-
+-	return 0;
+-}
+-
+-struct ir_map_tab_list *seek_map_tab(struct remote_chip *chip, int custom_code)
+-{
+-	struct ir_map_tab_list *ir_map = NULL;
+-
+-	list_for_each_entry(ir_map, &chip->map_tab_head, list) {
+-		if (ir_map->tab.custom_code == custom_code)
+-			return ir_map;
+-	}
+-	return NULL;
+-}
+-
+-void ir_tab_free(struct ir_map_tab_list *ir_map_list)
+-{
+-	kfree((void *)ir_map_list);
+-	ir_map_list = NULL;
+-}
+-
+-static int ir_lookup_by_scancode(struct ir_map_tab *ir_map,
+-					  unsigned int scancode)
+-{
+-	int start = 0;
+-	int end = ir_map->map_size - 1;
+-	int mid;
+-
+-	while (start <= end) {
+-		mid = (start + end) >> 1;
+-		if (ir_map->codemap[mid].map.scancode < scancode)
+-			start = mid + 1;
+-		else if (ir_map->codemap[mid].map.scancode > scancode)
+-			end = mid - 1;
+-		else
+-			return mid;
+-	}
+-
+-	return -1;
+-}
+-
+-static int ir_report_rel(struct remote_dev *dev, u32 scancode, int status)
+-{
+-	struct remote_chip *chip = (struct remote_chip *)dev->platform_data;
+-	struct ir_map_tab_list *ct = chip->cur_tab;
+-	static u32 repeat_count;
+-	s32 cursor_value = 0;
+-	u32 valid_scancode;
+-	u16 mouse_code;
+-	s32 move_accelerate[] = CURSOR_MOVE_ACCELERATE;
+-
+-	/*nothing need to do in normal mode*/
+-	if (!ct || (ct->ir_dev_mode != MOUSE_MODE))
+-		return -EINVAL;
+-
+-	if (status == REMOTE_REPEAT) {
+-		valid_scancode = dev->last_scancode;
+-		repeat_count++;
+-		if (repeat_count > ARRAY_SIZE(move_accelerate) - 1)
+-			repeat_count = ARRAY_SIZE(move_accelerate) - 1;
+-	} else {
+-		valid_scancode = scancode;
+-		dev->last_scancode = scancode;
+-		repeat_count = 0;
+-	}
+-	if (valid_scancode == ct->tab.cursor_code.cursor_left_scancode) {
+-		cursor_value = -(1 + move_accelerate[repeat_count]);
+-		mouse_code = REL_X;
+-	} else if (valid_scancode ==
+-			ct->tab.cursor_code.cursor_right_scancode) {
+-		cursor_value = 1 + move_accelerate[repeat_count];
+-		mouse_code = REL_X;
+-	} else if (valid_scancode ==
+-			ct->tab.cursor_code.cursor_up_scancode) {
+-		cursor_value = -(1 + move_accelerate[repeat_count]);
+-		mouse_code = REL_Y;
+-	} else if (valid_scancode ==
+-			ct->tab.cursor_code.cursor_down_scancode) {
+-		cursor_value = 1 + move_accelerate[repeat_count];
+-		mouse_code = REL_Y;
+-	} else {
+-		return -EINVAL;
+-	}
+-	input_event(chip->r_dev->input_device, EV_REL,
+-			mouse_code, cursor_value);
+-	input_sync(chip->r_dev->input_device);
+-
+-	remote_dbg(chip->dev, "mouse cursor be %s moved %d.\n",
+-				mouse_code == REL_X ? "horizontal" :
+-					"vertical",
+-					cursor_value);
+-
+-	return 0;
+-}
+-
+-static u32 getkeycode(struct remote_dev *dev, u32 scancode)
+-{
+-	struct remote_chip *chip = (struct remote_chip *)dev->platform_data;
+-	struct ir_map_tab_list *ct = chip->cur_tab;
+-	int index;
+-
+-	if (!ct) {
+-		dev_err(chip->dev, "cur_custom is nulll\n");
+-		return KEY_RESERVED;
+-	}
+-	/*return BTN_LEFT in mouse mode*/
+-	if (ct->ir_dev_mode == MOUSE_MODE &&
+-			scancode == ct->tab.cursor_code.cursor_ok_scancode) {
+-		remote_dbg(chip->dev, "mouse left button scancode: 0x%x",
+-					BTN_LEFT);
+-		return BTN_LEFT;
+-	}
+-
+-	index = ir_lookup_by_scancode(&ct->tab, scancode);
+-	if (index < 0) {
+-		dev_err(chip->dev, "scancode %d undefined\n", scancode);
+-		return KEY_RESERVED;
+-	}
+-
+-	/*save remote-control work mode*/
+-	if (dev->keypressed == false &&
+-			scancode == ct->tab.cursor_code.fn_key_scancode) {
+-		if (ct->ir_dev_mode == NORMAL_MODE)
+-			ct->ir_dev_mode = MOUSE_MODE;
+-		else
+-			ct->ir_dev_mode = NORMAL_MODE;
+-		dev_info(chip->dev, "remote control[ID: 0x%x] switch to %s\n",
+-					ct->tab.custom_code,
+-					ct->ir_dev_mode ?
+-					"mouse mode":"normal mode");
+-	}
+-
+-	return ct->tab.codemap[index].map.keycode;
+-}
+-
+-static bool is_valid_custom(struct remote_dev *dev)
+-{
+-	struct remote_chip *chip = (struct remote_chip *)dev->platform_data;
+-	int custom_code;
+-
+-	if (!chip->ir_contr[chip->ir_work].get_custom_code)
+-		return true;
+-	custom_code = chip->ir_contr[chip->ir_work].get_custom_code(chip);
+-	chip->cur_tab = seek_map_tab(chip, custom_code);
+-	if (chip->cur_tab) {
+-		dev->keyup_delay = chip->cur_tab->tab.release_delay;
+-		return true;
+-	}
+-	return false;
+-}
+-
+-static bool is_next_repeat(struct remote_dev *dev)
+-{
+-	unsigned int val;
+-	unsigned char fbusy = 0;
+-	unsigned char cnt;
+-
+-	struct remote_chip *chip = (struct remote_chip *)dev->platform_data;
+-
+-	for (cnt = 0; cnt < (ENABLE_LEGACY_IR(chip->protocol) ? 2:1); cnt++) {
+-		remote_reg_read(chip, cnt, REG_STATUS, &val);
+-		fbusy |= IR_CONTROLLER_BUSY(val);
+-	}
+-	remote_dbg(chip->dev, "ir controller busy flag = %d\n", fbusy);
+-	if (!dev->wait_next_repeat && fbusy)
+-		return true;
+-	else
+-		return false;
+-}
+-
+-static bool set_custom_code(struct remote_dev *dev, u32 code)
+-{
+-	struct remote_chip *chip = (struct remote_chip *)dev->platform_data;
+-
+-	return chip->ir_contr[chip->ir_work].set_custom_code(chip, code);
+-}
+-
+-static void amlremote_tasklet(unsigned long data)
+-{
+-	struct remote_chip *chip = (struct remote_chip *)data;
+-	unsigned long flags;
+-	int status = -1;
+-	int scancode = -1;
+-
+-	/**
+-	  *need first get_scancode, then get_decode_status, the status
+-	  *may was set flag from get_scancode function
+-	  */
+-	spin_lock_irqsave(&chip->slock, flags);
+-	if (chip->ir_contr[chip->ir_work].get_scancode)
+-		scancode = chip->ir_contr[chip->ir_work].get_scancode(chip);
+-	if (chip->ir_contr[chip->ir_work].get_decode_status)
+-		status = chip->ir_contr[chip->ir_work].get_decode_status(chip);
+-	if (status == REMOTE_NORMAL) {
+-		remote_dbg(chip->dev, "receive scancode=0x%x\n", scancode);
+-		remote_keydown(chip->r_dev, scancode, status);
+-	} else if (status & REMOTE_REPEAT) {
+-		remote_dbg(chip->dev, "receive repeat\n");
+-		remote_keydown(chip->r_dev, scancode, status);
+-	} else
+-		dev_err(chip->dev, "receive error %d\n", status);
+-	spin_unlock_irqrestore(&chip->slock, flags);
+-
+-}
+-
+-static irqreturn_t ir_interrupt(int irq, void *dev_id)
+-{
+-	struct remote_chip *rc = (struct remote_chip *)dev_id;
+-	int contr_status;
+-	int val = 0;
+-	u32 duration;
+-	char buf[50];
+-	unsigned char cnt;
+-	enum raw_event_type type = RAW_SPACE;
+-
+-	remote_reg_read(rc, MULTI_IR_ID, REG_REG1, &val);
+-	val = (val & 0x1FFF0000) >> 16;
+-	sprintf(buf, "d:%d\n", val);
+-	debug_log_printk(rc->r_dev, buf);
+-	/**
+-	  *software decode multiple protocols by using Time Measurement of
+-	  *multif-format IR controller
+-	  */
+-	if (MULTI_IR_SOFTWARE_DECODE(rc->protocol)) {
+-		rc->ir_work = MULTI_IR_ID;
+-		duration = val*10*1000;
+-		type    = RAW_PULSE;
+-		sprintf(buf, "------\n");
+-		debug_log_printk(rc->r_dev, buf);
+-		remote_raw_event_store_edge(rc->r_dev, type, duration);
+-		remote_raw_event_handle(rc->r_dev);
+-	} else {
+-		for (cnt = 0; cnt < (ENABLE_LEGACY_IR(rc->protocol)
+-				? 2:1); cnt++) {
+-			remote_reg_read(rc, cnt, REG_STATUS, &contr_status);
+-			if (IR_DATA_IS_VALID(contr_status)) {
+-				rc->ir_work = cnt;
+-				break;
+-			}
+-		}
+-
+-		if (cnt == IR_ID_MAX) {
+-			dev_err(rc->dev, "invalid interrupt.\n");
+-			return IRQ_HANDLED;
+-		}
+-
+-		tasklet_schedule(&tasklet);
+-	}
+-	return IRQ_HANDLED;
+-}
+-
+-static int get_custom_tables(struct device_node *node,
+-	struct remote_chip *chip)
+-{
+-	const phandle *phandle;
+-	struct device_node *custom_maps, *map;
+-	u32 value;
+-	int ret = -1;
+-	int index;
+-	char *propname;
+-	const char *uname;
+-	unsigned long flags;
+-	struct ir_map_tab_list *ptable;
+-
+-	phandle = of_get_property(node, "map", NULL);
+-	if (!phandle) {
+-		dev_err(chip->dev, "%s:don't find match custom\n", __func__);
+-		return -1;
+-	} else {
+-		custom_maps = of_find_node_by_phandle(be32_to_cpup(phandle));
+-		if (!custom_maps) {
+-			dev_err(chip->dev, "can't find device node key\n");
+-			return -1;
+-		}
+-	}
+-
+-	ret = of_property_read_u32(custom_maps, "mapnum", &value);
+-	if (ret) {
+-		dev_err(chip->dev, "please config correct mapnum item\n");
+-		return -1;
+-	}
+-	chip->custom_num = value;
+-	if (chip->custom_num > CUSTOM_NUM_MAX)
+-		chip->custom_num = CUSTOM_NUM_MAX;
+-
+-	dev_info(chip->dev, "custom_number = %d\n", chip->custom_num);
+-
+-	for (index = 0; index < chip->custom_num; index++) {
+-		propname = kasprintf(GFP_KERNEL, "map%d", index);
+-		phandle = of_get_property(custom_maps, propname, NULL);
+-		if (!phandle) {
+-			dev_err(chip->dev, "%s:don't find match map%d\n",
+-					__func__, index);
+-			return -1;
+-		}
+-		map = of_find_node_by_phandle(be32_to_cpup(phandle));
+-		if (!map) {
+-			dev_err(chip->dev, "can't find device node key\n");
+-			return -1;
+-		}
+-
+-		ret = of_property_read_u32(map, "size", &value);
+-		if (ret || value > MAX_KEYMAP_SIZE) {
+-			dev_err(chip->dev, "no config size item or err\n");
+-			return -1;
+-		}
+-
+-		/*alloc memory*/
+-		ptable = kzalloc(sizeof(struct ir_map_tab_list) +
+-				    value * sizeof(union _codemap), GFP_KERNEL);
+-		if (!ptable) {
+-			dev_err(chip->dev, "%s ir map table alloc err\n",
+-					__func__);
+-			return -1;
+-		}
+-
+-		ptable->tab.map_size = value;
+-		dev_info(chip->dev, "ptable->map_size = %d\n",
+-							ptable->tab.map_size);
+-
+-		ret = of_property_read_string(map, "mapname", &uname);
+-		if (ret) {
+-			dev_err(chip->dev, "please config mapname item\n");
+-			goto err;
+-		}
+-		strncpy(ptable->tab.custom_name, uname, CUSTOM_NAME_LEN);
+-
+-		dev_info(chip->dev, "ptable->custom_name = %s\n",
+-						ptable->tab.custom_name);
+-
+-		ret = of_property_read_u32(map, "customcode", &value);
+-		if (ret) {
+-			dev_err(chip->dev, "please config customcode item\n");
+-			goto err;
+-		}
+-		ptable->tab.custom_code = value;
+-		dev_info(chip->dev, "ptable->custom_code = 0x%x\n",
+-						ptable->tab.custom_code);
+-
+-		ret = of_property_read_u32(map, "release_delay", &value);
+-		if (ret) {
+-			dev_err(chip->dev, "remote:don't find the node <release_delay>\n");
+-			goto err;
+-		}
+-		ptable->tab.release_delay = value;
+-		dev_info(chip->dev, "ptable->release_delay = %d\n",
+-						ptable->tab.release_delay);
+-
+-		ret = of_property_read_u32_array(map,
+-				"keymap", (u32 *)&ptable->tab.codemap[0],
+-					ptable->tab.map_size);
+-		if (ret) {
+-			dev_err(chip->dev, "please config keymap item\n");
+-			goto err;
+-		}
+-
+-		memset(&ptable->tab.cursor_code, 0xff,
+-					sizeof(struct cursor_codemap));
+-		ir_scancode_sort(&ptable->tab);
+-		/*insert list*/
+-		spin_lock_irqsave(&chip->slock, flags);
+-		list_add_tail(&ptable->list, &chip->map_tab_head);
+-		spin_unlock_irqrestore(&chip->slock, flags);
+-
+-	}
+-	return 0;
+-err:
+-	ir_tab_free(ptable);
+-	return -1;
+-}
+-
+-
+-static int ir_get_devtree_pdata(struct platform_device *pdev)
+-{
+-	struct resource *res_irq;
+-	struct resource *res_mem;
+-	resource_size_t *res_start[2];
+-	struct pinctrl *p;
+-	int ret;
+-	int value;
+-	unsigned char i;
+-
+-
+-	struct remote_chip *chip = platform_get_drvdata(pdev);
+-
+-	ret = of_property_read_u32(pdev->dev.of_node,
+-			"protocol", &chip->protocol);
+-	if (ret) {
+-		dev_err(chip->dev, "don't find the node <protocol>\n");
+-		chip->protocol = 1;
+-	}
+-	dev_info(chip->dev, "protocol = 0x%x\n", chip->protocol);
+-
+-	p = devm_pinctrl_get_select_default(&pdev->dev);
+-	if (IS_ERR(p)) {
+-		dev_err(chip->dev, "pinctrl error, %ld\n", PTR_ERR(p));
+-		return -1;
+-	}
+-
+-	for (i = 0; i < 2; i++) {
+-		res_mem = platform_get_resource(pdev, IORESOURCE_MEM, i);
+-		if (IS_ERR_OR_NULL(res_mem)) {
+-			dev_err(chip->dev, "get IORESOURCE_MEM error, %ld\n",
+-					PTR_ERR(p));
+-			return PTR_ERR(res_mem);
+-		}
+-		res_start[i] = devm_ioremap_resource(&pdev->dev, res_mem);
+-		chip->ir_contr[i].remote_regs = (void __iomem *)res_start[i];
+-	}
+-
+-	res_irq = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
+-	if (IS_ERR_OR_NULL(res_irq)) {
+-		dev_err(chip->dev, "get IORESOURCE_IRQ error, %ld\n",
+-				PTR_ERR(p));
+-		return PTR_ERR(res_irq);
+-	}
+-
+-	chip->irqno = res_irq->start;
+-
+-	dev_info(chip->dev, "platform_data irq =%d\n", chip->irqno);
+-
+-	ret = of_property_read_u32(pdev->dev.of_node,
+-				"max_frame_time", &value);
+-	if (ret) {
+-		dev_err(chip->dev, "don't find the node <max_frame_time>\n");
+-		value = 200; /*default value*/
+-	}
+-
+-	chip->r_dev->max_frame_time = value;
+-
+-
+-	/*create map table */
+-	ret = get_custom_tables(pdev->dev.of_node, chip);
+-	if (ret < 0)
+-		return -1;
+-
+-	return 0;
+-}
+-
+-static int ir_hardware_init(struct platform_device *pdev)
+-{
+-	int ret;
+-
+-	struct remote_chip *chip = platform_get_drvdata(pdev);
+-
+-	if (!pdev->dev.of_node) {
+-		dev_err(chip->dev, "pdev->dev.of_node == NULL!\n");
+-		return -1;
+-	}
+-
+-	ret = ir_get_devtree_pdata(pdev);
+-	if (ret < 0)
+-		return ret;
+-	chip->set_register_config(chip, chip->protocol);
+-	ret = request_irq(chip->irqno, ir_interrupt, IRQF_SHARED,
+-				"keypad", (void *)chip);
+-	if (ret < 0)
+-		goto error_irq;
+-
+-	chip->irq_cpumask = 1;
+-	irq_set_affinity(chip->irqno, cpumask_of(chip->irq_cpumask));
+-
+-	tasklet_enable(&tasklet);
+-	tasklet.data = (unsigned long)chip;
+-
+-	return 0;
+-
+-error_irq:
+-	dev_err(chip->dev, "request_irq error %d\n", ret);
+-
+-	return ret;
+-
+-}
+-
+-static int ir_hardware_free(struct platform_device *pdev)
+-{
+-	struct remote_chip *chip = platform_get_drvdata(pdev);
+-	free_irq(chip->irqno, chip);
+-	return 0;
+-}
+-
+-static void ir_input_device_init(struct input_dev *dev,
+-	struct device *parent, const char *name)
+-{
+-	dev->name = name;
+-	dev->phys = "keypad/input0";
+-	dev->dev.parent = parent;
+-	dev->id.bustype = BUS_ISA;
+-	dev->id.vendor  = 0x0001;
+-	dev->id.product = 0x0001;
+-	dev->id.version = 0x0100;
+-}
+-
+-static int remote_probe(struct platform_device *pdev)
+-{
+-	struct remote_dev *dev;
+-	int ret;
+-	struct remote_chip *chip;
+-
+-	pr_info("%s: remote_probe\n", DRIVER_NAME);
+-	chip = kzalloc(sizeof(struct remote_chip), GFP_KERNEL);
+-	if (!chip) {
+-		pr_err("%s: kzalloc remote_chip error!\n", DRIVER_NAME);
+-		ret = -ENOMEM;
+-		goto err_end;
+-	}
+-
+-	dev = remote_allocate_device();
+-	if (!dev) {
+-		pr_err("%s: kzalloc remote_dev error!\n", DRIVER_NAME);
+-		ret = -ENOMEM;
+-		goto err_alloc_remote_dev;
+-	}
+-
+-	mutex_init(&chip->file_lock);
+-	spin_lock_init(&chip->slock);
+-	INIT_LIST_HEAD(&chip->map_tab_head);
+-
+-	chip->r_dev = dev;
+-	chip->dev = &pdev->dev;
+-
+-	chip->r_dev->dev = &pdev->dev;
+-	chip->r_dev->platform_data = (void *)chip;
+-	chip->r_dev->getkeycode    = getkeycode;
+-	chip->r_dev->ir_report_rel = ir_report_rel;
+-	chip->r_dev->set_custom_code = set_custom_code;
+-	chip->r_dev->is_valid_custom = is_valid_custom;
+-	chip->r_dev->is_next_repeat  = is_next_repeat;
+-	chip->set_register_config = ir_register_default_config;
+-	platform_set_drvdata(pdev, chip);
+-
+-	ir_input_device_init(dev->input_device, &pdev->dev, "aml_keypad");
+-
+-	ret = ir_hardware_init(pdev);
+-	if (ret < 0)
+-		goto err_hard_init;
+-
+-	ret = ir_cdev_init(chip);
+-	if (ret < 0)
+-		goto err_cdev_init;
+-
+-	dev->rc_type = chip->protocol;
+-	ret = remote_register_device(dev);
+-	if (ret)
+-		goto error_register_remote;
+-
+-	return 0;
+-
+-error_register_remote:
+-	ir_hardware_free(pdev);
+-err_cdev_init:
+-	remote_free_device(dev);
+-err_hard_init:
+-	ir_cdev_free(chip);
+-err_alloc_remote_dev:
+-	kfree(chip);
+-err_end:
+-	return ret;
+-}
+-
+-static int remote_remove(struct platform_device *pdev)
+-{
+-	struct remote_chip *chip = platform_get_drvdata(pdev);
+-
+-	tasklet_disable(&tasklet);
+-	tasklet_kill(&tasklet);
+-
+-	free_irq(chip->irqno, chip); /*irq dev_id is chip address*/
+-	ir_cdev_free(chip);
+-	remote_unregister_device(chip->r_dev);
+-	remote_free_device(chip->r_dev);
+-
+-	kfree(chip);
+-	return 0;
+-}
+-
+-static int remote_resume(struct platform_device *pdev)
+-{
+-	struct remote_chip *chip = platform_get_drvdata(pdev);
+-	unsigned int val;
+-	unsigned long flags;
+-	unsigned char cnt;
+-
+-	dev_info(chip->dev, "remote resume\n");
+-	/*resume register config*/
+-	spin_lock_irqsave(&chip->slock, flags);
+-	chip->set_register_config(chip, chip->protocol);
+-	/* read REG_STATUS and REG_FRAME to clear status */
+-	for (cnt = 0; cnt < (ENABLE_LEGACY_IR(chip->protocol) ? 2:1); cnt++) {
+-		remote_reg_read(chip, cnt, REG_STATUS, &val);
+-		remote_reg_read(chip, cnt, REG_FRAME, &val);
+-	}
+-	spin_unlock_irqrestore(&chip->slock, flags);
+-
+-	if (get_resume_method() == REMOTE_WAKEUP) {
+-		input_event(chip->r_dev->input_device,
+-		    EV_KEY, KEY_POWER, 1);
+-		input_sync(chip->r_dev->input_device);
+-		input_event(chip->r_dev->input_device,
+-		    EV_KEY, KEY_POWER, 0);
+-		input_sync(chip->r_dev->input_device);
+-	}
+-
+-	if (get_resume_method() == REMOTE_CUS_WAKEUP) {
+-		input_event(chip->r_dev->input_device, EV_KEY, 133, 1);
+-		input_sync(chip->r_dev->input_device);
+-		input_event(chip->r_dev->input_device, EV_KEY, 133, 0);
+-		input_sync(chip->r_dev->input_device);
+-	}
+-
+-	irq_set_affinity(chip->irqno, cpumask_of(chip->irq_cpumask));
+-	enable_irq(chip->irqno);
+-	return 0;
+-}
+-
+-static int remote_suspend(struct platform_device *pdev, pm_message_t state)
+-{
+-	struct remote_chip *chip = platform_get_drvdata(pdev);
+-
+-	dev_info(chip->dev, "remote suspend\n");
+-	disable_irq(chip->irqno);
+-	return 0;
+-}
+-
+-static const struct of_device_id remote_dt_match[] = {
+-	{
+-		.compatible     = "amlogic, aml_remote",
+-	},
+-	{},
+-};
+-
+-static struct platform_driver remote_driver = {
+-	.probe = remote_probe,
+-	.remove = remote_remove,
+-	.suspend = remote_suspend,
+-	.resume = remote_resume,
+-	.driver = {
+-		.name = DRIVER_NAME,
+-		.of_match_table = remote_dt_match,
+-	},
+-};
+-
+-static int __init remote_init(void)
+-{
+-	pr_info("%s: Driver init\n", DRIVER_NAME);
+-	return platform_driver_register(&remote_driver);
+-}
+-
+-static void __exit remote_exit(void)
+-{
+-	pr_info("%s: Driver exit\n", DRIVER_NAME);
+-	platform_driver_unregister(&remote_driver);
+-}
+-
+-module_init(remote_init);
+-module_exit(remote_exit);
+-
+-
+-MODULE_AUTHOR("AMLOGIC");
+-MODULE_DESCRIPTION("AMLOGIC REMOTE PROTOCOL");
+-MODULE_LICENSE("GPL");
+-
+diff --git a/drivers/amlogic/input/remote/remote_meson.h b/drivers/amlogic/input/remote/remote_meson.h
+deleted file mode 100644
+index a91e5d6..0000000
+--- a/drivers/amlogic/input/remote/remote_meson.h
++++ /dev/null
+@@ -1,205 +0,0 @@
+-/*
+- * drivers/amlogic/input/remote/remote_meson.h
+- *
+- * Copyright (C) 2015 Amlogic, Inc. All rights reserved.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+- * more details.
+- *
+-*/
+-
+-#ifndef _REMOTE_MESON_H
+-#define _REMOTE_MESON_H
+-#include <linux/cdev.h>
+-#include <uapi/linux/rc_common.h>
+-#include "remote_core.h"
+-
+-#define DRIVER_NAME "meson-remote"
+-
+-#define IR_DATA_IS_VALID(data) (data & 0x8)
+-#define IR_CONTROLLER_BUSY(x) ((x >> 7) & 0x1)
+-
+-#define CURSOR_MOVE_ACCELERATE {0, 2, 2, 4, 4, 6, 8, 10, 12, 14, 16, 18}
+-
+-enum IR_CONTR_NUMBER {
+-	MULTI_IR_ID = 0,
+-	LEGACY_IR_ID,
+-	IR_ID_MAX
+-};
+-
+-enum IR_WORK_MODE {
+-	NORMAL_MODE = 0,
+-	MOUSE_MODE = 1
+-};
+-
+-struct remote_range {
+-	struct range active;
+-	struct range idle;
+-	struct range repeat;
+-	struct range bit_zero_zero;
+-	struct range bit_zero_one;
+-	struct range bit_one_zero;
+-	struct range bit_one_one;
+-};
+-
+-struct remote_reg_map {
+-	unsigned int reg;
+-	unsigned int val;
+-};
+-
+-/*
+- *struct ir_map_tab_list
+- *
+- *@ir_dev_mode: 0: normal mode; 1: mouse mode
+- *@list:
+- *@tab:
+- */
+-struct ir_map_tab_list {
+-	bool ir_dev_mode;
+-	struct list_head list;
+-	struct ir_map_tab tab;
+-};
+-
+-struct cdev;
+-struct remote_chip;
+-
+-/**
+-  *struct key_number - to save the number of key for map table
+-  *
+-  *@update_flag: to ensure get key number before map table
+-  *@value:
+-  */
+-struct key_number {
+-	bool update_flag;
+-	int  value;
+-};
+-
+-/**
+-  *struct remote_contr_desc - describe the different properties and methods
+-  *for the Legacy IR controller and multi-format IR controller.
+-  *TODO: compatible with the "struct aml_remote_reg_proto"
+-  */
+-struct remote_contr_desc {
+-	void __iomem *remote_regs;
+-	char *proto_name;
+-	int (*get_scancode)(struct remote_chip *chip);
+-	int (*get_decode_status)(struct remote_chip *chip);
+-	u32 (*get_custom_code)(struct remote_chip *chip);
+-	bool (*set_custom_code)(struct remote_chip *chip, u32 code);
+-};
+-/**
+-  *struct remote_chip - describe the common properties and methods
+-  * for the Legacy IR controller and multi-format IR controller.
+-  */
+-struct remote_chip {
+-	struct device *dev;
+-	struct remote_dev *r_dev;
+-	struct remote_range reg_duration;
+-	char *dev_name;
+-	int protocol;
+-
+-	dev_t chr_devno;
+-	struct class  *chr_class;
+-	struct cdev chrdev;
+-	struct mutex  file_lock;
+-	spinlock_t slock;
+-
+-	bool debug_enable;
+-	bool repeat_enable;
+-#define CUSTOM_TABLES_SIZE 20
+-#define CUSTOM_NUM_MAX 20
+-	struct list_head map_tab_head;
+-	struct ir_map_tab_list *cur_tab;
+-	int custom_num;
+-	struct key_number key_num;
+-	int decode_status;
+-	int sys_custom_code;
+-	const char *keymap_name;
+-	int	irqno;       /*irq number*/
+-	int	irq_cpumask;
+-	/**
+-	  *indicate which ir controller working.
+-	  *0: multi format IR
+-	  *1: legacy IR
+-	  */
+-	unsigned char ir_work;
+-	/**
+-	  *multi_format IR controller register saved to ir_contr[0]
+-	  *legacy IR controller register saved to ir_contr[1]
+-	  */
+-	struct remote_contr_desc ir_contr[2];
+-
+-	/*software decode*/
+-	unsigned char bit_count;
+-	unsigned short time_window[18];
+-
+-	int (*report_key)(struct remote_chip *chip);
+-	int (*release_key)(struct remote_chip *chip);
+-	int (*set_register_config)(struct remote_chip *chip, int type);
+-	int (*debug_printk)(const char *, ...);
+-};
+-
+-struct aml_remote_reg_proto {
+-	int protocol;
+-	char *name;
+-	struct aml_remote_reg *reg;
+-	struct remote_reg_map *reg_map;
+-	int reg_map_size;
+-	int (*get_scancode)(struct remote_chip *chip);
+-	int (*get_decode_status)(struct remote_chip *chip);
+-	u32 (*get_custom_code)(struct remote_chip *chip);
+-	bool (*set_custom_code)(struct remote_chip *chip, u32 code);
+-};
+-
+-enum {
+-	DECODE_MODE_NEC			= 0x00,
+-	DECODE_MODE_SKIP_LEADER = 0x01,
+-	DECODE_MODE_SOFTWARE    = 0x02,
+-	DECODE_MODE_MITSUBISHI_OR_50560 = 0x03,
+-	DECODE_MODE_DUOKAN = 0x0B
+-};
+-
+-enum remote_reg {
+-	REG_LDR_ACTIVE = 0x00<<2,
+-	REG_LDR_IDLE   = 0x01<<2,
+-	REG_LDR_REPEAT = 0x02<<2,
+-	REG_BIT_0      = 0x03<<2,
+-	REG_REG0       = 0x04<<2,
+-	REG_FRAME      = 0x05<<2,
+-	REG_STATUS     = 0x06<<2,
+-	REG_REG1       = 0x07<<2,
+-	REG_REG2       = 0x08<<2,
+-	REG_DURATN2    = 0x09<<2,
+-	REG_DURATN3    = 0x0a<<2,
+-	REG_FRAME1     = 0x0b<<2,
+-	REG_STATUS1    = 0x0c<<2,
+-	REG_STATUS2    = 0x0d<<2,
+-	REG_REG3       = 0x0e<<2,
+-	REG_FRAME_RSV0 = 0x0f<<2,
+-	REG_FRAME_RSV1 = 0x10<<2
+-};
+-
+-int ir_register_default_config(struct remote_chip *chip, int type);
+-int ir_cdev_init(struct remote_chip *chip);
+-void ir_cdev_free(struct remote_chip *chip);
+-
+-
+-int remote_reg_read(struct remote_chip *chip, unsigned char id,
+-	unsigned int reg, unsigned int *val);
+-int remote_reg_write(struct remote_chip *chip, unsigned char id,
+-	unsigned int reg, unsigned int val);
+-int ir_scancode_sort(struct ir_map_tab *ir_map);
+-struct ir_map_tab_list *seek_map_tab(struct remote_chip *chip, int custom_code);
+-void ir_tab_free(struct ir_map_tab_list *ir_map_list);
+-
+-#endif
+-
+-
+-
+diff --git a/drivers/amlogic/input/remote/remote_raw.c b/drivers/amlogic/input/remote/remote_raw.c
+deleted file mode 100644
+index af6aef3..0000000
+--- a/drivers/amlogic/input/remote/remote_raw.c
++++ /dev/null
+@@ -1,207 +0,0 @@
+-/*
+- * drivers/amlogic/input/remote/remote_raw.c
+- *
+- * Copyright (C) 2015 Amlogic, Inc. All rights reserved.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+- * more details.
+- *
+-*/
+-
+-#include <linux/export.h>
+-#include <linux/kthread.h>
+-#include <linux/mutex.h>
+-#include <linux/kmod.h>
+-#include <linux/sched.h>
+-#include <linux/freezer.h>
+-#include <linux/jiffies.h>
+-#include "remote_meson.h"
+-
+-static DEFINE_MUTEX(remote_raw_handler_lock);
+-static LIST_HEAD(remote_raw_handler_list);
+-static LIST_HEAD(remote_raw_client_list);
+-
+-#define MAX_REMOTE_EVENT_SIZE      512
+-
+-
+-static int ir_raw_event_thread(void *data)
+-{
+-	DEFINE_REMOTE_RAW_EVENT(ev);
+-	struct remote_raw_handler *handler;
+-	struct remote_raw_handle *raw = (struct remote_raw_handle *)data;
+-	int retval;
+-
+-	while (!kthread_should_stop()) {
+-		/*spin_lock_irq(&raw->lock); */
+-		retval = kfifo_len(&raw->kfifo);
+-
+-		if (retval < sizeof(ev)) {
+-			set_current_state(TASK_INTERRUPTIBLE);
+-
+-			if (kthread_should_stop())
+-				set_current_state(TASK_RUNNING);
+-
+-			/* spin_unlock_irq(&raw->lock); */
+-			schedule();
+-			continue;
+-		}
+-
+-		retval = kfifo_out(&raw->kfifo, &ev, sizeof(ev));
+-		/*spin_unlock_irq(&raw->lock); */
+-
+-		mutex_lock(&remote_raw_handler_lock);
+-		list_for_each_entry(handler, &remote_raw_handler_list, list)
+-			handler->decode(raw->dev, ev, handler->data);
+-		mutex_unlock(&remote_raw_handler_lock);
+-	}
+-
+-	return 0;
+-}
+-
+-int remote_raw_event_store(struct remote_dev *dev,
+-	struct remote_raw_event *ev)
+-{
+-	if (!dev->raw)
+-		return -EINVAL;
+-
+-	if (kfifo_in(&dev->raw->kfifo, ev, sizeof(*ev)) != sizeof(*ev))
+-		return -ENOMEM;
+-
+-	return 0;
+-}
+-
+-int remote_raw_event_store_edge(struct remote_dev *dev,
+-	enum raw_event_type type, u32 duration)
+-{
+-	DEFINE_REMOTE_RAW_EVENT(ev);
+-	int rc = 0;
+-	unsigned long timeout;
+-
+-	if (!dev->raw)
+-		return -EINVAL;
+-
+-	timeout = dev->raw->jiffies_old +
+-		msecs_to_jiffies(dev->raw->max_frame_time);
+-
+-	if (time_after(jiffies, timeout) || !dev->raw->last_type)
+-		type |= RAW_START_EVENT;
+-	else
+-		ev.duration = duration;
+-
+-	if (type & RAW_START_EVENT)
+-		ev.reset = true;
+-	else if (dev->raw->last_type & RAW_SPACE)
+-		ev.pulse = false;
+-	else if (dev->raw->last_type & RAW_PULSE)
+-		ev.pulse = true;
+-	else
+-		return 0;
+-
+-	rc = remote_raw_event_store(dev, &ev);
+-
+-	dev->raw->last_type = type;
+-	dev->raw->jiffies_old = jiffies;
+-	return rc;
+-}
+-
+-
+-void remote_raw_event_handle(struct remote_dev *dev)
+-{
+-/*	unsigned long flags;*/
+-
+-	if (!dev || !dev->raw)
+-		return;
+-
+-/*	spin_lock_irqsave(&dev->raw->lock, flags);*/
+-	wake_up_process(dev->raw->thread);
+-/*	spin_unlock_irqrestore(&dev->raw->lock, flags);*/
+-}
+-
+-int remote_raw_event_register(struct remote_dev *dev)
+-{
+-	int ret;
+-
+-	dev_info(dev->dev, "remote_raw_event_register\n");
+-	dev->raw = kzalloc(sizeof(*dev->raw), GFP_KERNEL);
+-	if (!dev->raw)
+-		return -ENOMEM;
+-
+-	dev->raw->dev = dev;
+-	dev->raw->max_frame_time = dev->max_frame_time;
+-
+-	dev->raw->jiffies_old = jiffies;
+-
+-	ret = kfifo_alloc(&dev->raw->kfifo,
+-		 sizeof(struct remote_raw_event)*MAX_REMOTE_EVENT_SIZE,
+-		 GFP_KERNEL);
+-	if (ret < 0)
+-		goto out;
+-
+-	dev->raw->thread = kthread_run(ir_raw_event_thread, dev->raw,
+-		 "remote-thread");
+-
+-	if (IS_ERR(dev->raw->thread)) {
+-		ret = PTR_ERR(dev->raw->thread);
+-		goto err_alloc_thread;
+-	}
+-	mutex_lock(&remote_raw_handler_lock);
+-	list_add_tail(&dev->raw->list, &remote_raw_client_list);
+-	mutex_unlock(&remote_raw_handler_lock);
+-	return 0;
+-err_alloc_thread:
+-	kfifo_free(&dev->raw->kfifo);
+-out:
+-	kfree(dev->raw);
+-	return ret;
+-}
+-
+-void remote_raw_event_unregister(struct remote_dev *dev)
+-{
+-	if (!dev || !dev->raw)
+-		return;
+-
+-	kthread_stop(dev->raw->thread);
+-	mutex_lock(&remote_raw_handler_lock);
+-	list_del(&dev->raw->list);
+-	mutex_unlock(&remote_raw_handler_lock);
+-
+-}
+-
+-int remote_raw_handler_register(struct remote_raw_handler *handler)
+-{
+-	mutex_lock(&remote_raw_handler_lock);
+-	list_add_tail(&(handler->list), &remote_raw_handler_list);
+-	mutex_unlock(&remote_raw_handler_lock);
+-	return 0;
+-}
+-
+-void remote_raw_handler_unregister(struct remote_raw_handler *handler)
+-{
+-	mutex_lock(&remote_raw_handler_lock);
+-	list_del(&(handler->list));
+-	mutex_unlock(&remote_raw_handler_lock);
+-}
+-
+-
+-void remote_raw_init(void)
+-{
+-	static bool raw_init;
+-
+-	if (!raw_init) {
+-		raw_init = true;
+-		pr_info("%s: loading raw decoder\n", DRIVER_NAME);
+-
+-		/* Load the decoder modules */
+-		request_module_nowait("remote_decoder_xmp");
+-	}
+-}
+-
+-
+-
+diff --git a/drivers/amlogic/input/remote/remote_regmap.c b/drivers/amlogic/input/remote/remote_regmap.c
+deleted file mode 100644
+index 17a7c62..0000000
+--- a/drivers/amlogic/input/remote/remote_regmap.c
++++ /dev/null
+@@ -1,645 +0,0 @@
+-/*
+- * drivers/amlogic/input/remote/remote_regmap.c
+- *
+- * Copyright (C) 2015 Amlogic, Inc. All rights reserved.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+- * more details.
+- *
+-*/
+-
+-#include "remote_meson.h"
+-
+-static struct remote_reg_map regs_legacy_nec[] = {
+-	{REG_LDR_ACTIVE ,   ((unsigned)500 << 16) | ((unsigned)400 << 0)},
+-	{REG_LDR_IDLE   ,   300 << 16 | 200 << 0},
+-	{REG_LDR_REPEAT ,   150 << 16 | 80 << 0},
+-	{REG_BIT_0      ,   72 << 16 | 40 << 0 },
+-	{REG_REG0       ,   7 << 28 | (0xFA0 << 12) | 0x13},
+-	{REG_STATUS     ,   (134 << 20) | (90 << 10)},
+-	{REG_REG1       ,   0xbe00},
+-};
+-
+-static struct remote_reg_map regs_default_nec[] = {
+-	{ REG_LDR_ACTIVE ,  ((unsigned)500 << 16) | ((unsigned)400 << 0)},
+-	{ REG_LDR_IDLE   ,  300 << 16 | 200 << 0},
+-	{ REG_LDR_REPEAT ,  150 << 16 | 80 << 0},
+-	{ REG_BIT_0      ,  72 << 16 | 40 << 0},
+-	{ REG_REG0       ,  7 << 28 | (0xFA0 << 12) | 0x13},
+-	{ REG_STATUS     ,  (134 << 20) | (90 << 10)},
+-	{ REG_REG1       ,  0x9f00},
+-	{ REG_REG2       ,  0x00},
+-	{ REG_DURATN2    ,  0x00},
+-	{ REG_DURATN3    ,  0x00}
+-};
+-
+-static struct remote_reg_map regs_default_duokan[] = {
+-	{ REG_LDR_ACTIVE ,  ((70 << 16) | (30 << 0))            },
+-	{ REG_LDR_IDLE   ,  ((50 << 16) | (15 << 0))            },
+-	{ REG_LDR_REPEAT ,  ((30 << 16) | (26 << 0))            },
+-	{ REG_BIT_0      ,  ((66 << 16) | (40 << 0))            },
+-	{ REG_REG0       ,  ((3 << 28) | (0x4e2 << 12) | (0x13))},
+-	{ REG_STATUS     ,  ((80 << 20) | (66 << 10))           },
+-	{ REG_REG1       ,  0x9300,                             },
+-	{ REG_REG2       ,  0xb90b,                             },
+-	{ REG_DURATN2    ,  ((97 << 16) | (80 << 0))            },
+-	{ REG_DURATN3    ,  ((120 << 16) | (97 << 0))           },
+-	{ REG_REG3       ,  5000<<0                             }
+-};
+-
+-static struct remote_reg_map regs_default_xmp_1_sw[] = {
+-	{ REG_LDR_ACTIVE ,  0            },
+-	{ REG_LDR_IDLE   ,  0            },
+-	{ REG_LDR_REPEAT ,  0            },
+-	{ REG_BIT_0      ,  0            },
+-	{ REG_REG0       ,  ((3 << 28) | (0xFA0 << 12) | (9))},
+-	{ REG_STATUS     ,  0           },
+-	{ REG_REG1       ,  0x8574,     },
+-	{ REG_REG2       ,  0x02,       },
+-	{ REG_DURATN2    ,  0           },
+-	{ REG_DURATN3    ,  0           },
+-	{ REG_REG3       ,  0           }
+-};
+-
+-static struct remote_reg_map regs_default_xmp_1[] = {
+-	{ REG_LDR_ACTIVE ,  0            },
+-	{ REG_LDR_IDLE   ,  0            },
+-	{ REG_LDR_REPEAT ,  0            },
+-	{ REG_BIT_0      ,  (52 << 16) | (45<<0) },
+-	{ REG_REG0       ,  ((7 << 28) | (0x5DC << 12) | (0x13))},
+-	{ REG_STATUS     ,   (87 << 20) | (80 << 10)},
+-	{ REG_REG1       ,  0x9f00,     },
+-	{ REG_REG2       ,  0xa90e,       },
+-	/*n=10,758+137*10=2128us,2128/20= 106*/
+-	{ REG_DURATN2    ,  (121<<16) | (114<<0)},
+-	{ REG_DURATN3    ,  (7<<16) | (7<<0) },
+-	{ REG_REG3       ,  0           }
+-};
+-
+-static struct remote_reg_map regs_default_nec_sw[] = {
+-	{ REG_LDR_ACTIVE ,  0            },
+-	{ REG_LDR_IDLE   ,  0            },
+-	{ REG_LDR_REPEAT ,  0            },
+-	{ REG_BIT_0      ,  0            },
+-	{ REG_REG0       ,  ((3 << 28) | (0xFA0 << 12) | (9))},
+-	{ REG_STATUS     ,  0           },
+-	{ REG_REG1       ,  0x8574,     },
+-	{ REG_REG2       ,  0x02,       },
+-	{ REG_DURATN2    ,  0           },
+-	{ REG_DURATN3    ,  0           },
+-	{ REG_REG3       ,  0           }
+-};
+-
+-static struct remote_reg_map regs_default_rc5[] = {
+-	{ REG_LDR_ACTIVE ,  0            },
+-	{ REG_LDR_IDLE   ,  0            },
+-	{ REG_LDR_REPEAT ,  0            },
+-	{ REG_BIT_0      ,  0            },
+-	{ REG_REG0       ,  ((3 << 28) | (0x1644 << 12) | 0x13)},
+-	{ REG_STATUS     ,  (1 << 30)    },
+-	{ REG_REG1       ,  ((1 << 15) | (13 << 8))},
+-	/*bit[0-3]: RC5; bit[8]: MSB first mode; bit[11]: compare frame method*/
+-	{ REG_REG2       ,  ((1 << 13) | (1 << 11) | (1 << 8) | 0x7)},
+-	/*Half bit for RC5 format: 888.89us*/
+-	{ REG_DURATN2    ,  ((49 << 16) | (40 << 0))  },
+-	/*RC5 typically 1777.78us for whole bit*/
+-	{ REG_DURATN3    ,  ((94 << 16) | (83 << 0))  },
+-	{ REG_REG3       ,  0			 }
+-};
+-
+-static struct remote_reg_map regs_default_rc6[] = {
+-	{REG_LDR_ACTIVE , ((unsigned)210 << 16) | ((unsigned)125 << 0)},
+-	/*rca leader 4000us,200* timebase*/
+-	{REG_LDR_IDLE   , 50 << 16 | 38 << 0},     /* leader idle 400*/
+-	{REG_LDR_REPEAT , 145 << 16 | 125 << 0}, /* leader repeat*/
+-	{REG_BIT_0      , 51 << 16 | 38 << 0 },   /* logic '0' or '00' 1500us*/
+-	{REG_REG0       , (7 << 28)|(0xFA0 << 12)|0x13},
+-	/* sys clock boby time.base time = 20 body frame*/
+-	{REG_STATUS     , (94 << 20) | (82 << 10)},
+-	/*20bit:9440 32bit:9f40 36bit:a340 37bit:a440*/
+-	{REG_REG1       , 0xa440},
+-	/*it may get the wrong customer value and key value from register if
+-	the value is set to 0x4,so the register value must set to 0x104*/
+-	{REG_REG2       , 0x2909},
+-	{REG_DURATN2    , ((28 << 16) | (16 << 0))},
+-	{REG_DURATN3    , ((51 << 16) | (38 << 0))},
+-};
+-
+-static struct remote_reg_map regs_default_toshiba[] = {
+-	{ REG_LDR_ACTIVE ,  ((unsigned)280 << 16) | ((unsigned)180 << 0)},
+-	{ REG_LDR_IDLE   ,  280 << 16 | 180 << 0},
+-	{ REG_LDR_REPEAT ,  150 << 16 | 60 << 0},
+-	{ REG_BIT_0      ,  72 << 16 | 40 << 0},
+-	{ REG_REG0       ,  7 << 28 | (0xFA0 << 12) | 0x13},
+-	{ REG_STATUS     ,  (134 << 20) | (90 << 10)},
+-	{ REG_REG1       ,  0x9f00},
+-	{ REG_REG2       ,  0x05},
+-	{ REG_DURATN2    ,  0x00},
+-	{ REG_DURATN3    ,  0x00}
+-};
+-
+-void set_hardcode(struct remote_chip *chip, int code)
+-{
+-	remote_dbg(chip->dev, "framecode=0x%x\n", code);
+-	chip->r_dev->cur_hardcode = code;
+-}
+-
+-/**
+-  * legacy nec hardware interface
+-  * other interface share with the multi-format NEC
+-  */
+-static int ir_legacy_nec_get_scancode(struct remote_chip *chip)
+-{
+-	int  code = 0;
+-	int decode_status = 0;
+-	int status = 0;
+-
+-	remote_reg_read(chip, LEGACY_IR_ID, REG_STATUS, &decode_status);
+-	if (decode_status & 0x01)
+-		status |= REMOTE_REPEAT;
+-	chip->decode_status = status; /*set decode status*/
+-	remote_reg_read(chip, LEGACY_IR_ID, REG_FRAME, &code);
+-	remote_dbg(chip->dev, "framecode=0x%x\n", code);
+-	chip->r_dev->cur_hardcode = code;
+-	code = (code >> 16) & 0xff;
+-	return code;
+-}
+-
+-/*
+- *nec hardware interface
+-*/
+-static int ir_nec_get_scancode(struct remote_chip *chip)
+-{
+-	int  code = 0;
+-	int decode_status = 0;
+-	int status = 0;
+-
+-	remote_reg_read(chip, MULTI_IR_ID, REG_STATUS, &decode_status);
+-	if (decode_status & 0x01)
+-		status |= REMOTE_REPEAT;
+-	chip->decode_status = status; /*set decode status*/
+-	remote_reg_read(chip, MULTI_IR_ID, REG_FRAME, &code);
+-	remote_dbg(chip->dev, "framecode=0x%x\n", code);
+-	chip->r_dev->cur_hardcode = code;
+-	code = (code >> 16) & 0xff;
+-	return code;
+-}
+-
+-static int ir_nec_get_decode_status(struct remote_chip *chip)
+-{
+-	int status = chip->decode_status;
+-	return status;
+-}
+-
+-static u32 ir_nec_get_custom_code(struct remote_chip *chip)
+-{
+-	u32 custom_code;
+-
+-	custom_code = chip->r_dev->cur_hardcode & 0xffff;
+-	return custom_code;
+-}
+-
+-/*
+- *	xmp-1 decode hardware interface
+-*/
+-static int xmp_decode_second;
+-static int ir_xmp_get_scancode(struct remote_chip *chip)
+-{
+-	int  code = 0;
+-
+-	remote_reg_read(chip, MULTI_IR_ID, REG_FRAME, &code);
+-	remote_dbg(chip->dev, "framecode=0x%x\n", code);
+-	if (!xmp_decode_second) {
+-		chip->r_dev->cur_hardcode = 0;
+-		chip->r_dev->cur_customcode = code;
+-		xmp_decode_second = 1;
+-		return -1;
+-	}
+-	xmp_decode_second = 2;
+-	chip->r_dev->cur_hardcode = code;
+-	code = (code >> 8) & 0xff;
+-	return code;
+-}
+-
+-static int ir_xmp_get_decode_status(struct remote_chip *chip)
+-{
+-	int status = 0;
+-
+-	switch (xmp_decode_second) {
+-	case 0:
+-	case 1:
+-		status = REMOTE_CUSTOM_DATA;
+-		break;
+-	case 2:
+-		if (chip->r_dev->cur_hardcode & (8<<20))
+-			status = REMOTE_REPEAT;
+-		else
+-			status = REMOTE_NORMAL;
+-		xmp_decode_second = 0;
+-		break;
+-	default:
+-		break;
+-	}
+-	return status;
+-}
+-
+-static u32 ir_xmp_get_custom_code(struct remote_chip *chip)
+-{
+-	u32 custom_code;
+-
+-	custom_code = chip->r_dev->cur_customcode & 0xffff;
+-	remote_dbg(chip->dev, "custom_code=0x%x\n", custom_code);
+-	return custom_code;
+-}
+-
+-/*
+- * duokan hardware interface
+-*/
+-static int duokan_parity_check(int code)
+-{
+-	unsigned int data;
+-	unsigned int c74, c30, d74, d30, p30;
+-
+-	c74 = (code >> 16) & 0xF;
+-	c30 = (code >> 12) & 0xF;
+-	d74 = (code >> 8)  & 0xF;
+-	d30 = (code >> 4)  & 0xF;
+-	p30 = (code >> 0)  & 0xF;
+-
+-	data = c74 ^ c30 ^ d74 ^ d30;
+-
+-	if (p30 == data)
+-		return 0;
+-	else {
+-		pr_err("%s: parity check error code=0x%x\n", DRIVER_NAME, code);
+-		return -1;
+-	}
+-}
+-
+-static int ir_duokan_get_scancode(struct remote_chip *chip)
+-{
+-	int  code = 0;
+-
+-	remote_reg_read(chip, MULTI_IR_ID, REG_FRAME, &code);
+-	if (duokan_parity_check(code) < 0) {
+-		set_hardcode(chip, 0);
+-		return 0;
+-	}
+-	set_hardcode(chip, code);
+-	code = (code >> 4) & 0xff;
+-	return code;
+-}
+-
+-
+-static int ir_duokan_get_decode_status(struct remote_chip *chip)
+-{
+-	int decode_status = 0;
+-	int status = 0;
+-
+-	remote_reg_read(chip, MULTI_IR_ID, REG_STATUS, &decode_status);
+-	decode_status &= 0xf;
+-	if (decode_status & 0x01)
+-		status |= REMOTE_REPEAT;
+-	/*
+-	it is error,if the custom_code is not mask.
+-	if (decode_status & 0x02)
+-		status |= REMOTE_CUSTOM_ERROR;
+-	*/
+-	if (decode_status & 0x04)
+-		status |= REMOTE_DATA_ERROR;
+-	return status;
+-
+-}
+-
+-
+-static u32 ir_duokan_get_custom_code(struct remote_chip *chip)
+-{
+-	u32 custom_code;
+-
+-	custom_code = (chip->r_dev->cur_hardcode >> 12) & 0xffff;
+-	chip->r_dev->cur_customcode = custom_code;
+-	remote_dbg(chip->dev, "custom_code=0x%x\n", custom_code);
+-	return custom_code;
+-}
+-
+-/*
+-	xmp-1 raw decoder interface
+-*/
+-static u32 ir_raw_xmp_get_custom_code(struct remote_chip *chip)
+-{
+-	u32 custom_code;
+-
+-	custom_code = chip->r_dev->cur_customcode;
+-	remote_dbg(chip->dev, "custom_code=0x%x\n", custom_code);
+-	return custom_code;
+-}
+-
+-static bool ir_raw_xmp_set_custom_code(struct remote_chip *chip, u32 code)
+-{
+-	chip->r_dev->cur_customcode = code;
+-	return 0;
+-}
+-
+-/*
+-* RC5 decoder interface
+-* 14bit of one frame is stored in [13:0]:
+-*      bit[13:11] is S1, S2, Toggle
+-*      bit[10:6] is system_code/custom_code
+-*      bit [5:0] is data_code/scan_code
+-*/
+-
+-static int ir_rc5_get_scancode(struct remote_chip *chip)
+-{
+-	int code = 0;
+-	int status = 0;
+-	int decode_status = 0;
+-
+-	remote_reg_read(chip, MULTI_IR_ID, REG_STATUS, &decode_status);
+-	decode_status &= 0xf;
+-	if (decode_status & 0x01)
+-		status |= REMOTE_REPEAT;
+-	chip->decode_status = status;
+-	remote_reg_read(chip, MULTI_IR_ID, REG_FRAME, &code);
+-	remote_dbg(chip->dev, "framecode=0x%x\n", code);
+-	chip->r_dev->cur_hardcode = code;
+-	code = code & 0x3f;
+-	return code;
+-}
+-
+-static int ir_rc5_get_decode_status(struct remote_chip *chip)
+-{
+-	int status = chip->decode_status;
+-
+-	return status;
+-}
+-
+-static u32 ir_rc5_get_custom_code(struct remote_chip *chip)
+-{
+-	u32 custom_code;
+-
+-	custom_code = (chip->r_dev->cur_hardcode >> 6) & 0x1f;
+-	return custom_code;
+-}
+-
+-/*RC6 decode interface*/
+-static int ir_rc6_get_scancode(struct remote_chip *chip)
+-{
+-	int code = 0;
+-	int code1 = 0;
+-	int status = 0;
+-	int decode_status = 0;
+-
+-	remote_reg_read(chip, MULTI_IR_ID, REG_STATUS, &decode_status);
+-	decode_status &= 0xf;
+-	if (decode_status & 0x01)
+-		status |= REMOTE_REPEAT;
+-	chip->decode_status = status;
+-	remote_reg_read(chip, MULTI_IR_ID, REG_FRAME, &code);
+-	remote_dbg(chip->dev, "framecode=0x%x\n", code);
+-	/**
+-	  *if the frame length larger than 32Bit, we must read the REG_FRAME1.
+-	  *Otherwise it will affect the update of the 'frame1' and repeat frame
+-	  *detect
+-	  */
+-	remote_reg_read(chip, MULTI_IR_ID, REG_FRAME1, &code1);
+-	chip->r_dev->cur_hardcode = code;
+-	code = code & 0xff;
+-	return code;
+-}
+-
+-static int ir_rc6_get_decode_status(struct remote_chip *chip)
+-{
+-	int status = chip->decode_status;
+-
+-	return status;
+-}
+-
+-static u32 ir_rc6_get_custom_code(struct remote_chip *chip)
+-{
+-	u32 custom_code;
+-
+-	custom_code = (chip->r_dev->cur_hardcode >> 16) & 0xffff;
+-	return custom_code;
+-}
+-
+-static int ir_toshiba_get_scancode(struct remote_chip *chip)
+-{
+-	int  code = 0;
+-	int decode_status = 0;
+-	int status = 0;
+-
+-	remote_reg_read(chip, MULTI_IR_ID, REG_STATUS, &decode_status);
+-	if (decode_status & 0x01)
+-		status |= REMOTE_REPEAT;
+-	chip->decode_status = status; /*set decode status*/
+-	remote_reg_read(chip, MULTI_IR_ID, REG_FRAME, &code);
+-	remote_dbg(chip->dev, "framecode=0x%x\n", code);
+-	chip->r_dev->cur_hardcode = code;
+-	code = (code >> 16) & 0xff;
+-	return code;
+-
+-}
+-
+-static int ir_toshiba_get_decode_status(struct remote_chip *chip)
+-{
+-	int status = chip->decode_status;
+-
+-	return status;
+-}
+-
+-static u32 ir_toshiba_get_custom_code(struct remote_chip *chip)
+-{
+-	u32 custom_code;
+-
+-	custom_code = (chip->r_dev->cur_hardcode) & 0xffff;
+-	return custom_code;
+-}
+-
+-
+-/*legacy IR controller support protocols*/
+-static struct aml_remote_reg_proto reg_legacy_nec = {
+-	.protocol = REMOTE_TYPE_LEGACY_NEC,
+-	.name     = "LEGACY_NEC",
+-	.reg_map      = regs_legacy_nec,
+-	.reg_map_size = sizeof(regs_legacy_nec)/sizeof(regs_legacy_nec[0]),
+-	.get_scancode      = ir_legacy_nec_get_scancode,
+-	.get_decode_status = ir_nec_get_decode_status,
+-	.get_custom_code   = ir_nec_get_custom_code
+-};
+-
+-static struct aml_remote_reg_proto reg_nec = {
+-	.protocol = REMOTE_TYPE_NEC,
+-	.name     = "NEC",
+-	.reg_map      = regs_default_nec,
+-	.reg_map_size = sizeof(regs_default_nec)/sizeof(regs_default_nec[0]),
+-	.get_scancode      = ir_nec_get_scancode,
+-	.get_decode_status = ir_nec_get_decode_status,
+-	.get_custom_code   = ir_nec_get_custom_code
+-};
+-
+-static struct aml_remote_reg_proto reg_duokan = {
+-	.protocol = REMOTE_TYPE_DUOKAN,
+-	.name	  = "DUOKAN",
+-	.reg_map      = regs_default_duokan,
+-	.reg_map_size = ARRAY_SIZE(regs_default_duokan),
+-	.get_scancode      = ir_duokan_get_scancode,
+-	.get_decode_status = ir_duokan_get_decode_status,
+-	.get_custom_code   = ir_duokan_get_custom_code
+-};
+-
+-static struct aml_remote_reg_proto reg_xmp_1_sw = {
+-	.protocol = REMOTE_TYPE_RAW_XMP_1,
+-	.name	  = "XMP-1-RAW",
+-	.reg_map      = regs_default_xmp_1_sw,
+-	.reg_map_size = ARRAY_SIZE(regs_default_xmp_1_sw),
+-	.get_scancode      = NULL,
+-	.get_decode_status = NULL,
+-	.get_custom_code   = ir_raw_xmp_get_custom_code,
+-	.set_custom_code   = ir_raw_xmp_set_custom_code
+-};
+-
+-static struct aml_remote_reg_proto reg_xmp_1 = {
+-	.protocol = REMOTE_TYPE_XMP_1,
+-	.name	  = "XMP-1",
+-	.reg_map      = regs_default_xmp_1,
+-	.reg_map_size = ARRAY_SIZE(regs_default_xmp_1),
+-	.get_scancode      = ir_xmp_get_scancode,
+-	.get_decode_status = ir_xmp_get_decode_status,
+-	.get_custom_code   = ir_xmp_get_custom_code,
+-};
+-
+-static struct aml_remote_reg_proto reg_nec_sw = {
+-	.protocol = REMOTE_TYPE_RAW_NEC,
+-	.name	  = "NEC-SW",
+-	.reg_map      = regs_default_nec_sw,
+-	.reg_map_size = ARRAY_SIZE(regs_default_nec_sw),
+-	.get_scancode      = NULL,
+-	.get_decode_status = NULL,
+-	.get_custom_code   = NULL,
+-};
+-
+-static struct aml_remote_reg_proto reg_rc5 = {
+-	.protocol = REMOTE_TYPE_RC5,
+-	.name	  = "RC5",
+-	.reg_map      = regs_default_rc5,
+-	.reg_map_size = ARRAY_SIZE(regs_default_rc5),
+-	.get_scancode      = ir_rc5_get_scancode,
+-	.get_decode_status = ir_rc5_get_decode_status,
+-	.get_custom_code   = ir_rc5_get_custom_code,
+-};
+-
+-static struct aml_remote_reg_proto reg_rc6 = {
+-	.protocol = REMOTE_TYPE_RC6,
+-	.name	  = "RC6",
+-	.reg_map      = regs_default_rc6,
+-	.reg_map_size = ARRAY_SIZE(regs_default_rc6),
+-	.get_scancode      = ir_rc6_get_scancode,
+-	.get_decode_status = ir_rc6_get_decode_status,
+-	.get_custom_code   = ir_rc6_get_custom_code,
+-};
+-
+-static struct aml_remote_reg_proto reg_toshiba = {
+-	.protocol = REMOTE_TYPE_TOSHIBA,
+-	.name	  = "TOSHIBA",
+-	.reg_map      = regs_default_toshiba,
+-	.reg_map_size = ARRAY_SIZE(regs_default_toshiba),
+-	.get_scancode      = ir_toshiba_get_scancode,
+-	.get_decode_status = ir_toshiba_get_decode_status,
+-	.get_custom_code   = ir_toshiba_get_custom_code,
+-};
+-
+-
+-const struct aml_remote_reg_proto *remote_reg_proto[] = {
+-	&reg_nec,
+-	&reg_duokan,
+-	&reg_xmp_1,
+-	&reg_xmp_1_sw,
+-	&reg_nec_sw,
+-	&reg_rc5,
+-	&reg_rc6,
+-	&reg_legacy_nec,
+-	&reg_toshiba,
+-	NULL
+-};
+-
+-static int ir_contr_init(struct remote_chip *chip, int type, unsigned char id)
+-{
+-	const struct aml_remote_reg_proto **reg_proto = remote_reg_proto;
+-	struct remote_reg_map *reg_map;
+-	int size;
+-	int status;
+-
+-	for ( ; (*reg_proto) != NULL ; ) {
+-		if ((*reg_proto)->protocol == type)
+-			break;
+-		reg_proto++;
+-	}
+-	if (!*reg_proto) {
+-		dev_err(chip->dev, "%s, protocol set err %d\n", __func__, type);
+-		return -EINVAL;
+-	}
+-
+-	remote_reg_read(chip, id, REG_STATUS, &status);
+-	remote_reg_read(chip, id, REG_FRAME,  &status);
+-	/*
+-	 * reset ir decoder and disable the state machine
+-	 * of IR decoder.
+-	 * [15] = 0 ,disable the machine of IR decoder
+-	 * [0] = 0x01,set to 1 to reset the IR decoder
+-	*/
+-	remote_reg_write(chip, id, REG_REG1, 0x01);
+-	dev_info(chip->dev, "default protocol = 0x%x and id = %d\n",
+-				(*reg_proto)->protocol, id);
+-	reg_map = (*reg_proto)->reg_map;
+-	size    = (*reg_proto)->reg_map_size;
+-
+-	for (  ; size > 0;  ) {
+-		remote_reg_write(chip, id, reg_map->reg, reg_map->val);
+-		dev_info(chip->dev, "reg=0x%x, val=0x%x\n",
+-				reg_map->reg, reg_map->val);
+-		reg_map++;
+-		size--;
+-	}
+-	/*
+-	 * when we reinstall remote controller register,
+-	 * we need reset IR decoder, set 1 to REG_REG1 bit0,
+-	 * after IR decoder reset, we need to clear the bit0
+-	*/
+-	remote_reg_read(chip, id, REG_REG1, &status);
+-	status |= 1;
+-	remote_reg_write(chip, id, REG_REG1, status);
+-	status &= ~0x01;
+-	remote_reg_write(chip, id, REG_REG1, status);
+-	chip->ir_contr[id].get_scancode      = (*reg_proto)->get_scancode;
+-	chip->ir_contr[id].get_decode_status = (*reg_proto)->get_decode_status;
+-	chip->ir_contr[id].proto_name        = (*reg_proto)->name;
+-	chip->ir_contr[id].get_custom_code   = (*reg_proto)->get_custom_code;
+-	chip->ir_contr[id].set_custom_code   = (*reg_proto)->set_custom_code;
+-
+-	return 0;
+-}
+-
+-int ir_register_default_config(struct remote_chip *chip, int type)
+-{
+-	if (ENABLE_LEGACY_IR(type)) {
+-		/*initialize registers for legacy IR controller*/
+-		ir_contr_init(chip, LEGACY_IR_TYPE_MASK(type), LEGACY_IR_ID);
+-	} else {
+-		/*disable legacy IR controller: REG_REG1[15]*/
+-		remote_reg_write(chip, LEGACY_IR_ID, REG_REG1, 0x0);
+-	}
+-	/*initialize registers for Multi-format IR controller*/
+-	ir_contr_init(chip, MULTI_IR_TYPE_MASK(type), MULTI_IR_ID);
+-
+-	return 0;
+-
+-}
+-EXPORT_SYMBOL(ir_register_default_config);
+-
+diff --git a/drivers/amlogic/input/remote/sysfs.c b/drivers/amlogic/input/remote/sysfs.c
+deleted file mode 100644
+index 526af65..0000000
+--- a/drivers/amlogic/input/remote/sysfs.c
++++ /dev/null
+@@ -1,322 +0,0 @@
+-/*
+- * drivers/amlogic/input/remote/sysfs.c
+- *
+- * Copyright (C) 2015 Amlogic, Inc. All rights reserved.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+- * more details.
+- *
+- */
+-
+-
+-#include <linux/module.h>
+-#include <linux/init.h>
+-#include <linux/interrupt.h>
+-#include <linux/irq.h>
+-#include <linux/types.h>
+-#include <linux/input.h>
+-#include <linux/kernel.h>
+-#include <linux/delay.h>
+-#include <linux/platform_device.h>
+-#include <linux/mutex.h>
+-#include <linux/errno.h>
+-#include <asm/irq.h>
+-#include <linux/io.h>
+-#include <linux/major.h>
+-#include <linux/slab.h>
+-#include <linux/uaccess.h>
+-#include <linux/pinctrl/consumer.h>
+-#include <linux/of_platform.h>
+-#include <linux/amlogic/cpu_version.h>
+-#include <linux/amlogic/pm.h>
+-#include <linux/of_address.h>
+-
+-#include "remote_meson.h"
+-#include <linux/amlogic/iomap.h>
+-
+-static ssize_t protocol_show(struct device *dev,
+-	struct device_attribute *attr, char *buf)
+-{
+-	struct remote_chip *chip = dev_get_drvdata(dev);
+-	if (ENABLE_LEGACY_IR(chip->protocol))
+-		return sprintf(buf, "protocol=%s&%s (0x%x)\n",
+-			chip->ir_contr[LEGACY_IR_ID].proto_name,
+-			chip->ir_contr[MULTI_IR_ID].proto_name,
+-			chip->protocol);
+-
+-	return sprintf(buf, "protocol=%s (0x%x)\n",
+-		chip->ir_contr[MULTI_IR_ID].proto_name,
+-		chip->protocol);
+-}
+-
+-static ssize_t protocol_store(struct device *dev,
+-	struct device_attribute *attr, const char *buf, size_t count)
+-{
+-	int ret;
+-	int protocol;
+-	unsigned long flags;
+-	struct remote_chip *chip = dev_get_drvdata(dev);
+-
+-	ret = kstrtoint(buf, 0, &protocol);
+-	if (ret != 0) {
+-		dev_err(chip->dev, "input parameter error\n");
+-		return -EINVAL;
+-	}
+-
+-	spin_lock_irqsave(&chip->slock, flags);
+-	chip->protocol = protocol;
+-	chip->set_register_config(chip, chip->protocol);
+-	if (MULTI_IR_SOFTWARE_DECODE(chip->r_dev->rc_type) &&
+-				!MULTI_IR_SOFTWARE_DECODE(chip->protocol)) {
+-		remote_raw_event_unregister(chip->r_dev); /*raw->no raw*/
+-		dev_info(chip->dev, "remote_raw_event_unregister\n");
+-	} else if (!MULTI_IR_SOFTWARE_DECODE(chip->r_dev->rc_type) &&
+-				MULTI_IR_SOFTWARE_DECODE(chip->protocol)) {
+-		remote_raw_init();
+-		remote_raw_event_register(chip->r_dev); /*no raw->raw*/
+-	}
+-	chip->r_dev->rc_type = chip->protocol;
+-	spin_unlock_irqrestore(&chip->slock, flags);
+-	return count;
+-}
+-
+-static ssize_t keymap_show(struct device *dev,
+-	struct device_attribute *attr, char *buf)
+-{
+-	struct remote_chip *chip = dev_get_drvdata(dev);
+-	struct ir_map_tab_list *map_tab;
+-	unsigned long flags;
+-	int i, len;
+-
+-	spin_lock_irqsave(&chip->slock, flags);
+-	map_tab = seek_map_tab(chip,  chip->sys_custom_code);
+-	if (!map_tab) {
+-		dev_err(chip->dev, "please set valid keymap name first\n");
+-		spin_unlock_irqrestore(&chip->slock, flags);
+-		return 0;
+-	}
+-	len = sprintf(buf, "custom_code=0x%x\n", map_tab->tab.custom_code);
+-	len += sprintf(buf+len, "custom_name=%s\n",  map_tab->tab.custom_name);
+-	len += sprintf(buf+len, "release_delay=%d\n",
+-						map_tab->tab.release_delay);
+-	len += sprintf(buf+len, "map_size=%d\n" ,  map_tab->tab.map_size);
+-	len += sprintf(buf+len, "fn_key_scancode = 0x%x\n",
+-				map_tab->tab.cursor_code.fn_key_scancode);
+-	len += sprintf(buf+len, "cursor_left_scancode = 0x%x\n",
+-				map_tab->tab.cursor_code.cursor_left_scancode);
+-	len += sprintf(buf+len, "cursor_right_scancode = 0x%x\n",
+-				map_tab->tab.cursor_code.cursor_right_scancode);
+-	len += sprintf(buf+len, "cursor_up_scancode = 0x%x\n",
+-				map_tab->tab.cursor_code.cursor_up_scancode);
+-	len += sprintf(buf+len, "cursor_down_scancode = 0x%x\n",
+-				map_tab->tab.cursor_code.cursor_down_scancode);
+-	len += sprintf(buf+len, "cursor_ok_scancode = 0x%x\n",
+-				map_tab->tab.cursor_code.cursor_ok_scancode);
+-	len += sprintf(buf+len, "keycode scancode\n");
+-	for (i = 0; i <  map_tab->tab.map_size; i++) {
+-		len += sprintf(buf+len, "%4d %4d\n",
+-			map_tab->tab.codemap[i].map.keycode,
+-			map_tab->tab.codemap[i].map.scancode);
+-	}
+-	spin_unlock_irqrestore(&chip->slock, flags);
+-	return len;
+-}
+-
+-static ssize_t keymap_store(struct device *dev,
+-					struct device_attribute *attr,
+-					const char *buf, size_t count)
+-{
+-	struct remote_chip *chip = dev_get_drvdata(dev);
+-	int ret;
+-	int value;
+-
+-	ret = kstrtoint(buf, 0, &value);
+-	if (ret != 0) {
+-		dev_err(chip->dev, "keymap_store input err\n");
+-		return -EINVAL;
+-	}
+-	chip->sys_custom_code = value;
+-	return count;
+-}
+-
+-static ssize_t debug_enable_show(struct device *dev,
+-	struct device_attribute *attr, char *buf)
+-{
+-	int debug_enable;
+-
+-	debug_enable = remote_debug_get_enable();
+-
+-	return sprintf(buf, "%d\n", debug_enable);
+-}
+-
+-static ssize_t debug_enable_store(struct device *dev,
+-				   struct device_attribute *attr,
+-					const char *buf, size_t count)
+-{
+-	int debug_enable;
+-	int ret;
+-	ret = kstrtoint(buf, 0, &debug_enable);
+-	if (ret != 0)
+-		return -EINVAL;
+-	remote_debug_set_enable(debug_enable);
+-	return count;
+-}
+-
+-int debug_log_printk(struct remote_dev *dev, const char *fmt)
+-{
+-	char *p;
+-	int len;
+-
+-	len = strlen(fmt);
+-	if (dev->debug_current + len > dev->debug_buffer_size)
+-		dev->debug_current = 0;
+-	p = (char *)(dev->debug_buffer+dev->debug_current);
+-	strcpy(p, fmt);
+-	dev->debug_current += len;
+-	return 0;
+-}
+-
+-static ssize_t debug_log_show(struct device *dev,
+-	struct device_attribute *attr, char *buf)
+-{
+-	struct remote_chip *chip = dev_get_drvdata(dev);
+-	struct remote_dev  *r_dev = chip->r_dev;
+-
+-	if (!r_dev->debug_buffer)
+-		return 0;
+-	return sprintf(buf, r_dev->debug_buffer);
+-}
+-
+-static ssize_t debug_log_store(struct device *dev,
+-	struct device_attribute *attr, const char *buf, size_t count)
+-{
+-	struct remote_chip *chip = dev_get_drvdata(dev);
+-	struct remote_dev  *r_dev = chip->r_dev;
+-
+-	if (!r_dev->debug_buffer)
+-		return 0;
+-	if (buf[0] == 'c') {
+-		r_dev->debug_buffer[0] = 0;
+-		r_dev->debug_current = 0;
+-	}
+-	return count;
+-}
+-
+-static ssize_t repeat_enable_show(struct device *dev,
+-	struct device_attribute *attr, char *buf)
+-{
+-	struct remote_chip *chip = dev_get_drvdata(dev);
+-	return sprintf(buf, "%u\n", chip->repeat_enable);
+-}
+-
+-static ssize_t repeat_enable_store(struct device *dev,
+-				   struct device_attribute *attr,
+-					const char *buf, size_t count)
+-{
+-	int ret;
+-	int val;
+-	struct remote_chip *chip = dev_get_drvdata(dev);
+-
+-	ret = kstrtoint(buf, 0, &val);
+-	if (ret != 0)
+-		return -EINVAL;
+-	chip->repeat_enable = val;
+-	return count;
+-}
+-
+-static ssize_t map_tables_show(struct device *dev,
+-				struct device_attribute *attr, char *buf)
+-{
+-	struct remote_chip *chip = dev_get_drvdata(dev);
+-	struct ir_map_tab_list *ir_map;
+-	unsigned long flags;
+-	int len = 0;
+-	int cnt = 0;
+-
+-	spin_lock_irqsave(&chip->slock, flags);
+-	list_for_each_entry(ir_map, &chip->map_tab_head, list) {
+-		len += sprintf(buf+len, "%d. 0x%x,%s\n",
+-			cnt, ir_map->tab.custom_code, ir_map->tab.custom_name);
+-		cnt++;
+-	}
+-	spin_unlock_irqrestore(&chip->slock, flags);
+-	return len;
+-}
+-
+-DEVICE_ATTR_RW(repeat_enable);
+-DEVICE_ATTR_RW(protocol);
+-DEVICE_ATTR_RW(keymap);
+-DEVICE_ATTR_RW(debug_enable);
+-DEVICE_ATTR_RW(debug_log);
+-DEVICE_ATTR_RO(map_tables);
+-
+-/*
+-static DEVICE_ATTR(custom_maps, S_IRUGO,
+-	custom_maps_show, NULL);
+-
+-static DEVICE_ATTR(release_delay, (S_IRUGO | S_IWUGO),
+-	release_delay_show, release_delay_store);
+-
+-static DEVICE_ATTR(protocol, (S_IRUGO | S_IWUGO),
+-	protocol_show, protocol_store);
+-
+-static DEVICE_ATTR(keymap, (S_IRUGO | S_IWUGO),
+-	keymap_show, keymap_store);
+-
+-static DEVICE_ATTR(debug_enable, (S_IRUGO | S_IWUGO),
+-	debug_enable_show, debug_enable_store);
+-
+-static DEVICE_ATTR(debug_level, (S_IRUGO | S_IWUGO),
+-	debug_level_show, debug_level_store);
+-
+-static DEVICE_ATTR(debug_log, (S_IRUGO | S_IWUGO),
+-	debug_log_show, debug_log_store);
+-*/
+-
+-static struct attribute *remote_attrs[] = {
+-	&dev_attr_protocol.attr,
+-	&dev_attr_map_tables.attr,
+-	&dev_attr_keymap.attr,
+-	&dev_attr_debug_enable.attr,
+-	&dev_attr_repeat_enable.attr,
+-	&dev_attr_debug_log.attr,
+-	NULL,
+-};
+-
+-ATTRIBUTE_GROUPS(remote);
+-
+-static struct class remote_class = {
+-	.name		= "remote",
+-	.owner		= THIS_MODULE,
+-	.dev_groups = remote_groups,
+-};
+-
+-int ir_sys_device_attribute_init(struct remote_chip *chip)
+-{
+-	struct device *dev;
+-
+-	class_register(&remote_class);
+-
+-	dev = device_create(&remote_class,  NULL,
+-					chip->chr_devno, chip, chip->dev_name);
+-	if (IS_ERR_OR_NULL(dev))
+-		return -1;
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(ir_sys_device_attribute_init);
+-
+-void ir_sys_device_attribute_sys(struct remote_chip *chip)
+-{
+-	device_destroy(&remote_class, chip->chr_devno);
+-}
+-EXPORT_SYMBOL_GPL(ir_sys_device_attribute_sys);
+-
+-
+-
+diff --git a/drivers/amlogic/input/remote/sysfs.h b/drivers/amlogic/input/remote/sysfs.h
+deleted file mode 100644
+index 89c89ec..0000000
+--- a/drivers/amlogic/input/remote/sysfs.h
++++ /dev/null
+@@ -1,28 +0,0 @@
+-/*
+- * drivers/amlogic/input/remote/sysfs.h
+- *
+- * Copyright (C) 2015 Amlogic, Inc. All rights reserved.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+- * more details.
+- *
+-*/
+-
+-#ifndef __REMOTE_SYSFS_H__
+-#define __REMOTE_SYSFS_H__
+-
+-int ir_sys_device_attribute_init(struct remote_chip *rc);
+-void ir_sys_device_attribute_sys(struct remote_chip *chip);
+-
+-
+-
+-#endif
+-
+-
