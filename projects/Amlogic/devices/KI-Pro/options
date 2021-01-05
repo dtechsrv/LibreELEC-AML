@@ -17,14 +17,6 @@
   # Amlogic IR remote support (yes / no)
     AMREMOTE_SUPPORT="yes"
 
-  # build and install driver addons (yes / no)
-    DRIVER_ADDONS_SUPPORT="yes"
-
-  # driver addons to install:
-  # for a list of additinoal drivers see packages/linux-driver-addons
-  # Space separated list is supported,
-    DRIVER_ADDONS="crazycat_aml"
-
   # additional packages to install:
   # Space separated list is supported,
   # e.g. ADDITIONAL_PACKAGES="PACKAGE1 PACKAGE2"
