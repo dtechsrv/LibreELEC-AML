@@ -1,6 +1,6 @@
-# LibreELEC - OTT M8S* Edition
+# LibreELEC - OTT Meson 8* + GXL Edition
 
-Unofficial community sources and firmware binaries for some Amlogic S805 and S812 based devices.
+Unofficial community sources and firmware binaries for some Amlogic S805/S812 and S905x based devices.
 
 **Currently supported devices:**
 
@@ -11,7 +11,9 @@ Unofficial community sources and firmware binaries for some Amlogic S805 and S81
 - S805/M8Q (a.k.a. M8S-S805),<br />
 *Amlogic S805 SoC, 1 GB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet (IC+ IP101GR),*
 - S805/m201d (a.k.a. MXQ with 512MB RAM only),<br />
-*Amlogic S805 SoC, 512 MB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet (IC+ IP101GR).*
+*Amlogic S805 SoC, 512 MB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet (IC+ IP101GR),*
+- S905D/KI-Pro (Mecool/Videostrong),<br />
+*Amlogic S905D SoC, 2 GB RAM, 16 GB NAND Flash, 1 Gbps Ethernet (RTL8211F).*
 
 This repository is based on [S802-LE/LibreELEC.tv](https://github.com/S802-LE/LibreELEC.tv).
 
