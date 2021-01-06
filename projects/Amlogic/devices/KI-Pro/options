@@ -1,0 +1,31 @@
+  # Kernel extra targets to build
+    KERNEL_UBOOT_EXTRA_TARGET="gxl_p230_k1_pro_amr.dtb"
+
+  # additional drivers to install:
+  # for a list of additinoal drivers see packages/linux-drivers
+  # Space separated list is supported,
+  # e.g. ADDITIONAL_DRIVERS="DRIVER1 DRIVER2"
+    ADDITIONAL_DRIVERS="$ADDITIONAL_DRIVERS ap6xxx-aml mt7601u-aml mt7603u-aml \
+                        qca9377-aml RTL8189ES-aml RTL8189FS-aml RTL8723BS-aml \
+                        RTL8723DS-aml RTL8822BU-aml ssv6xxx-aml fd628-aml avl6862-aml"
+
+  # additional Firmware to use (dvb-firmware, misc-firmware, wlan-firmware)
+  # Space separated list is supported,
+  # e.g. FIRMWARE="dvb-firmware misc-firmware wlan-firmware"
+    FIRMWARE="$FIRMWARE brcmfmac_sdio-firmware-all-aml rtl8723bs_bt qca9377-firmware-aml"
+
+  # Amlogic IR remote support (yes / no)
+    AMREMOTE_SUPPORT="yes"
+
+  # additional packages to install:
+  # Space separated list is supported,
+  # e.g. ADDITIONAL_PACKAGES="PACKAGE1 PACKAGE2"
+    ADDITIONAL_PACKAGES+=" autoscript-amlogic"
+
+  # set the addon dirs
+    ADDON_PATH="$ADDON_VERSION/S905/$TARGET_ARCH"
+    ADDON_URL="$ADDON_SERVER_URL/$ADDON_PATH"
+
+  # add custom tag to os version name
+    LIBREELEC_TAG="AMREMOTE+DVB"
+    LIBREELEC_VERSION+="-S905D-$LIBREELEC_TAG"

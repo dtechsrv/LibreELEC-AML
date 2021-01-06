@@ -60,8 +60,8 @@
   # Additional kernel make parameters (for example to specify the u-boot loadaddress)
     KERNEL_MAKE_EXTRACMD=""
 
-  # kernel image name
-    KERNEL_NAME="kernel.img" 
+  # Kernel image name
+    KERNEL_NAME="kernel.img"
 
   # Kernel to use. values can be:
   # default:  default mainline kernel
@@ -140,14 +140,22 @@
     INSTALLER_SUPPORT="no"
 
   # build and install driver addons (yes / no)
-    DRIVER_ADDONS_SUPPORT="no"
+    DRIVER_ADDONS_SUPPORT="yes"
 
   # driver addons to install:
   # for a list of additinoal drivers see packages/linux-driver-addons
   # Space separated list is supported,
-    DRIVER_ADDONS="crazycat_aml"
+    DRIVER_ADDONS="crazycat dvb-latest"
 
   # additional packages to install:
   # Space separated list is supported,
   # e.g. ADDITIONAL_PACKAGES="PACKAGE1 PACKAGE2"
     ADDITIONAL_PACKAGES="u-boot-tools-aml dtc"
+
+  # set the addon dirs
+    ADDON_PATH="$ADDON_VERSION/WeTek_Play/$TARGET_ARCH"
+    ADDON_URL="$ADDON_SERVER_URL/$ADDON_PATH"
+
+  # add custom tag to os version name
+    LIBREELEC_TAG="DVB"
+    LIBREELEC_VERSION+="-$PROJECT-$LIBREELEC_TAG"

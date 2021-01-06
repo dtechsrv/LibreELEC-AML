@@ -1,6 +1,41 @@
-# OTT M8S+ Edition
+# LibreELEC - OTT Meson 8* + GXL Edition
 
-Based on [S802-LE/LibreELEC.tv](https://github.com/S802-LE/LibreELEC.tv).
+Unofficial community sources and firmware binaries for some Amlogic S805/S812 and S905x based devices.
+
+**Currently supported devices:**
+
+- S8X2/M8S+ (with ap6330 and bcm4335b0 wireless modules),<br />
+*Amlogic S812 SoC, 2 GB RAM, 8 GB NAND Flash, 1 Gbps Ethernet (RTL8211F),*
+- S8X2/M8S (with 'CS_812M8_V1.3 20150921' PCB only),<br />
+*Amlogic S812 SoC, 2 GB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet (IC+ IP101GR),*
+- S805/M8Q (a.k.a. M8S-S805),<br />
+*Amlogic S805 SoC, 1 GB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet (IC+ IP101GR),*
+- S805/m201d (a.k.a. MXQ with 512MB RAM only),<br />
+*Amlogic S805 SoC, 512 MB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet (IC+ IP101GR),*
+- S905D/KI-Pro (Mecool/Videostrong),<br />
+*Amlogic S905D SoC, 2 GB RAM, 16 GB NAND Flash, 1 Gbps Ethernet (RTL8211F).*
+
+This repository is based on [S802-LE/LibreELEC.tv](https://github.com/S802-LE/LibreELEC.tv).
+
+# How to crate bootable media, start, install and update the firmware
+
+**Create bootable SD Card**
+
+To create bootable SD card media you need to download the [LibreELEC USB-SD Creator](https://libreelec.tv/downloads_new/) tool from the LibreELEC website. Then click on the 'Select file' button and browse the previously downloaded 'img.gz' disk image.
+
+**Start LibreELEC from SD Card**
+
+If you want to boot the device from an SD Card, you need to perform the toothpick method: disconnect the power plug, insert the prepared SD Card on, which the image file is written (img.gz), and then press and hold the reset button located behind the A/V connector. Wait for the LibreELEC logo to appear before releasing the button.
+
+**Install image from SD Card to internal memory (eMMC or onboard NAND Flash)**
+
+If you want to install the firmware into the internal memory, you need to log in to the device via SSH and run the 'installtointernal' command. The default password for the root user is 'libreelec'.
+
+*NOTICE: The command will completely overwrite the previously installed firmware, so it will no longer be possible to boot the originally installed system.*
+
+**Install an update package**
+
+To install the update, you must copy the 'tar' file to the Update folder via SMB, and then restart the device. The update process will start automatically after the restart.
 
 # LibreELEC
 

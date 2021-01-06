@@ -1,0 +1,13 @@
+diff --git a/xbmc/platform/linux/powermanagement/LogindUPowerSyscall.cpp b/xbmc/platform/linux/powermanagement/LogindUPowerSyscall.cpp
+index fec636a..4cd1199 100644
+--- a/xbmc/platform/linux/powermanagement/LogindUPowerSyscall.cpp
++++ b/xbmc/platform/linux/powermanagement/LogindUPowerSyscall.cpp
+@@ -76,7 +76,7 @@ CLogindUPowerSyscall::~CLogindUPowerSyscall()
+ 
+ bool CLogindUPowerSyscall::Powerdown()
+ {
+-  return LogindSetPowerState("PowerOff");
++  return LogindSetPowerState("Suspend");
+ }
+ 
+ bool CLogindUPowerSyscall::Reboot()

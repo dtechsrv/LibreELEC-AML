@@ -1,0 +1,9 @@
+--- a/xbmc/cores/AudioEngine/Engines/ActiveAE/ActiveAEBuffer.cpp    2018-08-26 12:11:07.000000000 +0200
++++ b/xbmc/cores/AudioEngine/Engines/ActiveAE/ActiveAEBuffer.cpp    2018-09-07 21:00:23.774030788 +0200
+@@ -143,6 +143,7 @@
+     m_inputFormat.m_channelLayout.Reset();
+     m_inputFormat.m_channelLayout += AE_CH_FC;
+   }
++  m_fillPackets = true;
+   m_resampleQuality = quality;
+ }

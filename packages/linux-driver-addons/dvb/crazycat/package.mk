@@ -2,22 +2,26 @@
 # Copyright (C) 2016-present Team LibreELEC (https://libreelec.tv)
 
 PKG_NAME="crazycat"
-PKG_VERSION="f77791e13e0a29edeb775383f89e37bb1ed80416"
-PKG_SHA256="524a5cdbbb653b0db46d20b56249953e473302bd20e8097bf06e3918e5c0a35f"
+PKG_VERSION="ca1ea9fc2cfaedfc32bd0ac628e03e9aa379e3ad"
+PKG_SHA256="6b44a96d82c4a3e052864a995baceaede46b37c048c5718a6f62a009492d08ff"
 PKG_LICENSE="GPL"
 PKG_SITE="https://bitbucket.org/CrazyCat/media_build"
 PKG_URL="https://bitbucket.org/CrazyCat/media_build/get/$PKG_VERSION.tar.gz"
 PKG_DEPENDS_TARGET="toolchain linux media_tree_cc"
-PKG_NEED_UNPACK="$LINUX_DEPENDS media_tree_cc"
+PKG_NEED_UNPACK="$LINUX_DEPENDS $(get_pkg_directory media_tree_cc)"
 PKG_SECTION="driver.dvb"
 PKG_LONGDESC="DVB driver for TBS cards with CrazyCats additions"
 
 PKG_IS_ADDON="embedded"
 PKG_IS_KERNEL_PKG="yes"
 PKG_ADDON_IS_STANDALONE="yes"
-PKG_ADDON_NAME="DVB drivers for TBS"
+PKG_ADDON_NAME="DVB drivers for TBS (CrazyCat)"
 PKG_ADDON_TYPE="xbmc.service"
 PKG_ADDON_VERSION="${ADDON_VERSION}.${PKG_REV}"
+
+if [ $LINUX = "amlogic-3.10" ]; then
+  PKG_PATCH_DIRS="amlogic-3.10"
+fi
 
 pre_make_target() {
   export KERNEL_VER=$(get_module_dir)
@@ -27,13 +31,23 @@ pre_make_target() {
 make_target() {
   cp -RP $(get_build_dir media_tree_cc)/* $PKG_BUILD/linux
 
-  # make config all
-  kernel_make VER=$KERNEL_VER SRCDIR=$(kernel_path) allyesconfig
+  # copy config file
+  if [ "$PROJECT" = Generic ]; then
+    if [ -f $PKG_DIR/config/generic.config ]; then
+      cp $PKG_DIR/config/generic.config v4l/.config
+    fi
+  else
+    if [ -f $PKG_DIR/config/usb.config ]; then
+      cp $PKG_DIR/config/usb.config v4l/.config
+    fi
+  fi
 
   # hack to workaround media_build bug
-  if [ "$PROJECT" = Rockchip ]; then
-    sed -e 's/CONFIG_DVB_CXD2820R=m/# CONFIG_DVB_CXD2820R is not set/g' -i v4l/.config
-    sed -e 's/CONFIG_DVB_LGDT3306A=m/# CONFIG_DVB_LGDT3306A is not set/g' -i v4l/.config
+  if [ $LINUX = "amlogic-3.10" ]; then
+    sed -e 's/CONFIG_VIDEO_TVP5150=m/# CONFIG_VIDEO_TVP5150 is not set/g' -i v4l/.config
+    sed -e 's/CONFIG_DVB_M88DS3103=m/# CONFIG_DVB_M88DS3103 is not set/g' -i v4l/.config
+    sed -e 's/CONFIG_IR_NUVOTON=m/# CONFIG_IR_NUVOTON is not set/g' -i v4l/.config
+    sed -e 's/CONFIG_DVB_AF9013=m/# CONFIG_DVB_AF9013 is not set/g' -i v4l/.config
   fi
 
   # add menuconfig to edit .config
