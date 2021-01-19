@@ -5,7 +5,7 @@
   # The TARGET_CPU variable controls which processor should be targeted for
   # generated code.
     case $TARGET_ARCH in
-      arm)
+      aarch64)
         # TARGET_CPU:
         # arm2 arm250 arm3 arm6 arm60 arm600 arm610 arm620 arm7 arm7m arm7d
         # arm7dm arm7di arm7dmi arm70 arm700 arm700i arm710 arm710c
@@ -18,24 +18,18 @@
         # arm1176jz-s arm1176jzf-s cortex-a8 cortex-a9 cortex-r4
         # cortex-r4f cortex-m3 cortex-m1 xscale iwmmxt iwmmxt2 ep9312.
         #
-        TARGET_CPU="cortex-a5"
-
-        # TARGET_FLOAT:
-        # Specifies which floating-point ABI to use. Permissible values are:
-        # soft softfp hard
-        TARGET_FLOAT="hard"
-
-        # TARGET_FPU:
-        # This specifies what floating point hardware (or hardware emulation) is
-        # available on the target. Permissible names are:
-        # fpa fpe2 fpe3 maverick vfp vfpv3 vfpv3-fp16 vfpv3-d16 vfpv3-d16-fp16
-        # vfpv3xd vfpv3xd-fp16 neon neon-fp16 vfpv4 vfpv4-d16 fpv4-sp-d16
-        # neon-vfpv4.
-        TARGET_FPU="neon-vfpv4"
+        TARGET_CPU="cortex-a53"
+        TARGET_CPU_FLAGS="+crc+fp+simd"
+        TARGET_FEATURES="64bit"
+        ;;
+      arm)
+        TARGET_KERNEL_ARCH="arm64"
+        TARGET_PATCH_ARCH="aarch64"
+        TARGET_FLOAT=hard
+        TARGET_CPU="cortex-a53"
+        TARGET_CPU_FLAGS="+crc"
+        TARGET_FPU="neon-fp-armv8"
         TARGET_FEATURES="32bit"
-
-        # Use linaro toolchain to build kernel
-        KERNEL_LINARO_TOOLCHAIN="arm-linux-gnueabihf"
         ;;
     esac
 
@@ -45,27 +39,30 @@
   # u-boot version to use (default)
     UBOOT_VERSION="vendor"
 
-  # Configuration for u-boot
-    UBOOT_CONFIG=""
-
-  # Target Configfile for u-boot
-    UBOOT_CONFIGFILE=""
-
   # Kernel target
-    KERNEL_TARGET="uImage"
+    KERNEL_TARGET="Image.lzo"
+
+  # Kernel extra targets to build
+    KERNEL_UBOOT_EXTRA_TARGET="gxbb_p200.dtb gxbb_p200_2G.dtb gxl_p212_1g.dtb gxl_p212_2g.dtb gxl_p230_2g.dtb"
 
   # Build Android kernel image using mkbootimg
     BUILD_ANDROID_BOOTIMG="yes"
 
+  # Additional options to be passed to Android mkbootimg
+    ANDROID_BOOTIMG_OPTIONS="--base 0x0 --kernel_offset 0x1080000"
+
   # Additional kernel make parameters (for example to specify the u-boot loadaddress)
     KERNEL_MAKE_EXTRACMD=""
 
-  # Kernel image name
-    KERNEL_NAME="kernel.img"
+  # Additional kernel dependencies
+    KERNEL_EXTRA_DEPENDS_TARGET=""
 
   # Kernel to use. values can be:
   # default:  default mainline kernel
-    LINUX="amlogic-3.10"
+    LINUX="amlogic-3.14"
+
+  # kernel image name
+    KERNEL_NAME="kernel.img"
 
 ################################################################################
 # setup build defaults
@@ -91,7 +88,7 @@
     OPENGLES="opengl-meson"
 
   # Amlogic Meson SOC family (8 / 6 / gxbb)
-    MESON_FAMILY="8"
+    MESON_FAMILY="gxbb"
 
   # include uvesafb support (yes / no)
     UVESAFB_SUPPORT="no"
@@ -99,7 +96,7 @@
   # Displayserver to use (x11 / no)
     DISPLAYSERVER="no"
 
-  # Windowmanager to use (ratpoison / fluxbox / none)
+  # Windowmanager to use (fluxbox / none)
     WINDOWMANAGER="none"
 
   # Xorg Graphic drivers to use (all / i915,i965,r200,r300,r600,nvidia,nouveau)
@@ -111,25 +108,21 @@
     KODIPLAYER_DRIVER="libamcodec"
 
   # Modules to install in initramfs for early boot
-    INITRAMFS_MODULES="font softcursor bitblit fbcon"
+    INITRAMFS_MODULES="font softcursor bitblit fbcon dwc_otg"
 
   # additional drivers to install:
   # for a list of additinoal drivers see packages/linux-drivers
   # Space separated list is supported,
   # e.g. ADDITIONAL_DRIVERS="DRIVER1 DRIVER2"
-    ADDITIONAL_DRIVERS="gpu-aml RTL8192CU RTL8192DU RTL8192EU RTL8812AU RTL8188EU-aml mt7601u-aml \
-                        RTL8189ES-aml RTL8189FS-aml RTL8723BS-aml RTL8723DS-aml RTL8822BU-aml ssv6xxx-aml"
+    ADDITIONAL_DRIVERS="gpu-aml RTL8192CU RTL8192DU RTL8192EU RTL8812AU RTL8188EU-aml"
 
   # additional Firmware to use (dvb-firmware, misc-firmware, wlan-firmware)
   # Space separated list is supported,
   # e.g. FIRMWARE="dvb-firmware misc-firmware wlan-firmware"
-    FIRMWARE="misc-firmware wlan-firmware dvb-firmware brcmfmac_sdio-firmware-all-aml rtl8723bs_bt"
+    FIRMWARE="misc-firmware wlan-firmware dvb-firmware"
 
   # build and install ATV IR remote support (yes / no)
     ATVCLIENT_SUPPORT="no"
-
-  # "none" for disable LCD support
-    LCD_DRIVER="none"
 
   # Amlogic IR remote support (yes / no)
     AMREMOTE_SUPPORT="yes"
@@ -146,7 +139,7 @@
   # driver addons to install:
   # for a list of additinoal drivers see packages/linux-driver-addons
   # Space separated list is supported,
-    DRIVER_ADDONS="crazycat dvb-latest"
+    DRIVER_ADDONS="crazycat_aml"
 
   # additional packages to install:
   # Space separated list is supported,
@@ -154,7 +147,7 @@
     ADDITIONAL_PACKAGES="u-boot-tools-aml dtc"
 
   # set the addon dirs
-    ADDON_PATH="$ADDON_VERSION/WeTek_Play/$TARGET_ARCH"
+    ADDON_PATH="$ADDON_VERSION/S905/$TARGET_ARCH"
     ADDON_URL="$ADDON_SERVER_URL/$ADDON_PATH"
 
   # add custom tag to os version name

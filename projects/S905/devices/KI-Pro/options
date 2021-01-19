@@ -14,18 +14,7 @@
   # e.g. FIRMWARE="dvb-firmware misc-firmware wlan-firmware"
     FIRMWARE="$FIRMWARE brcmfmac_sdio-firmware-all-aml rtl8723bs_bt qca9377-firmware-aml"
 
-  # Amlogic IR remote support (yes / no)
-    AMREMOTE_SUPPORT="yes"
-
   # additional packages to install:
   # Space separated list is supported,
   # e.g. ADDITIONAL_PACKAGES="PACKAGE1 PACKAGE2"
     ADDITIONAL_PACKAGES+=" autoscript-amlogic"
-
-  # set the addon dirs
-    ADDON_PATH="$ADDON_VERSION/S905/$TARGET_ARCH"
-    ADDON_URL="$ADDON_SERVER_URL/$ADDON_PATH"
-
-  # add custom tag to os version name
-    LIBREELEC_TAG="AMREMOTE+DVB"
-    LIBREELEC_VERSION+="-S905D-$LIBREELEC_TAG"
