@@ -1,5 +1,5 @@
   # Kernel extra targets to build
-    KERNEL_UBOOT_EXTRA_TARGET="gxl_p230_k1_pro_amr.dtb"
+    KERNEL_UBOOT_EXTRA_TARGET="gxl_p230_k1_pro.dtb"
 
   # additional drivers to install:
   # for a list of additinoal drivers see packages/linux-drivers
