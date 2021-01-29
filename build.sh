@@ -26,4 +26,4 @@ DISTRO=LibreELEC PROJECT=S805 DEVICE=m201d ARCH=arm make image -j8
 # Create image for Mecool/Videostrong KI Pro (MesonGXL_p230_2G)
 # Specs: Amlogic S905D SoC, 2 GB MB RAM, 16 GB NAND Flash, 1 Gbps Ethernet (RTL8211F)
 # Tested and works on PCB: 'K3_DVB_DDR4-V1.2', wireless module: ap6255.
-DISTRO=LibreELEC PROJECT=Amlogic DEVICE=KI-Pro ARCH=arm make image -j8
+DISTRO=LibreELEC PROJECT=S905 DEVICE=KI-Pro ARCH=arm make image -j8

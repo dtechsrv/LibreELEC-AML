@@ -12,7 +12,7 @@ Unofficial community sources and firmware binaries for some Amlogic S805/S812 an
 *Amlogic S805 SoC, 1 GB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet (IC+ IP101GR),*
 - S805/m201d (a.k.a. MXQ with 512MB RAM only),<br />
 *Amlogic S805 SoC, 512 MB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet (IC+ IP101GR),*
-- S905D/KI-Pro (Mecool/Videostrong),<br />
+- S905/KI-Pro (Mecool/Videostrong),<br />
 *Amlogic S905D SoC, 2 GB RAM, 16 GB NAND Flash, 1 Gbps Ethernet (RTL8211F).*
 
 This repository is based on [S802-LE/LibreELEC.tv](https://github.com/S802-LE/LibreELEC.tv).
