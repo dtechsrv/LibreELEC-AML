@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<keymap>
+  <global>
+    <keyboard>
+      <f1>Red</f1>
+      <f2>Green</f2>
+      <f3>Yellow</f3>
+      <f4>Blue</f4>
+      <f5>ActivateWindow(Favourites)</f5>
+      <f6>ActivateWindow(TVRecordings)</f6>
+      <f7>ActivateWindow(Programs)</f7>
+      <f11>AudioNextLanguage</f11>
+    </keyboard>
+  </global>
+  <Favourites>
+    <keyboard>
+      <f5>PreviousMenu</f5>
+    </keyboard>
+  </Favourites>
+  <TVRecordings>
+    <keyboard>
+      <f6>PreviousMenu</f6>
+    </keyboard>
+  </TVRecordings>
+  <Programs>
+    <keyboard>
+      <f7>PreviousMenu</f7>
+    </keyboard>
+  </Programs>
+</keymap>

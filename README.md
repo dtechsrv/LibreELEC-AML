@@ -1,3 +1,34 @@
+# LibreELEC-AML
+
+Unofficial community sources and firmware binaries for some Amlogic TV Boxes.
+
+**Currently supported devices:**
+
+- S905/KI-Pro (Mecool/Videostrong),<br />
+*Amlogic S905D SoC, 2 GB RAM, 16 GB NAND Flash, 1 Gbps Ethernet (RTL8211F).*
+
+This repository is based on [LibreELEC/LibreELEC.tv](https://github.com/LibreELEC/LibreELEC.tv).
+
+# How to crate bootable media, start, install and update the firmware
+
+**Create bootable SD Card**
+
+To create bootable SD card media you need to download the [LibreELEC USB-SD Creator](https://libreelec.tv/downloads_new/) tool from the LibreELEC website. Then click on the 'Select file' button and browse the previously downloaded 'img.gz' disk image.
+
+**Start LibreELEC from SD Card**
+
+If you want to boot the device from an SD Card, you need to perform the toothpick method: disconnect the power plug, insert the prepared SD Card on, which the image file is written (img.gz), and then press and hold the reset button located behind the A/V connector. Wait for the LibreELEC logo to appear before releasing the button.
+
+**Install image from SD Card to internal memory (eMMC or onboard NAND Flash)**
+
+If you want to install the firmware into the internal memory, you need to log in to the device via SSH and run the 'installtointernal' command. The default password for the root user is 'libreelec'.
+
+*NOTICE: The command will completely overwrite the previously installed firmware, so it will no longer be possible to boot the originally installed system.*
+
+**Install an update package**
+
+To install the update, you must copy the 'tar' file to the Update folder via SMB, and then restart the device. The update process will start automatically after the restart.
+
 # LibreELEC
 
 LibreELEC is a 'Just enough OS' Linux distribution for running the award-winning [Kodi](https://kodi.tv) software on popular mediacentre hardware. LibreELEC is a conservative fork of the popular [OpenELEC](http://openelec.tv) project with a stronger focus on pre-release testing and post-release change management. Further information on the project can be found on the [LibreELEC website](https://libreelec.tv).
