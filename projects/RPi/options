@@ -1,0 +1,135 @@
+################################################################################
+# setup system defaults
+################################################################################
+
+  # The TARGET_CPU variable controls which processor should be targeted for
+  # generated code.
+    case $TARGET_ARCH in
+      arm)
+        # Valid TARGET_CPU for Raspberry Pi based devices are:
+        # arm1176jzf-s cortex-a7 cortex-a53
+        if [ "$DEVICE" = "RPi" -o "$DEVICE" = "Slice" ]; then
+          TARGET_CPU="arm1176jzf-s"
+        elif [ "$DEVICE" = "RPi2" -o "$DEVICE" = "Slice3" ]; then
+          TARGET_CPU="cortex-a7"
+        elif [ "$DEVICE" = "RPi4" ]; then
+          TARGET_CPU="cortex-a53"
+          TARGET_CPU_FLAGS="+crc"
+        fi
+
+        # TARGET_FLOAT:
+        # Specifies which floating-point ABI to use. Permissible values are:
+        # soft hard
+        TARGET_FLOAT="hard"
+
+        # Valid TARGET_FPU for Raspberry Pi based devices:
+        # This specifies what floating point hardware (or hardware emulation) is
+        # available on the target. Permissible names are:
+        # vfp neon-vfpv4 neon-fp-armv8
+        if [ "$DEVICE" = "RPi" -o "$DEVICE" = "Slice" ]; then
+          TARGET_FPU="vfp"
+        elif [ "$DEVICE" = "RPi2" -o "$DEVICE" = "Slice3" ]; then
+          TARGET_FPU="neon-vfpv4"
+        elif [ "$DEVICE" = "RPi4" ]; then
+          TARGET_FPU="neon-fp-armv8"
+        fi
+        TARGET_FEATURES="32bit"
+        ;;
+    esac
+
+  # Bootloader to use (bcm2835-bootloader)
+    BOOTLOADER="bcm2835-bootloader"
+
+  # u-boot version to use (default)
+    UBOOT_VERSION="default"
+
+  # Kernel target
+    KERNEL_TARGET="zImage"
+
+  # Additional kernel make parameters (for example to specify the u-boot loadaddress)
+    KERNEL_MAKE_EXTRACMD="dtbs"
+
+  # Additional kernel dependencies
+    KERNEL_EXTRA_DEPENDS_TARGET=""
+
+  # Kernel to use. values can be:
+  # default:  default mainline kernel
+    LINUX="raspberrypi"
+
+################################################################################
+# setup build defaults
+################################################################################
+
+  # Project CFLAGS
+    PROJECT_CFLAGS=""
+
+  # SquashFS compression method (gzip / lzo / xz / zstd)
+    SQUASHFS_COMPRESSION="lzo"
+
+################################################################################
+# setup project defaults
+################################################################################
+
+  # build and install ALSA Audio support (yes / no)
+    ALSA_SUPPORT="yes"
+
+  # OpenGL(X) implementation to use (no / mesa)
+    OPENGL="no"
+
+  # OpenGL-ES implementation to use (no / bcm2835-driver / mesa)
+    OPENGLES="bcm2835-driver"
+
+  # include uvesafb support (yes / no)
+    UVESAFB_SUPPORT="no"
+
+  # Displayserver to use (x11 / no)
+    DISPLAYSERVER="no"
+
+  # Windowmanager to use (fluxbox / none)
+    WINDOWMANAGER="none"
+
+  # Xorg Graphic drivers to use (all / vc4 / none)
+  # Space separated list is supported,
+  # e.g. GRAPHIC_DRIVERS="vc4"
+    GRAPHIC_DRIVERS=""
+
+  # Use a vendor specific KODI repo
+    KODI_VENDOR="raspberrypi"
+
+  # KODI Player implementation to use (default / bcm2835-driver / mesa)
+    KODIPLAYER_DRIVER="bcm2835-driver"
+
+  # Modules to install in initramfs for early boot
+    INITRAMFS_MODULES=""
+
+  # additional Firmware to use (dvb-firmware, misc-firmware, wlan-firmware)
+  # Space separated list is supported,
+  # e.g. FIRMWARE="dvb-firmware misc-firmware wlan-firmware"
+    FIRMWARE="misc-firmware wlan-firmware dvb-firmware brcmfmac_sdio-firmware-rpi"
+
+  # build with installer (yes / no)
+    INSTALLER_SUPPORT="no"
+
+  # build debug with valgrind (yes / no)
+  # Not available for armv6. Increases image size significantly
+    VALGRIND="no"
+
+  # kernel image name
+    KERNEL_NAME="kernel.img"
+
+  # additional drivers to install:
+  # for a list of additional drivers see packages/linux-drivers
+  # Space separated list is supported,
+  # e.g. ADDITIONAL_DRIVERS="DRIVER1 DRIVER2"
+    ADDITIONAL_DRIVERS="$ADDITIONAL_DRIVERS rpi-cirrus-config bcm2835-driver"
+
+  # build and install driver addons (yes / no)
+    DRIVER_ADDONS_SUPPORT="yes"
+
+  # driver addons to install:
+  # for a list of additional drivers see packages/linux-driver-addons
+  # Space separated list is supported,
+    DRIVER_ADDONS="crazycat dvb-latest"
+
+  # debug tty path
+    DEBUG_TTY="/dev/console"
