@@ -114,7 +114,7 @@
   # for a list of additinoal drivers see packages/linux-drivers
   # Space separated list is supported,
   # e.g. ADDITIONAL_DRIVERS="DRIVER1 DRIVER2"
-    ADDITIONAL_DRIVERS="gpu-aml RTL8192CU RTL8192DU RTL8192EU RTL8812AU RTL8188EU-aml"
+    ADDITIONAL_DRIVERS="gpu-aml RTL8192CU-aml RTL8192DU RTL8192EU-aml RTL8812AU RTL8188EU-aml"
 
   # additional Firmware to use (dvb-firmware, misc-firmware, wlan-firmware)
   # Space separated list is supported,
@@ -146,6 +146,9 @@
   # e.g. ADDITIONAL_PACKAGES="PACKAGE1 PACKAGE2"
     ADDITIONAL_PACKAGES="u-boot-tools-aml dtc"
 
+  # Addon Server Url
+    ADDON_SERVER_URL="http://libreelec.dtech.hu/packages"
+
   # set the addon dirs
-    ADDON_PATH="$ADDON_VERSION/RPi4/$TARGET_ARCH"
+    ADDON_PATH="$ADDON_VERSION/${DEVICE:-$PROJECT}/$TARGET_ARCH"
     ADDON_URL="$ADDON_SERVER_URL/$ADDON_PATH"

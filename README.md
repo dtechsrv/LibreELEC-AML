@@ -4,6 +4,8 @@ Unofficial community sources and firmware binaries for some Amlogic TV Boxes.
 
 **Currently supported devices:**
 
+- S8X2/M8S+ (with ap6330 and bcm4335b0 wireless modules),<br />
+*Amlogic S812 SoC, 2 GB RAM, 8 GB NAND Flash, 1 Gbps Ethernet (RTL8211F),*
 - S905/KI-Pro (Mecool/Videostrong),<br />
 *Amlogic S905D SoC, 2 GB RAM, 16 GB NAND Flash, 1 Gbps Ethernet (RTL8211F).*
 
