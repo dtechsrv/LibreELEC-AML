@@ -1,0 +1,12 @@
+--- a/arch/arm/mach-meson8b/include/mach/cpufreq_table.h
++++ b/arch/arm/mach-meson8b/include/mach/cpufreq_table.h
+@@ -19,7 +19,8 @@
+     {12	, 1296000  },
+     {13	, 1416000  },
+     {14	, 1488000  },
+-    {15	, CPUFREQ_TABLE_END},
++    {15	, 1536000  },
++    {16	, CPUFREQ_TABLE_END},
+ };
+ 
+ #ifdef CONFIG_FIX_SYSPLL
