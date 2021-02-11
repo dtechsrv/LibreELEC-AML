@@ -7,11 +7,7 @@ Unofficial community sources and firmware binaries for some Amlogic TV Boxes.
 - S905/KI-Pro (Mecool/Videostrong),<br />
 *Amlogic S905D SoC, 2 GB RAM, 16 GB NAND Flash, 1 Gbps Ethernet (RTL8211F),*
 - S8X2/M8S+ (with ap6330 and bcm4335b0 wireless modules),<br />
-*Amlogic S812 SoC, 2 GB RAM, 8 GB NAND Flash, 1 Gbps Ethernet (RTL8211F),*
-- S805/HD18Q (MXQ "all black" versions),<br />
-*Amlogic S805 SoC, 1 GB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet (IC+ IP101GR),*
-- S805/m201d (MXQ with 512 MB RAM only),<br />
-*Amlogic S805 SoC, 512 MB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet (IC+ IP101GR).*
+*Amlogic S812 SoC, 2 GB RAM, 8 GB NAND Flash, 1 Gbps Ethernet (RTL8211F).
 
 This repository is based on [LibreELEC/LibreELEC.tv](https://github.com/LibreELEC/LibreELEC.tv).
 
