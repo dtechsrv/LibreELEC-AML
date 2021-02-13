@@ -1,0 +1,87 @@
+#!/bin/sh
+
+# SPDX-License-Identifier: GPL-2.0
+# Copyright (C) 2014 Alex Deryskyba (alex@codesnake.com)
+
+display_mode=$(cat /sys/class/display/mode)
+
+# Parse command line arguments
+for arg in $(cat /proc/cmdline); do
+  case $arg in
+    bootfrom*)
+      bootfromext=1
+      ;;
+    BOOT_IMAGE=*)
+      BOOT_IMAGE=${arg#*=}
+      ;;
+    boot=*)
+      boot=${arg#*=}
+      ;;
+    disk=*)
+      disk=${arg#*=}
+      ;;
+    hdmitx=*)
+      hdmitx="${arg#*=}"
+      ;;
+    hdmimode=*)
+      hdmimode="${arg#*=}"
+      ;;
+  esac
+done
+
+# Enable HDMI output if cable is connected and not already enabled by u-boot
+if [ "$(cat /sys/class/amhdmitx/amhdmitx0/hpd_state)" != "0" ] && [ "$display_mode" != "$hdmimode" ]; then
+  display_mode="$hdmimode"
+fi
+
+echo $display_mode > /sys/class/display/mode
+
+# Force enable CEC if configuration parameter not present or empty
+if [ -z "$hdmitx" ]; then
+  echo 0xf > /sys/class/amhdmitx/amhdmitx0/cec_config
+fi
+
+# Enable framebuffer device
+echo 0 > /sys/class/graphics/fb0/blank
+
+# Blank fb1 to prevent static noise
+echo 1 > /sys/class/graphics/fb1/blank
+
+# Set framebuffer geometry to match the resolution
+case $display_mode in
+  480*)            X=720  Y=480  ;;
+  576*)            X=720  Y=576  ;;
+  720p*)           X=1280 Y=720  ;;
+  *)               X=1920 Y=1080 ;;
+esac
+
+fbset -fb /dev/fb0 -g $X $Y 1920 2160 32
+fbset -fb /dev/fb1 -g 32 32 32 32 32
+echo 0 > /sys/class/graphics/fb0/free_scale
+echo 0 > /sys/class/graphics/fb1/free_scale
+
+# Include deinterlacer into default VFM map
+echo rm default > /sys/class/vfm/map
+echo add default decoder ppmgr deinterlace amvideo > /sys/class/vfm/map
+
+cmdline=$(cat /proc/cmdline)
+
+# Add information where to run LibreELEC from
+if [ -z "$BOOT_IMAGE" -o -z "$boot" -o -z "$disk" ]; then
+  cmdline=$(cat /proc/cmdline)
+  if [ -n "$bootfromext" ]; then
+    cmdline="$cmdline BOOT_IMAGE=kernel.img boot=LABEL=@BOOT_LABEL@ disk=LABEL=@DISK_LABEL@"
+  else
+    cmdline="$cmdline BOOT_IMAGE=/dev/boot boot=/dev/system disk=/dev/data"
+  fi
+  echo "$cmdline" > /proc/cmdline
+fi
+
+for part in /sys/block/*/queue/add_random; do
+  echo 0 > "$part"
+done
+
+echo 1 > /sys/devices/system/cpu/cpufreq/ondemand/io_is_busy
+
+# Use hotplug governor for m201d board
+[ $(cat /proc/device-tree/amlogic-dt-id) = "m8b_m201C_512M" ] && echo hotplug > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
