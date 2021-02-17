@@ -8,8 +8,10 @@ Unofficial community sources and firmware binaries for some Amlogic TV Boxes.
 *Amlogic S905D SoC, 2 GB RAM, 16 GB NAND Flash, 1 Gbps Ethernet (RTL8211F),*
 - S8X2/M8S+ (with ap6330 and bcm4335b0 wireless modules),<br />
 *Amlogic S812 SoC, 2 GB RAM, 8 GB NAND Flash, 1 Gbps Ethernet (RTL8211F),*
-- S805/M8Q (a.k.a. M8S-S805),<br />
-*Amlogic S805 SoC, 1 GB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet (IC+ IP101GR).*
+- S805/HD18Q (MXQ "all black" versions),<br />
+*Amlogic S805 SoC, 1 GB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet (IC+ IP101GR),*
+- S805/m201d (MXQ with 512 MB RAM only),<br />
+*Amlogic S805 SoC, 512 MB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet (IC+ IP101GR).*
 
 This repository is based on [LibreELEC/LibreELEC.tv](https://github.com/LibreELEC/LibreELEC.tv).
 
@@ -21,7 +23,7 @@ To create bootable SD card media you need to download the [LibreELEC USB-SD Crea
 
 **Start LibreELEC from SD Card**
 
-If you want to boot the device from an SD Card, you need to perform the toothpick method: disconnect the power plug, insert the prepared SD Card on, which the image file is written (img.gz), and then press and hold the reset button. The reset button on M8Q and M8S+ is located behind the A/V connector, but on the KI Pro, the reset button is located behind the hole on the bottom of the device. Reconnect the power jack while holding down the reset button, then release it after about 3-5 seconds.
+If you want to boot the device from an SD Card, you need to perform the toothpick method: disconnect the power plug, insert the prepared SD Card on, which the image file is written (img.gz), and then press and hold the reset button. The reset button on MXQ and M8S+ is located behind the A/V connector, but on the KI Pro, the reset button is located behind the hole on the bottom of the device. Reconnect the power jack while holding down the reset button, then release it after about 3-5 seconds.
 
 *NOTICE: If the recovery menu appeared, you pressed the button for too long.*
 

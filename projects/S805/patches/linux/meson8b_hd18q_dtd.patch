@@ -905,7 +905,7 @@ index 0000000..af28bb1
 +    audio_m8_audio{
 +        compatible = "amlogic,m8_audio_codec";
 +        dev_name = "aml_m8_codec.0";
-+        status = "disable";
++        status = "okay";
 +    };
 +
 +//$$ DEVICE="dummy_codec"
@@ -913,7 +913,7 @@ index 0000000..af28bb1
 +    dummy_codec{
 +        compatible = "amlogic,aml_dummy_codec";
 +        dev_name = "dummy_codec.0";
-+        status = "okay";
++        status = "disable";
 +    };
 +
 +    aml_audio_codec{
@@ -946,7 +946,7 @@ index 0000000..af28bb1
 +
 +        dummy:dummy{
 +          codec_name = "dummy_codec";
-+          status = "okay";
++          status = "disable";
 +        };
 +    };
 +

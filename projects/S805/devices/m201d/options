@@ -1,0 +1,7 @@
+# Kernel extra targets to build
+  KERNEL_UBOOT_EXTRA_TARGET="meson8b_m201d.dtd meson8b_m201d.dtb"
+
+# additional packages to install:
+# Space separated list is supported,
+# e.g. ADDITIONAL_PACKAGES="PACKAGE1 PACKAGE2"
+  ADDITIONAL_PACKAGES+=" autoscript-amlogic"
