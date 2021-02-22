@@ -1,0 +1,33 @@
+From 4a6c8d4c2964af5ea9c708d416b3140f1eb8f450 Mon Sep 17 00:00:00 2001
+From: Sam Nazarko <email@samnazarko.co.uk>
+Date: Fri, 27 Dec 2019 23:08:48 +0000
+Subject: [PATCH] Fix VC-1 playback
+
+Signed-off-by: Sam Nazarko <email@samnazarko.co.uk>
+---
+ xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp b/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp
+index 10e73cc..65a81d3 100644
+--- a/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp
++++ b/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp
+@@ -1640,6 +1640,15 @@ bool CAMLCodec::OpenDecoder(CDVDStreamInfo &hints)
+   am_private->gcodec.ratio64     = am_private->video_ratio64;
+   am_private->gcodec.param       = NULL;
+ 
++  if (am_private->video_format == VFORMAT_VC1) {
++      SysfsUtils::SetInt("/sys/module/di/parameters/di_debug_flag", 0x10000);
++      SysfsUtils::SetInt("/sys/module/di/parameters/bypass_prog", 0);
++  }
++  else {
++      SysfsUtils::SetInt("/sys/module/di/parameters/di_debug_flag", 0);
++      SysfsUtils::SetInt("/sys/module/di/parameters/bypass_prog", 1);
++  }
++
+   switch(am_private->video_format)
+   {
+     default:
+-- 
+2.7.4
+
