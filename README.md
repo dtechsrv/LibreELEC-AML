@@ -6,6 +6,8 @@ Unofficial community sources and firmware binaries for some Amlogic TV Boxes.
 
 - S905/KI-Pro (Mecool/Videostrong),<br />
 *Amlogic S905D SoC, 2 GB RAM, 16 GB NAND Flash, 1 Gbps Ethernet (RTL8211F),*
+- S905/MXQ-4K-Pro_2G (MXQ 4K Pro+),<br />
+*Amlogic S905X SoC, 2 GB RAM, 16 GB NAND Flash, 10/100 Mbps Ethernet (IC+ IP101GR),*
 - S8X2/M8S+ (with ap6330 and bcm4335b0 wireless modules),<br />
 *Amlogic S812 SoC, 2 GB RAM, 8 GB NAND Flash, 1 Gbps Ethernet (RTL8211F),*
 - S805/HD18Q (MXQ "all black" versions),<br />
