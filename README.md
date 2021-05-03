@@ -17,7 +17,7 @@ Unofficial community sources and firmware binaries for some Amlogic TV Boxes.
 
 This repository is based on [LibreELEC/LibreELEC.tv](https://github.com/LibreELEC/LibreELEC.tv).
 
-# How to crate bootable media, start, install and update the firmware
+# How to create bootable media, start, install and update the firmware
 
 **Create bootable SD Card**
 
