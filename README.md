@@ -27,7 +27,7 @@ To create bootable SD card media you need to download the [LibreELEC USB-SD Crea
 
 If you want to boot the device from an SD Card, you need to perform the toothpick method: disconnect the power plug, insert the prepared SD Card on, which the image file is written (img.gz), and then press and hold the reset button. The reset button on MXQ and M8S+ is located behind the A/V connector, but on the KI Pro, the reset button is located behind the hole on the bottom of the device. Reconnect the power jack while holding down the reset button, then release it after about 3-5 seconds.
 
-*NOTICE: If the recovery menu appeared, you pressed the button for too long.*
+*NOTICE: If the Android recovery menu appeared, you pressed the button for too long.*
 
 **Install image from SD Card to internal memory (eMMC or onboard NAND Flash)**
 
