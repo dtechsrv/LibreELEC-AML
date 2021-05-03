@@ -1,0 +1,7 @@
+# Kernel extra targets to build
+  KERNEL_UBOOT_EXTRA_TARGET="meson8_k200b_1G_emmc_sdio.dtd meson8_k200b_1G_emmc_sdio.dtb"
+
+# additional packages to install:
+# Space separated list is supported,
+# e.g. ADDITIONAL_PACKAGES="PACKAGE1 PACKAGE2"
+  ADDITIONAL_PACKAGES+=" autoscript-amlogic"
