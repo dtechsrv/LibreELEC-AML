@@ -3,14 +3,16 @@
 
 PKG_NAME="chrome"
 PKG_VERSION="1.0"
-PKG_REV="103"
+# curl -s http://dl.google.com/linux/chrome/deb/dists/stable/main/binary-amd64/Packages | grep -B 1 Version
+PKG_VERSION_NUMBER="87.0.4280.66"
+PKG_REV="104"
 PKG_ARCH="x86_64"
 PKG_LICENSE="Custom"
 PKG_SITE="http://www.google.com/chrome"
 PKG_DEPENDS_TARGET="toolchain at-spi2-atk atk cairo chrome-libXcomposite \
                     chrome-libXdamage chrome-libXfixes chrome-libXi chrome-libXrender \
-                    chrome-libXtst chrome-libxcb cups gdk-pixbuf gtk3 harfbuzz \
-                    libXcursor libxss nss pango scrnsaverproto unclutter"
+                    chrome-libXtst chrome-libxcb chrome-libxkbcommon cups gdk-pixbuf gtk3 \
+                    harfbuzz libXcursor libxss nss pango scrnsaverproto unclutter"
 PKG_SECTION="browser"
 PKG_SHORTDESC="Google Chrome Browser"
 PKG_LONGDESC="Google Chrome Browser"
@@ -33,6 +35,7 @@ addon() {
 
   # config
   cp -P $PKG_DIR/config/* $ADDON_BUILD/$PKG_ADDON_ID/config
+  echo "CHROME_VERSION=${PKG_VERSION_NUMBER}" >$ADDON_BUILD/$PKG_ADDON_ID/config/chrome.version
 
   # atk
   cp -PL $(get_build_dir atk)/.$TARGET_NAME/atk/libatk-1.0.so.0 $ADDON_BUILD/$PKG_ADDON_ID/lib
@@ -82,6 +85,9 @@ addon() {
 
   # libXi  
   cp -PL $(get_build_dir chrome-libXi)/.$TARGET_NAME/src/.libs/libXi.so.6 $ADDON_BUILD/$PKG_ADDON_ID/lib
+
+  # libxkbcommon
+  cp -PL $(get_build_dir chrome-libxkbcommon)/.$TARGET_NAME/.libs/libxkbcommon.so.0 $ADDON_BUILD/$PKG_ADDON_ID/lib
 
   # libXrender
   cp -PL $(get_build_dir chrome-libXrender)/.$TARGET_NAME/src/.libs/libXrender.so.1 $ADDON_BUILD/$PKG_ADDON_ID/lib

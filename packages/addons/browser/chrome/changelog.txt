@@ -1,3 +1,7 @@
+104
+- fix getting default audio device
+- updated to 87.0.4280
+
 103
 - add flag for dark mode
 
