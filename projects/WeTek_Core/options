@@ -143,3 +143,10 @@
   # for a list of additinoal drivers see packages/linux-driver-addons
   # Space separated list is supported,
     DRIVER_ADDONS="dvb-latest"
+
+  # Addon Server Url
+    ADDON_SERVER_URL="http://libreelec.dtech.hu/packages"
+
+  # set the addon dirs
+    ADDON_PATH="$ADDON_VERSION/${DEVICE:-$PROJECT}/$TARGET_ARCH"
+    ADDON_URL="$ADDON_SERVER_URL/$ADDON_PATH"

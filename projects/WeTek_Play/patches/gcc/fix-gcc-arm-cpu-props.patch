@@ -1,0 +1,109 @@
+diff --git a/gcc/config/arm/arm-cpus.in b/gcc/config/arm/arm-cpus.in
+index ba194a8..545321b 100644
+--- a/gcc/config/arm/arm-cpus.in
++++ b/gcc/config/arm/arm-cpus.in
+@@ -96,12 +96,6 @@ define feature armv7em
+ # Architecture rel 7.
+ define feature armv7
+ 
+-# MP extension to ArmV7-A
+-define feature mp
+-
+-# SEC extension to ArmV7-A
+-define feature sec
+-
+ # ARM division instructions.
+ define feature adiv
+ 
+@@ -246,7 +240,7 @@ define fgroup ARMv6m      mode32 armv3m armv4 thumb armv5 armv5e armv6 be8
+ define fgroup ARMv7       ARMv6m thumb2 armv7
+ 
+ define fgroup ARMv7a      ARMv7 notm armv6k
+-define fgroup ARMv7ve     ARMv7a adiv tdiv lpae mp sec
++define fgroup ARMv7ve     ARMv7a adiv tdiv lpae
+ define fgroup ARMv7r      ARMv7a tdiv
+ define fgroup ARMv7m      ARMv7 tdiv
+ define fgroup ARMv7em     ARMv7m armv7em
+@@ -480,8 +474,6 @@ begin arch armv7-a
+  base 7A
+  profile A
+  isa ARMv7a
+- option mp	       add mp
+- option sec	       add sec
+ # fp => VFPv3-d16, simd => neon-vfpv3
+  option fp	       add VFPv3 FP_DBL
+  optalias vfpv3-d16    fp
+@@ -533,8 +525,6 @@ begin arch armv7-r
+  optalias vfpv3xd fp.sp
+  option fp add VFPv3 FP_DBL
+  optalias vfpv3-d16 fp
+- option vfpv3xd-fp16 add VFPv3 fp16conv
+- option vfpv3-d16-fp16 add VFPv3 FP_DBL fp16conv
+  option idiv add adiv
+  option nofp remove ALL_FP
+  option noidiv remove adiv
+@@ -1232,8 +1222,6 @@ begin cpu generic-armv7-a
+  cname genericv7a
+  tune flags LDSCHED
+  architecture armv7-a
+- option mp add mp
+- option sec add sec
+  fpu vfpv3-d16
+  option vfpv3-d16 add VFPv3 FP_DBL
+  option vfpv3 add VFPv3 FP_D32
+@@ -1254,7 +1242,7 @@ end cpu generic-armv7-a
+ begin cpu cortex-a5
+  cname cortexa5
+  tune flags LDSCHED
+- architecture armv7-a+mp+sec
++ architecture armv7-a
+  fpu neon-fp16
+  option nosimd remove ALL_SIMD
+  option nofp remove ALL_FP
+@@ -1274,7 +1262,7 @@ end cpu cortex-a7
+ begin cpu cortex-a8
+  cname cortexa8
+  tune flags LDSCHED
+- architecture armv7-a+sec
++ architecture armv7-a
+  fpu neon-vfpv3
+  option nofp remove ALL_FP
+  costs cortex_a8
+@@ -1283,7 +1271,7 @@ end cpu cortex-a8
+ begin cpu cortex-a9
+  cname cortexa9
+  tune flags LDSCHED
+- architecture armv7-a+mp+sec
++ architecture armv7-a
+  fpu neon-fp16
+  option nosimd remove ALL_SIMD
+  option nofp remove ALL_FP
+@@ -1347,8 +1335,7 @@ begin cpu cortex-r7
+  cname cortexr7
+  tune flags LDSCHED
+  architecture armv7-r+idiv
+- fpu vfpv3-d16-fp16
+- option nofp.dp remove FP_DBL
++ fpu vfpv3-d16
+  option nofp remove ALL_FP
+  costs cortex
+ end cpu cortex-r7
+@@ -1358,8 +1345,7 @@ begin cpu cortex-r8
+  tune for cortex-r7
+  tune flags LDSCHED
+  architecture armv7-r+idiv
+- fpu vfpv3-d16-fp16
+- option nofp.dp remove FP_DBL
++ fpu vfpv3-d16
+  option nofp remove ALL_FP
+  costs cortex
+ end cpu cortex-r8
+@@ -1394,7 +1380,7 @@ end cpu cortex-m3
+ 
+ begin cpu marvell-pj4
+  tune flags LDSCHED
+- architecture armv7-a+mp+sec
++ architecture armv7-a
+  costs marvell_pj4
+ end cpu marvell-pj4
+ 
