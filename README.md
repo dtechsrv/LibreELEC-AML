@@ -13,7 +13,9 @@ Unofficial community sources and firmware binaries for some Amlogic TV Boxes.
 - S805/HD18Q (MXQ "all black" versions),<br />
 *Amlogic S805 SoC, 1 GB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet (IC+ IP101GR),*
 - S805/m201d (MXQ with 512 MB RAM only),<br />
-*Amlogic S805 SoC, 512 MB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet (IC+ IP101GR).*
+*Amlogic S805 SoC, 512 MB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet (IC+ IP101GR),*
+- WeTek_Play (Meson6),<br />
+*Amlogic AML8726-MX SoC, 1 GB RAM, 4 GB NAND Flash, 10/100 Mbps Ethernet (SMSC LAN8720A).*
 
 This repository is based on [LibreELEC/LibreELEC.tv](https://github.com/LibreELEC/LibreELEC.tv).
 
