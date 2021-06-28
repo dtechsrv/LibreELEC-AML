@@ -43,7 +43,7 @@ else #arm
   echo "MALLOC_MMAP_THRESHOLD_=8192" >> /run/libreelec/kodi.conf
 fi
 
-echo "LIBC_WIDEVINE_PATCHLEVEL=1" > /run/libreelec/kodi.conf
+echo "LIBC_WIDEVINE_PATCHLEVEL=1" >> /run/libreelec/kodi.conf
 
 if [ -f /storage/.config/kodi.conf ] ; then
   cat /storage/.config/kodi.conf >>/run/libreelec/kodi.conf
