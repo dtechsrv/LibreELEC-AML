@@ -35,6 +35,7 @@ PKG_CONFIGURE_OPTS_TARGET="BASH_SHELL=/bin/sh \
                            --enable-lock-elision \
                            --disable-timezone-tools"
 
+# workaround to use arm patches for aarch64
 if [ "${TARGET_PATCH_ARCH}" = "aarch64" ]; then
   PKG_PATCH_DIRS="arm"
 fi
