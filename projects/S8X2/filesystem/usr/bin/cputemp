@@ -5,4 +5,10 @@
 # Copyright (C) 2018-present Team LibreELEC (https://libreelec.tv)
 
 TEMP="$(cat /sys/class/thermal/thermal_zone0/temp)"
-echo "$(( $TEMP )) C"
+
+# Fix millidegree issue, if the kernel return value is specified in it
+if [ $TEMP -gt 1000 ]; then
+  echo "$(( $TEMP / 1000 )) C"
+else
+  echo "$(( $TEMP )) C"
+fi
