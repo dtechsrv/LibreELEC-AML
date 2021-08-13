@@ -1,0 +1,72 @@
+--- a/drivers/amlogic/wifi/Kconfig	2018-03-21 06:58:27.000000000 +0100
++++ b/drivers/amlogic/wifi/Kconfig	2018-04-03 19:47:09.000000000 +0200
+@@ -8,6 +8,11 @@
+ 	depends on AM_WIFI
+ 	default n
+ 
++config AM_WIFI_DUMMY
++	tristate "Amlogic SDIO WiFi turn on and rescan module"
++	depends on AM_WIFI_SD_MMC
++	default m
++
+ config DHD_USE_STATIC_BUF
+     bool "broadcom wifi static buff support"
+     default n
+--- a/drivers/amlogic/wifi/Makefile	2018-03-21 06:58:27.000000000 +0100
++++ b/drivers/amlogic/wifi/Makefile	2018-04-03 19:48:46.000000000 +0200
+@@ -1,4 +1,5 @@
+ obj-$(CONFIG_AM_WIFI_SD_MMC) +=  wifi_dt.o
++obj-$(CONFIG_AM_WIFI_DUMMY) += wifi_dummy.o
+ obj-$(CONFIG_AM_WIFI) += wifi_power.o
+ obj-$(CONFIG_DHD_USE_STATIC_BUF) += dhd_static_buf.o
+ obj-$(CONFIG_RTL8189ES) += rtl8189ES/
+@@ -12,3 +13,4 @@
+ obj-$(CONFIG_RTL8188EU) += rtl8xxx_EU/
+ obj-$(CONFIG_RTL8188EU_MP) += rtl8xxx_EU_MP/
+ obj-$(CONFIG_SDIO_DHD_CDC_WIFI_40181_MODULE) += broadcm_40181/
++
+--- a/drivers/amlogic/wifi/wifi_dummy.c	1970-01-01 01:00:00.000000000 +0100
++++ b/drivers/amlogic/wifi/wifi_dummy.c	2017-08-30 21:17:34.000000000 +0200
+@@ -0,0 +1,42 @@
++#include <linux/delay.h>
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("kszaq");
++MODULE_DESCRIPTION("Amlogic WiFi power on and SDIO rescan module");
++
++extern void wifi_setup_dt(void);
++extern void extern_wifi_set_enable(int);
++extern void sdio_reinit(void);
++
++static int run_trigger(const char *val, struct kernel_param *kp)
++{
++	if (!strncmp(val, "1", 1))
++	{
++		printk(KERN_INFO "Triggered SDIO WiFi power on and bus rescan.\n");
++		extern_wifi_set_enable(1);
++		msleep(300);
++		sdio_reinit();
++	}
++	return 0;
++}
++
++module_param_call(trigger, run_trigger, NULL, NULL, 0200);
++
++static int __init wifi_dummy_init(void)
++{
++	wifi_setup_dt();
++	msleep(300);
++	extern_wifi_set_enable(0);
++	return 0;
++}
++
++static void __exit wifi_dummy_cleanup(void)
++{
++    printk(KERN_INFO "Cleaning up module.\n");
++}
++
++module_init(wifi_dummy_init);
++module_exit(wifi_dummy_cleanup);

@@ -1,0 +1,8 @@
+# Kernel extra targets to build
+  KERNEL_UBOOT_EXTRA_TARGET="minix_x8h_sdhc.dtd minix_x8h_sdhc.dtb"
+
+# additional packages to install:
+# Space separated list is supported,
+# e.g. ADDITIONAL_PACKAGES="PACKAGE1 PACKAGE2"
+  ADDITIONAL_PACKAGES+=" autoscript-amlogic"
+
