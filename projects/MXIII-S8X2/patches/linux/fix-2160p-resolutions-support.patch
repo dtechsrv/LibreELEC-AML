@@ -1,0 +1,145 @@
+diff --git a/arch/arm/mach-meson8/include/mach/tvregs.h b/arch/arm/mach-meson8/include/mach/tvregs.h
+index dd09b09..de7d11b 100755
+--- a/arch/arm/mach-meson8/include/mach/tvregs.h
++++ b/arch/arm/mach-meson8/include/mach/tvregs.h
+@@ -1539,10 +1539,10 @@ static const tvinfo_t tvinfoTab[] = {
+     {.tvmode = TVMODE_1080I_50HZ, .xres = 1920, .yres = 1080, .id = "1080i50hz"},
+     {.tvmode = TVMODE_1080P_50HZ, .xres = 1920, .yres = 1080, .id = "1080p50hz"},
+     {.tvmode = TVMODE_1080P_24HZ, .xres = 1920, .yres = 1080, .id = "1080p24hz"},
+-    {.tvmode = TVMODE_4K2K_30HZ, .xres = 3840, .yres = 2160, .id = "4k2k30hz"},
+-    {.tvmode = TVMODE_4K2K_25HZ, .xres = 3840, .yres = 2160, .id = "4k2k25hz"},
+-    {.tvmode = TVMODE_4K2K_24HZ, .xres = 3840, .yres = 2160, .id = "4k2k24hz"},
+-    {.tvmode = TVMODE_4K2K_SMPTE, .xres = 4096, .yres = 2160, .id = "4k2ksmpte"},
++    {.tvmode = TVMODE_4K2K_30HZ, .xres = 3840, .yres = 2160, .id = "2160p30hz"},
++    {.tvmode = TVMODE_4K2K_25HZ, .xres = 3840, .yres = 2160, .id = "2160p25hz"},
++    {.tvmode = TVMODE_4K2K_24HZ, .xres = 3840, .yres = 2160, .id = "2160p24hz"},
++    {.tvmode = TVMODE_4K2K_SMPTE, .xres = 4096, .yres = 2160, .id = "smpte24hz"},
+     {.tvmode = TVMODE_VGA, .xres = 640, .yres = 480, .id = "vga"},
+     {.tvmode = TVMODE_SVGA, .xres = 800, .yres = 600, .id = "svga"},
+     {.tvmode = TVMODE_XGA, .xres = 1024, .yres = 768, .id = "xga"},
+diff --git a/drivers/amlogic/display/vout/tvconf.c b/drivers/amlogic/display/vout/tvconf.c
+index 511cae3..943ae91 100755
+--- a/drivers/amlogic/display/vout/tvconf.c
++++ b/drivers/amlogic/display/vout/tvconf.c
+@@ -429,7 +429,7 @@ static const vinfo_t tv_info[] =
+     },
+ #endif
+     { /* VMODE_4K2K_30HZ */
+-        .name              = "4k2k30hz",
++        .name              = "2160p30hz",
+         .mode              = VMODE_4K2K_30HZ,
+         .width             = 3840,
+         .height            = 2160,
+@@ -455,7 +455,7 @@ static const vinfo_t tv_info[] =
+ 	},
+ #endif
+     { /* VMODE_4K2K_25HZ */
+-        .name              = "4k2k25hz",
++        .name              = "2160p25hz",
+         .mode              = VMODE_4K2K_25HZ,
+         .width             = 3840,
+         .height            = 2160,
+@@ -467,7 +467,7 @@ static const vinfo_t tv_info[] =
+         .video_clk         = 297000000,
+     },
+     { /* VMODE_4K2K_24HZ */
+-        .name              = "4k2k24hz",
++        .name              = "2160p24hz",
+         .mode              = VMODE_4K2K_24HZ,
+         .width             = 3840,
+         .height            = 2160,
+@@ -493,7 +493,7 @@ static const vinfo_t tv_info[] =
+     },
+ #endif
+     { /* VMODE_4K2K_SMPTE */
+-        .name              = "4k2ksmpte",
++        .name              = "smpte24hz",
+         .mode              = VMODE_4K2K_SMPTE,
+         .width             = 4096,
+         .height            = 2160,
+diff --git a/drivers/amlogic/hdmi/hdmi_tx/hdmi_tx.c b/drivers/amlogic/hdmi/hdmi_tx/hdmi_tx.c
+index 531d6c9..b625a12 100755
+--- a/drivers/amlogic/hdmi/hdmi_tx/hdmi_tx.c
++++ b/drivers/amlogic/hdmi/hdmi_tx/hdmi_tx.c
+@@ -238,16 +238,16 @@ static  int  set_disp_mode(const char *mode)
+     HDMI_Video_Codes_t vic;
+ 
+     vic = hdmitx_edid_get_VIC(&hdmitx_device, mode, 1);
+-    if(strncmp(mode, "4k2k30hz", strlen("4k2k30hz")) == 0) {
++    if(strncmp(mode, "2160p30hz", strlen("2160p30hz")) == 0) {
+         vic = HDMI_4k2k_30;
+     }
+-    else if(strncmp(mode, "4k2k25hz", strlen("4k2k25hz")) == 0) {
++    else if(strncmp(mode, "2160p25hz", strlen("2160p25hz")) == 0) {
+         vic = HDMI_4k2k_25;
+     }
+-    else if(strncmp(mode, "4k2k24hz", strlen("4k2k24hz")) == 0) {
++    else if(strncmp(mode, "2160p24hz", strlen("2160p24hz")) == 0) {
+         vic = HDMI_4k2k_24;
+     }
+-    else if(strncmp(mode, "4k2ksmpte", strlen("4k2ksmpte")) == 0) {
++    else if(strncmp(mode, "smpte24hz", strlen("smpte24hz")) == 0) {
+         vic = HDMI_4k2k_smpte_24;
+     }
+ #ifdef CONFIG_AML_VOUT_FRAMERATE_AUTOMATION
+@@ -412,16 +412,16 @@ static int set_disp_mode_auto(void)
+ 
+     //msleep(500);
+     vic = hdmitx_edid_get_VIC(&hdmitx_device, mode, 1);
+-    if(strncmp(info->name, "4k2k30hz", strlen("4k2k30hz")) == 0) {
++    if(strncmp(info->name, "2160p30hz", strlen("2160p30hz")) == 0) {
+         vic = HDMI_4k2k_30;
+     }
+-    else if(strncmp(info->name, "4k2k25hz", strlen("4k2k25hz")) == 0) {
++    else if(strncmp(info->name, "2160p25hz", strlen("2160p25hz")) == 0) {
+         vic = HDMI_4k2k_25;
+     }
+-    else if(strncmp(info->name, "4k2k24hz", strlen("4k2k24hz")) == 0) {
++    else if(strncmp(info->name, "2160p24hz", strlen("2160p24hz")) == 0) {
+         vic = HDMI_4k2k_24;
+     }
+-    else if(strncmp(info->name, "4k2ksmpte", strlen("4k2ksmpte")) == 0) {
++    else if(strncmp(info->name, "smpte24hz", strlen("smpte24hz")) == 0) {
+         vic = HDMI_4k2k_smpte_24;
+     }
+     else {
+@@ -777,10 +777,10 @@ const char* disp_mode_t[]={
+     "1080i50hz",
+     "1080p50hz",
+     "1080p24hz",
+-    "4k2k30hz",
+-    "4k2k25hz",
+-    "4k2k24hz",
+-    "4k2ksmpte",
++    "2160p30hz",
++    "2160p25hz",
++    "2160p24hz",
++    "smpte24hz",
+     NULL
+ };
+ 
+diff --git a/drivers/amlogic/hdmi/hdmi_tx/hdmi_tx_edid.c b/drivers/amlogic/hdmi/hdmi_tx/hdmi_tx_edid.c
+index a2d3c5b..e93a4a5 100755
+--- a/drivers/amlogic/hdmi/hdmi_tx/hdmi_tx_edid.c
++++ b/drivers/amlogic/hdmi/hdmi_tx/hdmi_tx_edid.c
+@@ -1411,16 +1411,16 @@ static dispmode_vic_t dispmode_VIC_tab[]=
+ 	{"1080p59hz", HDMI_1080p60},
+ #endif
+ #if MESON_CPU_TYPE > MESON_CPU_TYPE_MESON6
+-    {"4k2k30hz",  HDMI_4k2k_30},
++    {"2160p30hz",  HDMI_4k2k_30},
+ #ifdef CONFIG_AML_VOUT_FRAMERATE_AUTOMATION
+ 	{"4k2k29hz",  HDMI_4k2k_30},
+ #endif
+-    {"4k2k25hz",  HDMI_4k2k_25},
+-    {"4k2k24hz",  HDMI_4k2k_24},
++    {"2160p25hz",  HDMI_4k2k_25},
++    {"2160p24hz",  HDMI_4k2k_24},
+ #ifdef CONFIG_AML_VOUT_FRAMERATE_AUTOMATION
+ 	{"4k2k23hz",  HDMI_4k2k_24},
+ #endif
+-    {"4k2ksmpte", HDMI_4k2k_smpte_24},
++    {"smpte24hz", HDMI_4k2k_smpte_24},
+ #endif // MESON_CPU_TYPE > MESON_CPU_TYPE_MESON6
+ };
+ 
