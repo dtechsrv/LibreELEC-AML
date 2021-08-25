@@ -1,5 +1,5 @@
 # VERSION: set full version, use "devel" for development version
-  LIBREELEC_VERSION="9.2.8.1"
+  LIBREELEC_VERSION="9.2.8.2"
 
 # BUILDER_NAME: set builder name
   BUILDER_NAME=dtech
