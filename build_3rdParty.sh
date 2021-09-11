@@ -3,15 +3,15 @@
 
 # MXIII
 # Specs: Amlogic S802 SoC, 1 GB RAM, 10/100 Mbps LAN, AP6330 WiFi
-PROJECT=MXIII-S8X2 DEVICE=MXIII-1G ARCH=arm make image -j8
+PROJECT=S8X2 DEVICE=MXIII-1G ARCH=arm make image -j8
 
 # MXIII Plus / G
 # Specs: Amlogic S812 SoC, 2 GB RAM, Gigabit LAN, AP6234 WiFi
-PROJECT=MXIII-S8X2 DEVICE=MXIII-Plus ARCH=arm make image -j8
+PROJECT=S8X2 DEVICE=MXIII-Plus ARCH=arm make image -j8
 
 # Universal build for multiple n200-based S812 TV boxes
 # Specs: Amlogic S812 SoC, 2 GB RAM, 10/100 Mbps LAN, AP6330 WiFi
-PROJECT=MXIII-S8X2 DEVICE=n200-AP6330_2G ARCH=arm make image -j8
+PROJECT=S8X2 DEVICE=n200-AP6330_2G ARCH=arm make image -j8
 
 # MINIX Neo X8-H Plus
 # Specs: Amlogic S812-H SoC, 2 GB RAM, 10/100 Mbps LAN, AP6335e WiFi
