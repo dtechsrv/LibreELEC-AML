@@ -1,0 +1,39 @@
+diff -Naur kodi-pre/xbmc/windowing/Resolution.cpp kodi-post/xbmc/windowing/Resolution.cpp
+--- kodi-pre/xbmc/windowing/Resolution.cpp	2018-06-11 15:38:19.000000000 +0200
++++ kodi-post/xbmc/windowing/Resolution.cpp	2018-06-12 16:51:09.000000000 +0200
+@@ -99,7 +99,7 @@
+     if (info.iScreenWidth == width &&
+         info.iScreen == curr.iScreen &&
+         (info.dwFlags & D3DPRESENTFLAG_MODEMASK) == (curr.dwFlags & D3DPRESENTFLAG_MODEMASK) &&
+-        MathUtils::FloatEquals(info.fRefreshRate, fps, 0.01f))
++        MathUtils::FloatEquals(info.fRefreshRate, fps, 0.03f))
+     {
+       CLog::Log(LOGDEBUG, "Matched exact whitelisted Resolution %s (%d)", info.strMode.c_str(), i);
+       resolution = i;
+@@ -118,7 +118,7 @@
+     if (info.iScreenWidth == width &&
+         info.iScreen == curr.iScreen &&
+         (info.dwFlags & D3DPRESENTFLAG_MODEMASK) == (curr.dwFlags & D3DPRESENTFLAG_MODEMASK) &&
+-        MathUtils::FloatEquals(info.fRefreshRate, fps * 2, 0.01f))
++        MathUtils::FloatEquals(info.fRefreshRate, fps * 2, 0.03f))
+     {
+       CLog::Log(LOGDEBUG, "Matched fuzzy whitelisted Resolution %s (%d)", info.strMode.c_str(), i);
+       resolution = i;
+@@ -139,7 +139,7 @@
+     if (info.iScreenWidth == desktop_info.iWidth &&
+         info.iScreen == desktop_info.iScreen &&
+         (info.dwFlags & D3DPRESENTFLAG_MODEMASK) == (desktop_info.dwFlags & D3DPRESENTFLAG_MODEMASK) &&
+-        MathUtils::FloatEquals(info.fRefreshRate, fps, 0.01f))
++        MathUtils::FloatEquals(info.fRefreshRate, fps, 0.03f))
+     {
+       CLog::Log(LOGDEBUG, "Matched fuzzy whitelisted Resolution %s (%d)", info.strMode.c_str(), i);
+       resolution = i;
+@@ -160,7 +160,7 @@
+     if (info.iScreenWidth == desktop_info.iWidth &&
+         info.iScreen == desktop_info.iScreen &&
+         (info.dwFlags & D3DPRESENTFLAG_MODEMASK) == (desktop_info.dwFlags & D3DPRESENTFLAG_MODEMASK) &&
+-        MathUtils::FloatEquals(info.fRefreshRate, fps * 2, 0.01f))
++        MathUtils::FloatEquals(info.fRefreshRate, fps * 2, 0.03f))
+     {
+       CLog::Log(LOGDEBUG, "Matched fuzzy whitelisted Resolution %s (%d)", info.strMode.c_str(), i);
+       resolution = i;
