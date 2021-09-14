@@ -153,5 +153,5 @@
     ADDON_SERVER_URL="http://libreelec.dtech.hu/packages"
 
   # set the addon dirs
-    ADDON_PATH="$ADDON_VERSION/M8S-Plus/$TARGET_ARCH"
+    ADDON_PATH="$ADDON_VERSION/S8X2/$TARGET_ARCH"
     ADDON_URL="$ADDON_SERVER_URL/$ADDON_PATH"
