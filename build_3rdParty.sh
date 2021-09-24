@@ -21,10 +21,6 @@ PROJECT=Minix-S8X2 DEVICE=X8H-Plus ARCH=arm make image -j8
 # Specs: Amlogic S802(-H) SoC, 2 GB RAM, 10/100 Mbps LAN, AP6330 WiFi
 PROJECT=Minix-S8X2 DEVICE=X8-X8H ARCH=arm make image -j8
 
-# WeTek Core (Semi-official)
-# Specs: Amlogic S812-H SoC, 2 GB RAM, Gigabit LAN, AP6330 WiFi
-PROJECT=WeTek_Core ARCH=arm make image -j8
-
 # MXQ S85
 # Specs: Amlogic S805 SoC, 1 GB RAM, 10/100 LAN, AP6210/AP6212 WiFi
 PROJECT=S805 DEVICE=MXQ ARCH=arm make image -j8
