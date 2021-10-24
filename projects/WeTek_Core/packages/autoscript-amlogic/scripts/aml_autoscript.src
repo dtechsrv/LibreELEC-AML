@@ -1,0 +1,3 @@
+setenv whereToBootFrom sdcard
+saveenv
+run bootingfromsdcard
