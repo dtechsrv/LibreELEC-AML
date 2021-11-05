@@ -1,0 +1,60 @@
+diff --git a/arch/arm/boot/dts/amlogic/meson8m2_wetek_core.dtd b/arch/arm/boot/dts/amlogic/meson8m2_wetek_core.dtd
+index b4278c2..78a6e01 100644
+--- a/arch/arm/boot/dts/amlogic/meson8m2_wetek_core.dtd
++++ b/arch/arm/boot/dts/amlogic/meson8m2_wetek_core.dtd
+@@ -88,7 +88,7 @@ void root_func(){
+ 
+         cma_0:region@0 {
+            region_name = "cma_0";
+-           reg = <0 0x02400000>;
++           reg = <0 0x01200000>;
+            linux,contiguous-region;
+         };
+ 	};
+@@ -148,7 +148,7 @@ void root_func(){
+ 		compatible = "amlogic,deinterlace";
+ 		dev_name = "deinterlace";
+ 		status = "ok";
+-		reserve-memory = <0x01800000>; //8x1920x1088x3/2=24M
++		reserve-memory = <0x02100000>; //10x1920x1088x3/2=33M
+ 	};
+ 
+ /// ***************************************************************************************
+@@ -178,6 +178,19 @@ void root_func(){
+                 reserve-memory = <0x10000000>;
+                 reserve-iomap = "true";
+         };
++///	-	picture decoder
++//$$ MODULE="picture decoder"
++//$$ DEVICE="picdec"
++//$$ L2 PROP_STR = "status"
++//$$ L3 PROP_U32 2 ="reg"
++    picdec{
++	compatible = "amlogic,picdec";
++	dev_name = "picdec";
++	status = "okay";
++                share-memory-name = "vdec0";
++                share-memory-offset = <0>;
++                share-memory-size = <0x04000000>; //64M
++	};
+ 
+ /// ***************************************************************************************
+ ///	-	DISP&MM-PostProcess
+@@ -292,7 +305,7 @@ void root_func(){
+ 		dev_name = "mesonvout";
+ 		status = "okay";
+ 	};
+-
++/*
+ /// ***************************************************************************************
+ ///	-	DISP&MM-A/V Amvideocap
+ //$$ MODULE = "DISP&MM-Amvideocap"
+@@ -306,7 +319,7 @@ void root_func(){
+ 		reserve-memory = <0x00600000>;//1920*1088*3
+ 		reserve-iomap = "true";
+ 	};
+-
++*/
+ /// ***************************************************************************************
+ ///	-	RTC
+ //$$ MODULE="RTC"
