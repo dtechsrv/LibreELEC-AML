@@ -1,0 +1,82 @@
+From 5dd613f29a1d7a3d794e7b1b867f38efe12d2e8b Mon Sep 17 00:00:00 2001
+From: Carlo Caione <carlo@caione.org>
+Date: Fri, 5 Dec 2014 04:49:13 +0100
+Subject: [PATCH 22/26] sound: m8: fix audio corruption for PCM_S16_LE
+
+This fixes the problem of audio corruption. Even the fix should be valid
+for several formats, it has been tested only with PCM_S16_LE.
+
+Signed-off-by: Carlo Caione <carlo@caione.org>
+---
+ sound/soc/aml/m8/aml_i2s.c | 46 +++++++++++++++++++---------------------------
+ 1 file changed, 19 insertions(+), 27 deletions(-)
+
+diff --git a/sound/soc/aml/m8/aml_i2s.c b/sound/soc/aml/m8/aml_i2s.c
+index eefbabf..1402a85 100755
+--- a/sound/soc/aml/m8/aml_i2s.c
++++ b/sound/soc/aml/m8/aml_i2s.c
+@@ -665,6 +665,16 @@ extern void audio_out_i2s_enable(unsigned flag);
+ extern void aml_hw_iec958_init(struct snd_pcm_substream *substream);
+ extern void audio_hw_958_enable(unsigned flag);
+ 
++static char *get_hw_buf_ptr(struct snd_pcm_runtime *runtime, snd_pcm_uframes_t cur_pos, int align)
++{
++	unsigned int tot_bytes_per_channel = frames_to_bytes(runtime, cur_pos) / runtime->channels;
++	unsigned int bytes_aligned_per_channel = frames_to_bytes(runtime, align / runtime->channels);
++	unsigned int hw_base_off = tot_bytes_per_channel / bytes_aligned_per_channel;
++	unsigned int block_off = tot_bytes_per_channel % bytes_aligned_per_channel;
++
++	return runtime->dma_area + (frames_to_bytes(runtime, align) * hw_base_off) + block_off;
++}
++
+ static int aml_i2s_copy_playback(struct snd_pcm_runtime *runtime, int channel,
+                                  snd_pcm_uframes_t pos,
+                                  void __user *buf, snd_pcm_uframes_t count, struct snd_pcm_substream *substream)
+@@ -692,35 +702,17 @@ static int aml_i2s_copy_playback(struct snd_pcm_runtime *runtime, int channel,
+     }
+     if (access_ok(VERIFY_READ, buf, frames_to_bytes(runtime, count))) {
+         if (runtime->format == SNDRV_PCM_FORMAT_S16_LE) {
++	int16_t * tfrom, *to, *left, *right;
++	tfrom = (int16_t *) ubuf;
+ 
+-            int16_t * tfrom, *to, *left, *right;
+-            tfrom = (int16_t*)ubuf;
+-            to = (int16_t*)hwbuf;
++	for (j = 0; j < count; j++) {
++		to = (int16_t *) get_hw_buf_ptr(runtime, pos + j, align);
++		left = to;
++		right = to + align;
+ 
+-            left = to;
+-            right = to + 16;
+-            if (pos % align) {
+-                printk("audio data unligned: pos=%d, n=%d, align=%d\n", (int)pos, n, align);
+-            }
+-            if (set_android_gain_enable == 0) {
+-                for (j = 0; j < n; j += 64) {
+-                    for (i = 0; i < 16; i++) {
+-                        *left++ = (*tfrom++) ;
+-                        *right++ = (*tfrom++);
+-                    }
+-                    left += 16;
+-                    right += 16;
+-                }
+-            } else {
+-                for (j = 0; j < n; j += 64) {
+-                    for (i = 0; i < 16; i++) {
+-                        *left++ = (int16_t)(((*tfrom++) * android_left_gain) >> 8);
+-                        *right++ = (int16_t)(((*tfrom++) * android_right_gain) >> 8);
+-                    }
+-                    left += 16;
+-                    right += 16;
+-                }
+-            }
++		*left = (*tfrom++);
++		*right = (*tfrom++);
++	}
+         } else if (runtime->format == SNDRV_PCM_FORMAT_S24_LE && I2S_MODE == AIU_I2S_MODE_PCM24) {
+             int32_t *tfrom, *to, *left, *right;
+             tfrom = (int32_t*)ubuf;
+-- 
+1.9.1
+

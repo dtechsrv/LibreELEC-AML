@@ -1,0 +1,27 @@
+From add0421bab936074772d2a99c4beb6f7a547a26c Mon Sep 17 00:00:00 2001
+From: kszaq <kszaquitto@gmail.com>
+Date: Wed, 3 Jun 2015 10:20:04 +0200
+Subject: [PATCH 26/26] sound/soc/aml/m8: Report only working frequecies and
+ bit depths
+
+---
+ sound/soc/aml/m8/aml_spdif_codec.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/sound/soc/aml/m8/aml_spdif_codec.c b/sound/soc/aml/m8/aml_spdif_codec.c
+index f914912..2d7feac 100755
+--- a/sound/soc/aml/m8/aml_spdif_codec.c
++++ b/sound/soc/aml/m8/aml_spdif_codec.c
+@@ -25,8 +25,8 @@
+ 
+ #define DRV_NAME "spdif-dit"
+ 
+-#define STUB_RATES	SNDRV_PCM_RATE_8000_192000
+-#define STUB_FORMATS	SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S24_LE | SNDRV_PCM_FMTBIT_S32_LE
++#define STUB_RATES	SNDRV_PCM_RATE_44100 | SNDRV_PCM_RATE_48000 | SNDRV_PCM_RATE_88200 | SNDRV_PCM_RATE_96000 | SNDRV_PCM_RATE_176400 | SNDRV_PCM_RATE_192000
++#define STUB_FORMATS	SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S32_LE
+ 
+ 
+ static struct snd_soc_codec_driver soc_codec_spdif_dit;
+-- 
+1.9.1

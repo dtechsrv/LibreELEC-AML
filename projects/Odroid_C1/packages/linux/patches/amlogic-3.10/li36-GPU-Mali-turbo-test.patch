@@ -1,0 +1,100 @@
+From 46991687bb4ba686c84800ba0e1bb7cf59f5272d Mon Sep 17 00:00:00 2001
+From: wrxtasy <wrxtasy@amnet.net.au>
+Date: Sun, 16 Jul 2017 23:43:03 +0800
+Subject: [PATCH] GPU: Mali turbo test
+
+---
+ drivers/amlogic/gpu/mali/Kbuild                             |  2 +-
+ drivers/amlogic/gpu/mali/common/mali_executor.c             |  2 +-
+ drivers/amlogic/gpu/mali/platform/meson_m450/platform_m8b.c | 10 +++++-----
+ drivers/amlogic/gpu/mali/platform/meson_m450/scaling.c      |  6 +++---
+ 4 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/amlogic/gpu/mali/Kbuild b/drivers/amlogic/gpu/mali/Kbuild
+index c3d4cc4..26dffdf 100644
+--- a/drivers/amlogic/gpu/mali/Kbuild
++++ b/drivers/amlogic/gpu/mali/Kbuild
+@@ -41,7 +41,7 @@ endif
+ 
+ OS_MEMORY_KERNEL_BUFFER_SIZE_IN_MB ?= 16
+ 
+-#USING_GPU_UTILIZATION ?= 0
++#USING_GPU_UTILIZATION ?= 1
+ #PROFILING_SKIP_PP_JOBS ?= 0
+ #PROFILING_SKIP_PP_AND_GP_JOBS ?= 0
+ 
+diff --git a/drivers/amlogic/gpu/mali/common/mali_executor.c b/drivers/amlogic/gpu/mali/common/mali_executor.c
+index 346285e..165655b 100644
+--- a/drivers/amlogic/gpu/mali/common/mali_executor.c
++++ b/drivers/amlogic/gpu/mali/common/mali_executor.c
+@@ -101,7 +101,7 @@ static u32 num_physical_pp_cores_total = 0;
+ static u32 num_physical_pp_cores_enabled = 0;
+ 
+ /* Enable or disable core scaling */
+-static mali_bool core_scaling_enabled = MALI_TRUE;
++static mali_bool core_scaling_enabled = MALI_FALSE;
+ 
+ /* Variables to allow safe pausing of the scheduler */
+ static _mali_osk_wait_queue_t *executor_working_wait_queue = NULL;
+diff --git a/drivers/amlogic/gpu/mali/platform/meson_m450/platform_m8b.c b/drivers/amlogic/gpu/mali/platform/meson_m450/platform_m8b.c
+index 7ab17d2..92acae0 100644
+--- a/drivers/amlogic/gpu/mali/platform/meson_m450/platform_m8b.c
++++ b/drivers/amlogic/gpu/mali/platform/meson_m450/platform_m8b.c
+@@ -32,9 +32,9 @@
+  *
+  */
+ 
+-#define CFG_PP 2
+-#define CFG_CLOCK 4
+-#define CFG_MIN_PP 2
++#define CFG_PP 4
++#define CFG_CLOCK 2
++#define CFG_MIN_PP 4
+ 
+ 
+ /* fclk is 2550Mhz. */
+@@ -95,8 +95,8 @@ static mali_plat_info_t mali_plat_data = {
+     .cfg_min_clock = CFG_CLOCK,
+ 
+     .sc_mpp = 2, /* number of pp used most of time.*/
+-    .bst_gpu = 210, /* threshold for boosting gpu. */
+-    .bst_pp = 160, /* threshold for boosting PP. */
++    .bst_gpu = 250, /* threshold for boosting gpu. */
++    .bst_pp = 200, /* threshold for boosting PP. */
+ 
+     .clk = mali_dvfs_clk, /* clock source table. */
+     .clk_sample = mali_dvfs_clk_sample, /* freqency table for show. */
+diff --git a/drivers/amlogic/gpu/mali/platform/meson_m450/scaling.c b/drivers/amlogic/gpu/mali/platform/meson_m450/scaling.c
+index d81a88d..e1ebb43 100644
+--- a/drivers/amlogic/gpu/mali/platform/meson_m450/scaling.c
++++ b/drivers/amlogic/gpu/mali/platform/meson_m450/scaling.c
+@@ -32,7 +32,7 @@ static int lastStep;
+ static struct work_struct wq_work;
+ static mali_plat_info_t* pmali_plat = NULL;
+ #endif
+-static int  scaling_mode = MALI_TURBO_MODE;
++static int  scaling_mode = MALI_TURBO_MODE;
+ 
+ 
+ static unsigned scaling_dbg_level = 0;
+@@ -264,7 +264,7 @@ static void mali_decide_next_status(struct mali_gpu_utilization_data *data, int*
+ 
+     *pp_change_flag = 0;
+     change_mode = 0;
+-    utilization = data->utilization_gpu;
++    utilization = 255;
+ 
+     mali_up_limit = (scaling_mode ==  MALI_TURBO_MODE) ?
+         pmali_plat->turbo_clock : pmali_plat->scale_info.maxclk;
+@@ -396,7 +396,7 @@ void set_mali_schel_mode(u32 mode)
+     MALI_DEBUG_ASSERT(mode < MALI_SCALING_MODE_MAX);
+     if (mode >= MALI_SCALING_MODE_MAX)
+         return;
+-    scaling_mode = mode;
++    scaling_mode = MALI_TURBO_MODE;
+ 
+     /* set default performance range. */
+     pmali_plat->scale_info.minclk = pmali_plat->cfg_min_clock;
+-- 
+2.7.4
+

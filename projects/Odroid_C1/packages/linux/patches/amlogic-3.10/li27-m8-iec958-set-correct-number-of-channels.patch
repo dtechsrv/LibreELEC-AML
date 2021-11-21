@@ -1,0 +1,87 @@
+From d7ded99344f5e0f1ae2775a2c5730779d7947195 Mon Sep 17 00:00:00 2001
+From: Daniel Drake <drake@endlessm.com>
+Date: Wed, 19 Nov 2014 20:43:46 -0600
+Subject: [PATCH 21/26] m8 iec958: set correct number of channels
+
+This was hardcoding 2 channels, so sounds with 1 channel were playing
+twice too fast.
+
+Set the MASKS register correctly to avoid this.
+---
+ sound/soc/aml/m8/aml_audio_hw.c  | 7 +++++--
+ sound/soc/aml/m8/aml_audio_hw.h  | 2 +-
+ sound/soc/aml/m8/aml_spdif_dai.c | 6 +++---
+ 3 files changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/sound/soc/aml/m8/aml_audio_hw.c b/sound/soc/aml/m8/aml_audio_hw.c
+index 90acd1f..819600c 100755
+--- a/sound/soc/aml/m8/aml_audio_hw.c
++++ b/sound/soc/aml/m8/aml_audio_hw.c
+@@ -179,8 +179,10 @@ void audio_set_aiubuf(u32 addr, u32 size, unsigned int channel)
+     audio_out_buf_ready = 1;
+ }
+ 
+-void audio_set_958outbuf(u32 addr, u32 size,int flag)
++void audio_set_958outbuf(u32 addr, u32 size, int channels, int flag)
+ {
++	u8 chanmask;
++
+     if (ENABLE_IEC958) {
+         WRITE_MPEG_REG(AIU_MEM_IEC958_START_PTR, addr & 0xffffffc0);
+         if(READ_MPEG_REG(AIU_MEM_IEC958_START_PTR) == READ_MPEG_REG(AIU_MEM_I2S_START_PTR)){
+@@ -193,7 +195,8 @@ void audio_set_958outbuf(u32 addr, u32 size,int flag)
+         }else{
+             WRITE_MPEG_REG(AIU_MEM_IEC958_END_PTR, (addr & 0xffffffc0) + (size & 0xffffffc0) - 1);    // this is for RAW mode
+         }
+-        WRITE_MPEG_REG_BITS(AIU_MEM_IEC958_MASKS, 0x303, 0, 16);
++		chanmask = (1 << channels) - 1;
++        WRITE_MPEG_REG_BITS(AIU_MEM_IEC958_MASKS, chanmask << 8 | chanmask, 0, 16);
+ 
+         WRITE_MPEG_REG_BITS(AIU_MEM_IEC958_CONTROL, 1, 0, 1);
+         WRITE_MPEG_REG_BITS(AIU_MEM_IEC958_CONTROL, 0, 0, 1);
+diff --git a/sound/soc/aml/m8/aml_audio_hw.h b/sound/soc/aml/m8/aml_audio_hw.h
+index 8aab308..049901a 100755
+--- a/sound/soc/aml/m8/aml_audio_hw.h
++++ b/sound/soc/aml/m8/aml_audio_hw.h
+@@ -105,7 +105,7 @@ extern unsigned IEC958_MODE;
+ extern unsigned I2S_MODE;
+ 
+ void audio_set_aiubuf(u32 addr, u32 size, unsigned int channel);
+-void audio_set_958outbuf(u32 addr, u32 size, int flag);
++void audio_set_958outbuf(u32 addr, u32 size, int channels, int flag);
+ void audio_in_i2s_set_buf(u32 addr, u32 size,u32 i2s_mode, u32 i2s_sync);
+ void audio_in_spdif_set_buf(u32 addr, u32 size);
+ void audio_in_i2s_enable(int flag);
+diff --git a/sound/soc/aml/m8/aml_spdif_dai.c b/sound/soc/aml/m8/aml_spdif_dai.c
+index c9ae2cb..95f567f 100755
+--- a/sound/soc/aml/m8/aml_spdif_dai.c
++++ b/sound/soc/aml/m8/aml_spdif_dai.c
+@@ -70,7 +70,7 @@ void aml_spdif_play(void)
+ 	}
+ 	audio_util_set_dac_958_format(AUDIO_ALGOUT_DAC_FORMAT_DSP);
+ 	memset(iec958buf, 0, sizeof(iec958buf));
+-	audio_set_958outbuf((virt_to_phys(iec958buf) + 63) & (~63), 128, 0);
++	audio_set_958outbuf((virt_to_phys(iec958buf) + 63) & (~63), 128, 2, 0);
+ 	audio_set_958_mode(AIU_958_MODE_PCM16, &set);
+ #if OVERCLOCK == 1 || IEC958_OVERCLOCK == 1
+ 	WRITE_MPEG_REG_BITS(AIU_CLK_CTRL, 3, 4, 2);	/* 512fs divide 4 == 128fs */
+@@ -274,7 +274,7 @@ void aml_hw_iec958_init(struct snd_pcm_substream *substream)
+ 		}
+ 		start = buf->addr;
+ 		size = snd_pcm_lib_buffer_bytes(substream);
+-		audio_set_958outbuf(start, size, 0);
++		audio_set_958outbuf(start, size, runtime->channels, 0);
+ 		/* audio_set_i2s_mode(AIU_I2S_MODE_PCM16); */
+ 		/* audio_set_aiubuf(start, size); */
+ 	} else {
+@@ -306,7 +306,7 @@ void aml_hw_iec958_init(struct snd_pcm_substream *substream)
+ 		}
+ 		start = buf->addr;
+ 		size = snd_pcm_lib_buffer_bytes(substream);
+-		audio_set_958outbuf(start, size,
++		audio_set_958outbuf(start, size, runtime->channels,
+ 				    (iec958_mode == AIU_958_MODE_RAW) ? 1 : 0);
+ 		memset((void *)buf->area, 0, size);
+ 	}
+-- 
+1.9.1

@@ -1,0 +1,160 @@
+From 855488fec7ff34a8e5b5ddee6ad778b8c778c243 Mon Sep 17 00:00:00 2001
+From: Joy Cho <joy.cho@hardkernel.com>
+Date: Wed, 23 Nov 2016 14:45:25 +0900
+Subject: [PATCH] ODROID-C1: Add a new overclocking cpu frequency
+
+- Add 1824MHz
+- Adjust sys_pll_table of 1728MHz
+
+Change-Id: Ia464ba7cfdcaa209580e1501b91fba7211cd8453
+---
+ arch/arm/boot/dts/meson8b_odroidc.dts              |  3 ++-
+ arch/arm/mach-meson8b/clock.c                      | 25 +++++++++++++++++++++-
+ arch/arm/mach-meson8b/include/mach/cpufreq_table.h |  6 ++++--
+ 3 files changed, 30 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm/boot/dts/meson8b_odroidc.dts b/arch/arm/boot/dts/meson8b_odroidc.dts
+index f3e8594..eec3b57 100755
+--- a/arch/arm/boot/dts/meson8b_odroidc.dts
++++ b/arch/arm/boot/dts/meson8b_odroidc.dts
+@@ -356,7 +356,7 @@
+ 
+         vcck_dvfs {
+             dvfs_id     = <1>;                                  /** must be value of (1 << n)            */
+-            table_count = <15>;                                 /** must be correct count for dvfs_table */
++            table_count = <16>;                                 /** must be correct count for dvfs_table */
+             /*change-frequent-only;*/
+             dvfs_table  = <
+             /* NOTE: frequent in this table must be ascending order */
+@@ -376,6 +376,7 @@
+ 					1536000	       1140000     1140000
+ 					1632000	       1140000     1140000
+ 					1728000        1140000     1140000
++					1824000        1140000     1140000
+             >;
+         };
+     };
+diff --git a/arch/arm/mach-meson8b/clock.c b/arch/arm/mach-meson8b/clock.c
+index dc1b597..d2998e5 100644
+--- a/arch/arm/mach-meson8b/clock.c
++++ b/arch/arm/mach-meson8b/clock.c
+@@ -61,7 +61,7 @@ static int measure_cpu_clock = 0;
+ #define SYS_PLL_TABLE_MIN	 24000000
+ #define SYS_PLL_TABLE_MAX	2112000000
+ 
+-#define CPU_FREQ_LIMIT 1728000000
++#define CPU_FREQ_LIMIT 1824000000
+ 
+ struct sys_pll_s {
+     unsigned int freq;
+@@ -154,6 +154,28 @@ static unsigned sys_pll_settings[][3] = {
+                 { 1584, 0x40000242, 0x00003546 }, /* fvco 1584, / 1, / 1 */
+                 { 1608, 0x40000243, 0x01003546 }, /* fvco 1608, / 1, / 1 */
+                 { 1632, 0x40000244, 0x01003546 }, /* fvco 1632, / 1, / 1 */
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++                { 1656, 0x40000245, 0x01003546 }, /* fvco 1656, / 1, / 1 */
++                { 1680, 0x40000246, 0x01003546 }, /* fvco 1680, / 1, / 1 */
++                { 1704, 0x40000247, 0x01003546 }, /* fvco 1704, / 1, / 1 */
++                { 1728, 0x40000248, 0x01003546 }, /* fvco 1728, / 1, / 1 */
++                { 1752, 0x40000249, 0x01003546 }, /* fvco 1752, / 1, / 1 */
++                { 1776, 0x4000024A, 0x01003546 }, /* fvco 1776, / 1, / 1 */
++                { 1800, 0x4000024B, 0x01003546 }, /* fvco 1800, / 1, / 1 */
++                { 1824, 0x4000024C, 0x01003546 }, /* fvco 1824, / 1, / 1 */
++                { 1848, 0x4000024D, 0x01003546 }, /* fvco 1848, / 1, / 1 */
++                { 1872, 0x4000024E, 0x01003546 }, /* fvco 1872, / 1, / 1 */
++                { 1896, 0x4000024F, 0x01003546 }, /* fvco 1896, / 1, / 1 */
++                { 1920, 0x40000250, 0x01003546 }, /* fvco 1920, / 1, / 1 */
++                { 1944, 0x40000251, 0x01003546 }, /* fvco 1944, / 1, / 1 */
++                { 1968, 0x40000252, 0x01003546 }, /* fvco 1968, / 1, / 1 */
++                { 1992, 0x40000253, 0x01003546 }, /* fvco 1992, / 1, / 1 */
++                { 2016, 0x40000254, 0x01003546 }, /* fvco 2016, / 1, / 1 */
++                { 2040, 0x40000255, 0x01003546 }, /* fvco 2040, / 1, / 1 */
++                { 2064, 0x40000256, 0x01003546 }, /* fvco 2064, / 1, / 1 */
++                { 2088, 0x40000257, 0x01003546 }, /* fvco 2088, / 1, / 1 */
++                { 2112, 0x40000258, 0x00003546 }, /* fvco 2112, / 1, / 1 */
++#else
+                 { 1656, 0x40004244, 0x01003546 }, /* fvco 1656, / 1, / 1 */
+                 { 1680, 0x40008244, 0x01003546 }, /* fvco 1680, / 1, / 1 */
+                 { 1704, 0x4000c244, 0x01003546 }, /* fvco 1704, / 1, / 1 */
+@@ -174,6 +196,7 @@ static unsigned sys_pll_settings[][3] = {
+                 { 2064, 0x40008248, 0x01003546 }, /* fvco 2064, / 1, / 1 */
+                 { 2088, 0x4000c248, 0x01003546 }, /* fvco 2088, / 1, / 1 */
+                 { 2112, 0x40000249, 0x00003546 }, /* fvco 2112, / 1, / 1 */
++#endif
+ };
+ static unsigned setup_a9_clk_max = CPU_FREQ_LIMIT;
+ static unsigned setup_a9_clk_min =    24000000;
+diff --git a/arch/arm/mach-meson8b/include/mach/cpufreq_table.h b/arch/arm/mach-meson8b/include/mach/cpufreq_table.h
+index 552ae7b..02ed0723 100644
+--- a/arch/arm/mach-meson8b/include/mach/cpufreq_table.h
++++ b/arch/arm/mach-meson8b/include/mach/cpufreq_table.h
+@@ -22,7 +22,8 @@ static struct cpufreq_frequency_table meson_freq_table[]=
+     {15 , 1536000  },
+     {16 , 1632000  },
+     {17 , 1728000  },
+-    {18	, CPUFREQ_TABLE_END},
++    {18 , 1824000  },
++    {19	, CPUFREQ_TABLE_END},
+ };
+ 
+ static struct cpufreq_frequency_table meson_freq_table_fix_syspll[] = {
+@@ -46,5 +47,6 @@ static struct cpufreq_frequency_table meson_freq_table_fix_syspll[] = {
+     {15 , 1536000  },
+     {16 , 1632000  },
+     {17 , 1728000  },
+-    {18	, CPUFREQ_TABLE_END},
++    {18 , 1824000  },
++    {19	, CPUFREQ_TABLE_END},
+ };
+
+From 6ac660cdf2e9772d33b235c972cb8cbd3c2b3c7e Mon Sep 17 00:00:00 2001
+From: "Mauro (mdrjr) Ribeiro" <mauro.ribeiro@hardkernel.com>
+Date: Thu, 24 Nov 2016 21:28:07 -0200
+Subject: [PATCH] cpufreq: allow control of the max cpu frequency via a kernel
+ parameter
+
+---
+ drivers/amlogic/cpufreq/meson-cpufreq.c | 19 ++++++++++++++++++-
+ 1 file changed, 18 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/amlogic/cpufreq/meson-cpufreq.c b/drivers/amlogic/cpufreq/meson-cpufreq.c
+index 2dc0ea1..e4713f0 100644
+--- a/drivers/amlogic/cpufreq/meson-cpufreq.c
++++ b/drivers/amlogic/cpufreq/meson-cpufreq.c
+@@ -46,6 +46,8 @@ static struct meson_cpufreq cpufreq;
+ static int fix_syspll = 0;
+ #endif
+ 
++unsigned long max_freq_dvfs = 1536000;
++
+ static DEFINE_MUTEX(meson_cpufreq_mutex);
+ 
+ static void adjust_jiffies(unsigned int freqOld, unsigned int freqNew);
+@@ -271,7 +273,7 @@ static int meson_cpufreq_init(struct cpufreq_policy *policy)
+ 	index -= 1;
+ 
+ 	policy->min = freq_table[0].frequency;
+-	policy->max = 1536000;
++	policy->max = max_freq_dvfs;
+ 	policy->cpuinfo.min_freq = clk_round_rate(cpufreq.armclk, 0) / 1000;
+     policy->cpuinfo.max_freq = clk_round_rate(cpufreq.armclk, 0xffffffff) / 1000;
+ 
+@@ -505,3 +507,18 @@ int meson_cpufreq_boost(unsigned int freq)
+     return ret;
+ }
+ #endif
++
++
++static int __init get_max_freq(char *f)
++{
++	int r;
++	
++	if (f == NULL)
++		return 0;
++	
++	r = kstrtoul(f, 0, &max_freq_dvfs);
++	max_freq_dvfs *= 1000;
++	
++	return 0;
++}
++__setup("max_freq=", get_max_freq);

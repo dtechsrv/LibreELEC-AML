@@ -1,0 +1,65 @@
+From e92a52faa27ccdefb37f1b01dc000f0c8841474e Mon Sep 17 00:00:00 2001
+From: Carlo Caione <carlo@endlessm.com>
+Date: Fri, 4 Sep 2015 12:15:34 +0200
+Subject: [PATCH 24/26] sound: Set correct number of channels for i2s
+
+Signed-off-by: Carlo Caione <carlo@endlessm.com>
+---
+ sound/soc/aml/m8/aml_audio_hw.c |  6 +++---
+ sound/soc/aml/m8/aml_i2s.c      | 10 +++++++---
+ 2 files changed, 10 insertions(+), 6 deletions(-)
+
+diff --git a/sound/soc/aml/m8/aml_audio_hw.c b/sound/soc/aml/m8/aml_audio_hw.c
+index 819600c..6584d15 100755
+--- a/sound/soc/aml/m8/aml_audio_hw.c
++++ b/sound/soc/aml/m8/aml_audio_hw.c
+@@ -159,8 +159,8 @@ void audio_set_aiubuf(u32 addr, u32 size, unsigned int channel)
+     if(channel == 8){
+         printk(" %s channel == 8\n",__FUNCTION__);
+         WRITE_MPEG_REG(AIU_MEM_I2S_MASKS,       (24 << 16) |    // [31:16] IRQ block.
+-                                (0xff << 8) |   // [15: 8] chan_mem_mask. Each bit indicates which channels exist in memory
+-                                (0xff << 0));   // [ 7: 0] chan_rd_mask.  Each bit indicates which channels are READ from memory
++                                (((1 << channel) - 1) << 8) |   // [15: 8] chan_mem_mask. Each bit indicates which channels exist in memory
++                                (((1 << channel) - 1) << 0));   // [ 7: 0] chan_rd_mask.  Each bit indicates which channels are READ from memory
+         }
+     else 
+         WRITE_MPEG_REG(AIU_MEM_I2S_MASKS,       (24 << 16) |    // [31:16] IRQ block.
+@@ -450,7 +450,7 @@ void audio_set_i2s_mode(u32 mode)
+             WRITE_MPEG_REG_BITS(AIU_I2S_SOURCE_DESC, 1, 5, 1);
+         }
+ 
+-        WRITE_MPEG_REG_BITS(AIU_MEM_I2S_MASKS, mask[mode], 0, 16);
++//        WRITE_MPEG_REG_BITS(AIU_MEM_I2S_MASKS, mask[mode], 0, 16);
+ 
+         //WRITE_MPEG_REG_BITS(AIU_MEM_I2S_CONTROL, 1, 0, 1);
+         //WRITE_MPEG_REG_BITS(AIU_MEM_I2S_CONTROL, 0, 0, 1);
+diff --git a/sound/soc/aml/m8/aml_i2s.c b/sound/soc/aml/m8/aml_i2s.c
+index 1402a85..6283de3 100755
+--- a/sound/soc/aml/m8/aml_i2s.c
++++ b/sound/soc/aml/m8/aml_i2s.c
+@@ -702,16 +702,20 @@ static int aml_i2s_copy_playback(struct snd_pcm_runtime *runtime, int channel,
+     }
+     if (access_ok(VERIFY_READ, buf, frames_to_bytes(runtime, count))) {
+         if (runtime->format == SNDRV_PCM_FORMAT_S16_LE) {
+-	int16_t * tfrom, *to, *left, *right;
++       int16_t * tfrom, *to, *left;
++       int16_t *right = NULL;
++
+ 	tfrom = (int16_t *) ubuf;
+ 
+ 	for (j = 0; j < count; j++) {
+ 		to = (int16_t *) get_hw_buf_ptr(runtime, pos + j, align);
+ 		left = to;
+-		right = to + align;
++		if (runtime->channels != 1)
++			right = to + align;
+ 
+ 		*left = (*tfrom++);
+-		*right = (*tfrom++);
++		if (runtime->channels != 1)
++			*right = (*tfrom++);
+ 	}
+         } else if (runtime->format == SNDRV_PCM_FORMAT_S24_LE && I2S_MODE == AIU_I2S_MODE_PCM24) {
+             int32_t *tfrom, *to, *left, *right;
+-- 
+1.9.1

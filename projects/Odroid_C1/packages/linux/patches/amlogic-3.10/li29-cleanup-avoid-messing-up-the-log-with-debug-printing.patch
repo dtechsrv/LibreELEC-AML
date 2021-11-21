@@ -1,0 +1,30 @@
+From 1fd5ea7d24a8dea634e508c530edde6ec5b94ecb Mon Sep 17 00:00:00 2001
+From: Carlo Caione <carlo@caione.org>
+Date: Fri, 6 Feb 2015 11:44:44 +0100
+Subject: [PATCH 23/26] cleanup: avoid messing up the log with debug printing
+
+My log is utterly filled with messages like:
+
+- enter aml_set_bias_level level: 1
+
+since it is just useless print(k)ing, delete it.
+
+Signed-off-by: Carlo Caione <carlo@caione.org>
+---
+ sound/soc/aml/m8/aml_m8.c              | 1 -
+ 1 files changed, 1 deletions(-)
+
+diff --git a/sound/soc/aml/m8/aml_m8.c b/sound/soc/aml/m8/aml_m8.c
+index ac2a754..3419f06 100755
+--- a/sound/soc/aml/m8/aml_m8.c
++++ b/sound/soc/aml/m8/aml_m8.c
+@@ -367,7 +367,6 @@ static int aml_set_bias_level(struct snd_soc_card *card,
+     struct aml_audio_private_data * p_aml_audio;
+     int hp_state;
+ 
+-    printk(KERN_DEBUG "enter %s level: %d\n", __func__, level);
+     p_aml_audio = snd_soc_card_get_drvdata(card);
+ 	hp_state = p_aml_audio->detect_flag;
+ 
+-- 
+1.9.1

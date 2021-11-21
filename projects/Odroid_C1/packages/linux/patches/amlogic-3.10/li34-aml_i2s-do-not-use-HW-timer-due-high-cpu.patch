@@ -1,0 +1,23 @@
+From b2704a82b1f9ddf7d25671f7487b4fa09e8ac8fc Mon Sep 17 00:00:00 2001
+From: Sam Nazarko <email@samnazarko.co.uk>
+Date: Sat, 20 Feb 2016 18:51:52 +0000
+Subject: [PATCH] aml_i2s: do not use HW timer as it causes high cpu
+
+Signed-off-by: Sam Nazarko <email@samnazarko.co.uk>
+---
+ sound/soc/aml/m8/aml_i2s.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/sound/soc/aml/m8/aml_i2s.c b/sound/soc/aml/m8/aml_i2s.c
+index eefbabfa66c..4a5fa941b3a 100755
+--- a/sound/soc/aml/m8/aml_i2s.c
++++ b/sound/soc/aml/m8/aml_i2s.c
+@@ -88,8 +88,6 @@ EXPORT_SYMBOL(aml_audio_hw_trigger);
+ // timer count: 16bits
+ #define TIMER_COUNT    100
+ 
+-#define USE_HW_TIMER
+-
+ #ifdef USE_HW_TIMER
+ static DEFINE_MUTEX(timer_mutex);
+ static int hw_timer_init = 0;

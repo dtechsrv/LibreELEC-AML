@@ -1,0 +1,29 @@
+From 4cd81a91430baed4bf1317c285a94e1cb2f2af9f Mon Sep 17 00:00:00 2001
+From: Sam Nazarko <email@samnazarko.co.uk>
+Date: Thu, 10 Nov 2016 07:00:38 +0000
+Subject: [PATCH] Ensure the IEEE HDMI identifier is set even when the EDID
+ cannot be read. This ensures HDMI specific functionality (audio; video modes;
+ 3D) can still be used
+
+Signed-off-by: Sam Nazarko <email@samnazarko.co.uk>
+---
+ drivers/amlogic/hdmi/hdmi_tx/hdmi_tx.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/drivers/amlogic/hdmi/hdmi_tx/hdmi_tx.c b/drivers/amlogic/hdmi/hdmi_tx/hdmi_tx.c
+index 3e043bc..f9ef3d9 100755
+--- a/drivers/amlogic/hdmi/hdmi_tx/hdmi_tx.c
++++ b/drivers/amlogic/hdmi/hdmi_tx/hdmi_tx.c
+@@ -1311,6 +1311,12 @@ static int hdmi_task_handle(void *data)
+                 if(!(hdmitx_device->HWOp.CntlDDC(hdmitx_device, DDC_IS_EDID_DATA_READY, 0))) {
+                     hdmi_print(ERR, EDID "edid failed\n");
+                     hdmitx_device->tv_no_edid = 1;
++                    hdmi_print(ERR, EDID "setting HDMI vendor\n");
++                    hdmitx_device->HWOp.CntlConfig(hdmitx_device, CONF_HDMI_DVI_MODE, HDMI_MODE);
++                    hdmitx_device->RXCap.IEEEOUI = 0x000c03; /* Need to stop us being switched in to DVI mode */
++                    set_disp_mode_auto();
++                    hdmi_print(ERR, EDID "manual cec now\n");
++                    cec_node_init(hdmitx_device);
+                 }
+                 else {
+                     goto edid_op;

@@ -1,0 +1,79 @@
+From 76bb74cd381b7b1dd388e012fabd09fb8c190495 Mon Sep 17 00:00:00 2001
+From: Markus Pfau <pfau@peakwork.de>
+Date: Mon, 23 May 2016 21:00:21 +0200
+Subject: [PATCH] enable deinterlace and ion_dev
+
+---
+ arch/arm/boot/dts/amlogic/meson8b_odroidc.dtd |  4 ++--
+ arch/arm/boot/dts/meson8b_odroidc.dts         | 22 +++++++++++++++-------
+ drivers/amlogic/Kconfig                       |  1 +
+ 3 files changed, 18 insertions(+), 9 deletions(-)
+
+diff --git a/arch/arm/boot/dts/amlogic/meson8b_odroidc.dtd b/arch/arm/boot/dts/amlogic/meson8b_odroidc.dtd
+index 21c97d0..3148810 100755
+--- a/arch/arm/boot/dts/amlogic/meson8b_odroidc.dtd
++++ b/arch/arm/boot/dts/amlogic/meson8b_odroidc.dtd
+@@ -144,7 +144,7 @@ void root_func(){
+     deinterlace{
+                 compatible = "amlogic,deinterlace";
+                 dev_name = "deinterlace";
+-                status = "ok";
++                status = "okay";
+                 reserve-memory = <0x02100000>; //10x1920x1088x3/2=33M
+         };
+ 
+@@ -284,7 +284,7 @@ void root_func(){
+     ion_dev{
+         compatible = "amlogic,ion_dev";
+         dev_name = "ion_dev";
+-        status = "ok";
++        status = "okay";
+         share-memory-name = "ppmgr0";
+         share-memory-offset = <0>;
+         share-memory-size = <0x01000000>; //16M
+diff --git a/arch/arm/boot/dts/meson8b_odroidc.dts b/arch/arm/boot/dts/meson8b_odroidc.dts
+index ebd84d1..c11a251 100755
+--- a/arch/arm/boot/dts/meson8b_odroidc.dts
++++ b/arch/arm/boot/dts/meson8b_odroidc.dts
+@@ -121,14 +121,22 @@
+         };
+ 
+     ion_dev{
+-        compatible = "amlogic,ion_dev";
+-        dev_name = "ion_dev";
+-        status = "ok";
+-        share-memory-name = "ppmgr0";
+-        share-memory-offset = <0>;
+-        share-memory-size = <0x01000000>; //16M
++                compatible = "amlogic,ion_dev";
++                dev_name = "ion_dev";
++                status = "okay";
++                share-memory-name = "ppmgr0";
++                share-memory-offset = <0>;
++                share-memory-size = <0x01000000>; //16M
+     };
+-        mesonvout{
++
++    deinterlace{
++                compatible = "amlogic,deinterlace";
++                dev_name = "deinterlace";
++                status = "okay";
++                reserve-memory = <0x02100000>; //10x1920x1088x3/2=33M
++        };
++
++    mesonvout{
+                 compatible = "amlogic,mesonvout";
+                 dev_name = "mesonvout";
+                 status = "okay";
+diff --git a/drivers/amlogic/Kconfig b/drivers/amlogic/Kconfig
+index 4df4087..1719e1f 100755
+--- a/drivers/amlogic/Kconfig
++++ b/drivers/amlogic/Kconfig
+@@ -75,6 +75,7 @@ source "drivers/amlogic/mipi/Kconfig"
+ source "drivers/amlogic/d2d3/Kconfig"
+ source "drivers/amlogic/amvecm/Kconfig"
+ source "drivers/amlogic/dvb_tv/Kconfig"
++source "drivers/amlogic/ion_dev/Kconfig"
+ 
+ #
+ # crypto

@@ -1,0 +1,41 @@
+From 7585e03d0a3c77fb60b04e4e099cababb8e573bf Mon Sep 17 00:00:00 2001
+From: wrxtasy <wrxtasy@amnet.net.au>
+Date: Sun, 16 Jul 2017 23:17:54 +0800
+Subject: [PATCH]  amlogic_cec: silence cec warnings
+
+---
+ drivers/amlogic/hdmi/hdmi_tx/amlogic_cec.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/amlogic/hdmi/hdmi_tx/amlogic_cec.c b/drivers/amlogic/hdmi/hdmi_tx/amlogic_cec.c
+index 53fb244..5ededa6 100644
+--- a/drivers/amlogic/hdmi/hdmi_tx/amlogic_cec.c
++++ b/drivers/amlogic/hdmi/hdmi_tx/amlogic_cec.c
+@@ -527,7 +527,6 @@ static ssize_t amlogic_cec_write(struct file *file, const char __user *buffer,
+     if (down_interruptible(&init_mutex))
+     {
+ 	amlogic_cec_log_dbg("error during wait on state change\n");
+-	printk(KERN_ERR "[amlogic] ##### cec write error! #####\n");
+ 	return -ERESTARTSYS;
+     }
+ 
+@@ -537,7 +536,6 @@ static ssize_t amlogic_cec_write(struct file *file, const char __user *buffer,
+         atomic_read(&cec_tx_struct.state) != STATE_TX, 2 * HZ) <= 0)
+     {
+ 	amlogic_cec_log_dbg("error during wait on state change, resetting\n");
+-	printk(KERN_ERR "[amlogic] ##### cec write error! #####\n");
+ 	amlogic_cec_write_reg(CEC_TX_MSG_CMD, TX_ABORT); // stop cec tx for hw retry.
+ 	amlogic_cec_write_reg(CEC_TX_MSG_CMD, TX_NO_OP);
+ 	retval = -ERESTARTSYS;
+@@ -546,7 +544,7 @@ static ssize_t amlogic_cec_write(struct file *file, const char __user *buffer,
+ 
+     if (atomic_read(&cec_tx_struct.state) != STATE_DONE)
+     {
+-	printk(KERN_ERR "[amlogic] ##### cec write error! #####\n");
++        amlogic_cec_log_dbg("##### cec write error! #####\n");
+ 	retval = -1;
+     }
+ 
+-- 
+2.7.4
+

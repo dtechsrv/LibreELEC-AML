@@ -1,0 +1,479 @@
+From c85ad1bda709443ef3d3f37b5b2f9ffc4a755283 Mon Sep 17 00:00:00 2001
+From: "charles.park" <charles.park@hardkernel.com>
+Date: Thu, 14 Apr 2016 12:28:25 +0900
+Subject: [PATCH] ODROID-C : gpio sysfs irq changed(aml_gpio to gpio)
+
+Change-Id: If65fab6c7feceaa7788cc3efd8581f94505b84ce
+---
+ arch/arm/boot/dts/meson8b_odroidc.dts     |   6 -
+ arch/arm/configs/odroidc_defconfig        |   3 +-
+ arch/arm/mach-meson8b/gpio.c              | 183 ++++++++++++++++++++++++++++++
+ drivers/amlogic/gpio/gpio-amlogic.c       |  22 ++++
+ drivers/gpio/gpiolib.c                    |  53 ++++++++-
+ drivers/hardkernel/ads7846.c              |  34 ++++++
+ include/linux/amlogic/aml_gpio_consumer.h |   9 ++
+ 7 files changed, 302 insertions(+), 8 deletions(-)
+ mode change 100644 => 100755 arch/arm/mach-meson8b/gpio.c
+ mode change 100644 => 100755 drivers/amlogic/gpio/gpio-amlogic.c
+ mode change 100644 => 100755 drivers/gpio/gpiolib.c
+ mode change 100644 => 100755 drivers/hardkernel/ads7846.c
+ mode change 100644 => 100755 include/linux/amlogic/aml_gpio_consumer.h
+
+diff --git a/arch/arm/boot/dts/meson8b_odroidc.dts b/arch/arm/boot/dts/meson8b_odroidc.dts
+index a02bcc79..ebd84d1 100755
+--- a/arch/arm/boot/dts/meson8b_odroidc.dts
++++ b/arch/arm/boot/dts/meson8b_odroidc.dts
+@@ -551,12 +551,6 @@
+ 		};
+     };
+ 
+-    aml_gpio_lib {
+-        compatible = "aml-gpio";
+-        dev_name = "aml_gpio";
+-        status = "okay";
+-    };
+-    
+     efuse{
+                 compatible = "amlogic,efuse";
+                 dev_name = "efuse";
+diff --git a/arch/arm/configs/odroidc_defconfig b/arch/arm/configs/odroidc_defconfig
+index cbfdc56..f3edce5 100644
+--- a/arch/arm/configs/odroidc_defconfig
++++ b/arch/arm/configs/odroidc_defconfig
+@@ -3917,7 +3918,7 @@ CONFIG_UMPLOCK=y
+ # ODROID Specific Hardware
+ #
+ CONFIG_ODROID_TOUCHSCREEN_ADS7846=m
+-CONFIG_ODROID_AML_GPIO_LIB=m
++# CONFIG_ODROID_AML_GPIO_LIB is not set
+ 
+ #
+ # File systems
+diff --git a/arch/arm/mach-meson8b/gpio.c b/arch/arm/mach-meson8b/gpio.c
+old mode 100644
+new mode 100755
+index dacebfc..9373fe8
+--- a/arch/arm/mach-meson8b/gpio.c
++++ b/arch/arm/mach-meson8b/gpio.c
+@@ -416,6 +416,187 @@ void	 gpio_amlogic_free(struct gpio_chip *chip,unsigned offset)
+ 	 pinctrl_free_gpio(offset);
+ 	return;
+ }
++
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++
++#include <linux/interrupt.h>
++
++#define	AMLGPIO_IRQ_MAX	8
++
++/* IRQ desc debug flag */
++#if 0
++#define	DEBUG_IRQ_DESC
++#endif
++
++unsigned int meson_irq_desc[AMLGPIO_IRQ_MAX] = { 0, };
++
++/* DEBUG MESSAGE */
++void display_irq_desc(const char *func)
++{
++#if defined(DEBUG_IRQ_DESC)
++	int i;
++	for (i = 0; i < AMLGPIO_IRQ_MAX; i++)	{
++		pr_err("%s : irq_desc[%d] = %d\n", func,
++						i,
++						meson_irq_desc[i]);
++	}
++#endif
++}
++
++int gpio_amlogic_to_irq(struct gpio_chip *chip, unsigned offset)
++{
++	return	offset;
++}
++
++int amlogic_setup_irq(unsigned int offset, unsigned int aml_irq_flags)
++{
++	unsigned reg,start_bit;
++	unsigned irq_bank = aml_irq_flags & 0x7;
++	unsigned filter = (aml_irq_flags>>8) & 0x7;
++	unsigned irq_type = (aml_irq_flags>>16) & 0x3;
++	unsigned type[]={0x0, 	/*GPIO_IRQ_HIGH*/
++			0x10000, /*GPIO_IRQ_LOW*/
++			0x1,  	/*GPIO_IRQ_RISING*/
++			0x10001, /*GPIO_IRQ_FALLING*/
++			};
++
++	if (meson_irq_desc[irq_bank])	{
++		pr_err("ERROR(%s) : already allocation irq bank!!\n",
++							 __func__);
++		pr_err("ERROR(%s) : gpio = %d, bank = %d\n", __func__,
++							    offset,
++							    irq_bank);
++		return	-1;
++	}
++
++	/*set trigger type*/
++	aml_clrset_reg32_bits(P_GPIO_INTR_EDGE_POL,0x10001<<irq_bank,type[irq_type]<<irq_bank);
++	printk(" reg:%x,clearmask=%x,setmask=%x\n",(P_GPIO_INTR_EDGE_POL&0xffff)>>2,0x10001<<irq_bank,(aml_read_reg32(P_GPIO_INTR_EDGE_POL)>>irq_bank)&0x10001);
++	/*select pin*/
++	reg=irq_bank<4?P_GPIO_INTR_GPIO_SEL0:P_GPIO_INTR_GPIO_SEL1;
++	start_bit=(irq_bank&3)*8;
++	aml_clrset_reg32_bits(reg,0xff<<start_bit,amlogic_pins[offset].num<<start_bit);
++	printk("reg:%x,clearmask=%x,set pin=%d\n",(reg&0xffff)>>2,0xff<<start_bit,(aml_read_reg32(reg)>>start_bit)&0xff);
++	/*set filter*/
++	start_bit=(irq_bank)*4;
++	aml_clrset_reg32_bits(P_GPIO_INTR_FILTER_SEL0,0x7<<start_bit,filter<<start_bit);
++	printk("reg:%x,clearmask=%x,setmask=%x\n",(P_GPIO_INTR_FILTER_SEL0&0xffff)>>2,0x7<<start_bit,(aml_read_reg32(P_GPIO_INTR_FILTER_SEL0)>>start_bit)&0x7);
++
++	meson_irq_desc[irq_bank] = offset;
++
++	/* DEBUG MESSAGE */
++	display_irq_desc(__func__);
++	return 0;
++}
++
++EXPORT_SYMBOL(amlogic_setup_irq);
++
++static int find_free_irq_bank(void)
++{
++	unsigned int i;
++
++	for (i = 0; i < AMLGPIO_IRQ_MAX; i++)	{
++		if (!meson_irq_desc[i])
++			break;
++	}
++	if (i == AMLGPIO_IRQ_MAX)
++		pr_err("ERROR(%s) : Can't find free irq bank!!\n", __func__);
++
++	return	(i != AMLGPIO_IRQ_MAX) ? i : -1;
++}
++
++/* find available irq bank */
++int meson_fix_irqbank(int bank)
++{
++	if (bank < AMLGPIO_IRQ_MAX)	{
++		if (!meson_irq_desc[bank])
++			return	bank;
++		else	{
++			pr_err("ERROR(%s):already allocation irq bank(%d)!!\n",
++							__func__, bank);
++		}
++
++		/* if irq bank is not empty then find free irq bank */
++		bank = find_free_irq_bank();
++		pr_err("%s : new allocation irq bank(%d)!!\n",
++						__func__, bank);
++		return	bank;
++	}
++	return	-1;
++}
++EXPORT_SYMBOL(meson_fix_irqbank);
++
++int meson_setup_irq(struct gpio_chip *chip, unsigned int gpio,
++			unsigned int irq_flags, int *irq_banks)
++{
++	int irq_rising = -1, irq_falling = -1;
++	unsigned int gpio_flag;
++
++	/* rising irq setup */
++	if (irq_flags & IRQF_TRIGGER_RISING)	{
++		irq_rising = find_free_irq_bank();
++		if (irq_rising < 0)
++			goto out;
++
++		gpio_flag = AML_GPIO_IRQ(irq_rising,
++					 FILTER_NUM0,
++					 GPIO_IRQ_RISING);
++
++		if (amlogic_setup_irq(gpio, gpio_flag) < 0)
++			goto out;
++	}
++
++	/* falling irq setup */
++	if (irq_flags & IRQF_TRIGGER_FALLING)	{
++		irq_falling = find_free_irq_bank();
++		if ((irq_falling) < 0)
++			goto out;
++
++		gpio_flag = AML_GPIO_IRQ(irq_falling,
++					 FILTER_NUM0,
++					 GPIO_IRQ_FALLING);
++
++		if (amlogic_setup_irq(gpio, gpio_flag) < 0)
++			goto out;
++	}
++
++	irq_banks[0] = irq_rising;	irq_banks[1] = irq_falling;
++	return	0;
++out:
++	if (irq_rising  != -1)
++		meson_irq_desc[irq_rising]  = 0;
++	if (irq_falling != -1)
++		meson_irq_desc[irq_falling] = 0;
++
++	/* DEBUG MESSAGE */
++	display_irq_desc(__func__);
++
++	return	-1;
++}
++EXPORT_SYMBOL(meson_setup_irq);
++
++void meson_free_irq(unsigned int gpio, int *irq_banks)
++{
++	int i, find;
++
++	irq_banks[0] = -1, irq_banks[1] = -1;
++
++	for (i = 0, find = 0; i < AMLGPIO_IRQ_MAX; i++)	{
++		if (gpio == meson_irq_desc[i])	{
++			irq_banks[find++] = i;
++			meson_irq_desc[i] = 0;
++		}
++		if (find == 2)
++			break;
++	}
++
++	/* DEBUG MESSAGE */
++	display_irq_desc(__func__);
++}
++EXPORT_SYMBOL(meson_free_irq);
++
++#else
++
+ int gpio_amlogic_to_irq(struct gpio_chip *chip,unsigned offset)
+ {
+ 	unsigned reg,start_bit;
+@@ -444,6 +625,8 @@ int gpio_amlogic_to_irq(struct gpio_chip *chip,unsigned offset)
+ 	return 0;
+ }
+ 
++#endif
++
+ int gpio_amlogic_direction_input(struct gpio_chip *chip,unsigned offset)
+ {
+ 	unsigned int reg,bit;
+diff --git a/drivers/amlogic/gpio/gpio-amlogic.c b/drivers/amlogic/gpio/gpio-amlogic.c
+old mode 100644
+new mode 100755
+index 35e1bb4d..7085bca
+--- a/drivers/amlogic/gpio/gpio-amlogic.c
++++ b/drivers/amlogic/gpio/gpio-amlogic.c
+@@ -196,7 +196,18 @@ int amlogic_request_gpio_to_irq(unsigned int  pin,const char *label,unsigned int
+ 		spin_lock_irqsave(&gpio_irqlock, flags);
+ 		gpio_flag=flag;
+ 		__gpio_to_irq(pin);
++
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++		/* setup aml_gpio_irq; */
++		ret = amlogic_setup_irq(pin, flag);
++		if (ret < 0)
++			pr_err("%s : amlogic setup irq fail!\n", __func__);
++
++		spin_unlock_irqrestore(&gpio_irqlock, flags);
++		return ret;
++#else
+ 		spin_unlock_irqrestore(&gpio_irqlock, flags);
++#endif
+ 	}
+ 	return ret;
+ }
+@@ -214,8 +225,19 @@ int amlogic_gpio_to_irq(unsigned int  pin,const char *owner,unsigned int flag)
+ 			spin_lock_irqsave(&gpio_irqlock, flags);
+ 			gpio_flag=flag;
+ 			__gpio_to_irq(pin);
++
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++			/* setup aml_gpio_irq; */
++			ret = amlogic_setup_irq(pin, flag);
++			if (ret < 0)
++				pr_err("%s : amlogic setup irq fail!\n", __func__);
++
++			spin_unlock_irqrestore(&gpio_irqlock, flags);
++			return ret;
++#else
+ 			spin_unlock_irqrestore(&gpio_irqlock, flags);
+ 			return 0;
++#endif
+ 		}
+ 	return ret;
+ }
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+old mode 100644
+new mode 100755
+index c3768fa..c135d96
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -373,12 +373,21 @@ static irqreturn_t gpio_sysfs_irq(int irq, void *priv)
+ 	return IRQ_HANDLED;
+ }
+ 
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++	#include <linux/amlogic/aml_gpio_consumer.h>
++	/* AMLogic GPIO irq bank start offset */
++	#define	AMLGPIO_IRQ_BASE	96
++#endif
++
+ static int gpio_setup_irq(struct gpio_desc *desc, struct device *dev,
+ 		unsigned long gpio_flags)
+ {
+ 	struct sysfs_dirent	*value_sd;
+ 	unsigned long		irq_flags;
+ 	int			ret, irq, id;
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++	int			irq_banks[2] = {0, };
++#endif
+ 
+ 	if ((desc->flags & GPIO_TRIGGER_MASK) == gpio_flags)
+ 		return 0;
+@@ -389,8 +398,21 @@ static int gpio_setup_irq(struct gpio_desc *desc, struct device *dev,
+ 
+ 	id = desc->flags >> ID_SHIFT;
+ 	value_sd = idr_find(&dirent_idr, id);
+-	if (value_sd)
++	if (value_sd)	{
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++		meson_free_irq(irq, &irq_banks[0]);
++
++		/* rising irq bank */
++		if (irq_banks[0] != -1)
++			free_irq(irq_banks[0] + AMLGPIO_IRQ_BASE, value_sd);
++
++		/* falling irq bank */
++		if (irq_banks[1] != -1)
++			free_irq(irq_banks[1] + AMLGPIO_IRQ_BASE, value_sd);
++#else
+ 		free_irq(irq, value_sd);
++#endif
++	}
+ 
+ 	desc->flags &= ~GPIO_TRIGGER_MASK;
+ 
+@@ -428,8 +450,37 @@ static int gpio_setup_irq(struct gpio_desc *desc, struct device *dev,
+ 		}
+ 	}
+ 
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++	ret = meson_setup_irq(desc->chip, irq, irq_flags, &irq_banks[0]);
++
++	if (ret < 0)
++		goto free_id;
++
++	/* rising irq bank */
++	if (irq_banks[0] != -1)	{
++		ret = request_any_context_irq(irq_banks[0] + AMLGPIO_IRQ_BASE,
++					gpio_sysfs_irq, IRQF_DISABLED,
++					"gpiolib", value_sd);
++		if (ret < 0)
++			goto free_id;
++	}
++	/* falling irq bank */
++	if (irq_banks[1] != -1)	{
++		ret = request_any_context_irq(irq_banks[1] + AMLGPIO_IRQ_BASE,
++					gpio_sysfs_irq, IRQF_DISABLED,
++					"gpiolib", value_sd);
++
++		if (ret < 0)	{
++			if (irq_banks[0] != -1)
++				free_irq(irq_banks[0] + AMLGPIO_IRQ_BASE,
++					 value_sd);
++			goto free_id;
++		}
++	}
++#else
+ 	ret = request_any_context_irq(irq, gpio_sysfs_irq, irq_flags,
+ 				"gpiolib", value_sd);
++#endif
+ 	if (ret < 0)
+ 		goto free_id;
+ 
+diff --git a/drivers/hardkernel/ads7846.c b/drivers/hardkernel/ads7846.c
+old mode 100644
+new mode 100755
+index f1eb6356..b51be82
+--- a/drivers/hardkernel/ads7846.c
++++ b/drivers/hardkernel/ads7846.c
+@@ -1358,6 +1358,23 @@ static const struct ads7846_platform_data *ads7846_probe_dt(struct device *dev)
+ }
+ #endif
+ 
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++static void amlgic_free_irq(struct ads7846 *ts)
++{
++	int	irq_banks[2];
++
++	meson_free_irq(ts->gpio_pendown, &irq_banks[0]);
++
++	/* rising irq bank */
++	if (irq_banks[0] != -1)
++		free_irq(irq_banks[0] + INT_GPIO_0, ts);
++
++	/* falling irq bank */
++	if (irq_banks[1] != -1)
++		free_irq(irq_banks[1] + INT_GPIO_0, ts);
++}
++#endif
++
+ static int ads7846_probe(struct spi_device *spi)
+ {
+ 	const struct ads7846_platform_data *pdata;
+@@ -1508,6 +1525,14 @@ static int ads7846_probe(struct spi_device *spi)
+ 	dev_warn(&spi->dev, "Undfined irq-source value in DT! irq-source to assume a GPIO_IRQ0.!\n");
+ 		irq_source = GPIO_IRQ0;
+ 	}
++
++	/* find available irq bank */
++	irq_source = meson_fix_irqbank(irq_source);
++	if (irq_source < 0) {
++		dev_err(&spi->dev, "amlogic find irq bank fail!\n");
++		err = -ENODEV;
++		goto err_disable_regulator;
++	}
+ 	spi->irq = INT_GPIO_0 + irq_source;
+         /*
+             IRQ Filter Select : (0 ~ 7)
+@@ -1595,7 +1620,11 @@ static int ads7846_probe(struct spi_device *spi)
+  err_remove_hwmon:
+ 	ads784x_hwmon_unregister(spi, ts);
+  err_free_irq:
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++	amlgic_free_irq(ts);
++#else
+ 	free_irq(spi->irq, ts);
++#endif
+  err_disable_regulator:
+ #if !defined(CONFIG_MACH_MESON8B_ODROIDC)
+ 	regulator_disable(ts->reg);
+@@ -1624,7 +1653,12 @@ static int ads7846_remove(struct spi_device *spi)
+ 	sysfs_remove_group(&spi->dev.kobj, &ads784x_attr_group);
+ 
+ 	ads7846_disable(ts);
++
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++	amlgic_free_irq(ts);
++#else
+ 	free_irq(ts->spi->irq, ts);
++#endif
+ 
+ 	input_unregister_device(ts->input);
+ 
+diff --git a/include/linux/amlogic/aml_gpio_consumer.h b/include/linux/amlogic/aml_gpio_consumer.h
+old mode 100644
+new mode 100755
+index e33f02a..f5ea464
+--- a/include/linux/amlogic/aml_gpio_consumer.h
++++ b/include/linux/amlogic/aml_gpio_consumer.h
+@@ -17,5 +17,14 @@ extern int amlogic_gpio_name_map_num(const char *name);
+ extern int amlogic_set_pull_up_down(unsigned int pin,unsigned int val,const char *owner);
+ extern int amlogic_disable_pullup(unsigned int pin,const char *owner);
+ #define AML_GPIO_IRQ(irq_bank,filter,type) ((irq_bank&0x7)|(filter&0x7)<<8|(type&0x3)<<16)
++
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++	extern int amlogic_setup_irq (unsigned int offset, unsigned int aml_irq_flags);
++	extern int meson_setup_irq(struct gpio_chip *chip, unsigned int gpio,
++				unsigned int irq_flags, int *irq_banks);
++	extern void meson_free_irq(unsigned int gpio, int *irq_banks);
++	extern int meson_fix_irqbank(int bank);
++#endif
++
+ #endif
+ 

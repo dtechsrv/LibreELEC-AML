@@ -1,0 +1,113 @@
+From 07532b3c9630be69453ca143c35e940dff4bd55e Mon Sep 17 00:00:00 2001
+From: ckkim <ckkim@hardkernel.com>
+Date: Mon, 25 Apr 2016 12:13:35 +0900
+Subject: [PATCH] odroid-c1:Enable S805 vcck dvfs driver.
+
+Change-Id: Ifcea2404f5c3f2707e3bfdea1b390487f558d58a
+---
+ arch/arm/boot/dts/meson8b_odroidc.dts | 51 ++++++++++++++++++++++++++++++++++-
+ arch/arm/configs/odroidc_defconfig    |  4 +--
+ drivers/amlogic/pwm/Kconfig           |  1 -
+ 3 files changed, 52 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm/boot/dts/meson8b_odroidc.dts b/arch/arm/boot/dts/meson8b_odroidc.dts
+index ebd84d1..c56c754 100755
+--- a/arch/arm/boot/dts/meson8b_odroidc.dts
++++ b/arch/arm/boot/dts/meson8b_odroidc.dts
+@@ -318,7 +318,7 @@
+         vcck_dvfs {
+             dvfs_id     = <1>;                                  /** must be value of (1 << n)            */
+             table_count = <15>;                                 /** must be correct count for dvfs_table */
+-            change-frequent-only;
++            /*change-frequent-only;*/
+             dvfs_table  = <
+             /* NOTE: frequent in this table must be ascending order */
+             /* frequent(Khz)    min_uV      max_uV                  */
+@@ -341,6 +341,48 @@
+         };
+     };
+ 
++    meson_vcck_dvfs_driver{
++        compatible = "amlogic, meson_vcck_dvfs";
++        dev_name = "meson_vcck_dvfs_driver";
++        status = "ok";
++        pinctrl-names = "default";
++        pinctrl-0 = <&aml_pwm_pins>;
++        use_pwm = <1>;
++        pmw_controller = "PWM_C";
++        table_count = <29>;
++        cs_voltage_table = <
++		0x10f001b        860000
++		0x1050025        870000
++		0x0fc002e        880000
++		0x0f30037        890000
++		0x0ea0040        900000
++		0x0e10049        910000
++		0x0d60054        920000
++		0x0cb005f        930000
++		0x0c0006a        940000
++		0x0b50075        950000
++		0x0aa0080        960000
++		0x0a0008a        970000
++		0x0960094        980000
++		0x08d009d        990000
++		0x07b00af        1000000
++		0x07200b8        1010000
++		0x06900c1        1020000
++		0x06000ca        1030000
++		0x05700d3        1040000
++		0x04e00dc        1050000
++		0x04500e5        1060000
++		0x03c00ee        1070000
++		0x03300f7        1080000
++		0x02a0100        1090000
++		0x0180109        1100000
++		0x00f011b        1110000
++		0x00a0120        1120000
++		0x0050125        1130000
++		0x000012a        1140000
++        >;
++    };
++
+     arm_pmu {
+         compatible = "arm,cortex-a9-pmu";
+         status = "ok";
+@@ -912,6 +954,13 @@
+                         amlogic,pins = "GPIOX_8","GPIOX_9","GPIOX_10";
+                 };
+ 
++		aml_pwm_pins:aml_pwm{
++			amlogic,setmask=<3 0x1000000>;
++			amlogic,clrmask=<0 0x48
++					 7 0x10000020>;
++			amlogic,pins="GPIODV_9";
++		};
++
+ 		odroid_pwm0:odroid_pwm0{
+             amlogic,setmask=<2 0x00000008>;     /*GPIOX_11 PWM_B Reg2[3]*/
+             amlogic,clrmask=<3 0x00100000
+diff --git a/arch/arm/configs/odroidc_defconfig b/arch/arm/configs/odroidc_defconfig
+index f3edce5..40e1ccf 100644
+--- a/arch/arm/configs/odroidc_defconfig
++++ b/arch/arm/configs/odroidc_defconfig
+@@ -1249,8 +1249,8 @@ CONFIG_PINCTRL_AMLOGIC=y
+ #
+ # CONFIG_AMLOGIC_BOARD_HAS_PMU is not set
+ # CONFIG_AML_PMU_ALGORITHM_SUPPORT is not set
+-# CONFIG_AML_DVFS is not set
+-# CONFIG_MESON_CS_DCDC_REGULATOR is not set
++CONFIG_AML_DVFS=y
++CONFIG_MESON_CS_DCDC_REGULATOR=y
+ 
+ #
+ # Security key Support
+diff --git a/drivers/amlogic/pwm/Kconfig b/drivers/amlogic/pwm/Kconfig
+index 4ef5f1c..e81df37 100644
+--- a/drivers/amlogic/pwm/Kconfig
++++ b/drivers/amlogic/pwm/Kconfig
+@@ -1,6 +1,5 @@
+ config MESON_PWM
+     tristate "Amlogic PWM support"
+-    depends on !MESON_CS_DCDC_REGULATOR
+ 	help
+ 	  Generic PWM framework driver for AMLOGIC.

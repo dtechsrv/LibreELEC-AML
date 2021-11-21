@@ -1,0 +1,27 @@
+From 00bdf64edca6db0202203664d4bf43b60e0e255b Mon Sep 17 00:00:00 2001
+From: Alex Deryskyba <alex@codesnake.com>
+Date: Sat, 10 Dec 2016 00:41:00 +0100
+Subject: [PATCH] drivers/amlogic/video_dev: Fix framerate automation when
+ amlvideo is included into VFM map
+
+---
+ drivers/amlogic/video_dev/amlvideo.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/drivers/amlogic/video_dev/amlvideo.c b/drivers/amlogic/video_dev/amlvideo.c
+index e1c8a35..eeaf950 100755
+--- a/drivers/amlogic/video_dev/amlvideo.c
++++ b/drivers/amlogic/video_dev/amlvideo.c
+@@ -324,6 +324,13 @@ static int video_receiver_event_fun(int type, void* data, void* private_data) {
+             vfq_init(&q_omx, AMLVIDEO_POOL_SIZE+1, &amlvideo_pool_omx[0]);
+         }
+     }
++    else if (type == VFRAME_EVENT_PROVIDER_FR_HINT) {
++        vf_notify_receiver(PROVIDER_NAME,VFRAME_EVENT_PROVIDER_FR_HINT,data);
++    }
++    else if (type == VFRAME_EVENT_PROVIDER_FR_END_HINT) {
++        vf_notify_receiver(PROVIDER_NAME,VFRAME_EVENT_PROVIDER_FR_END_HINT,data);
++    }
++
+     return 0;
+ }

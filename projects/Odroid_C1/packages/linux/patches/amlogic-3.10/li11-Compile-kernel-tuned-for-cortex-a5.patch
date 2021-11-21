@@ -1,0 +1,70 @@
+From 0d41dfbfbe4bba71b021266a25b942aea3fff727 Mon Sep 17 00:00:00 2001
+From: Arne Coucheron <arco68@gmail.com>
+Date: Thu, 13 Aug 2015 16:35:44 +0200
+Subject: [PATCH] amlogic: meson8b: Compile kernel tuned for cortex-a5
+
+---
+ arch/arm/Makefile                  | 1 +
+ drivers/amlogic/camera/Makefile    | 1 -
+ drivers/amlogic/ionvideo/Makefile  | 2 --
+ drivers/amlogic/mipi/Makefile      | 1 -
+ drivers/amlogic/video_dev/Makefile | 1 -
+ 5 files changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/arch/arm/Makefile b/arch/arm/Makefile
+index b1c9621..3b9fd33 100755
+--- a/arch/arm/Makefile
++++ b/arch/arm/Makefile
+@@ -98,6 +98,7 @@ tune-$(CONFIG_CPU_XSC3)		:=$(call cc-option,-mtune=xscale,-mtune=strongarm110) -
+ tune-$(CONFIG_CPU_FEROCEON)	:=$(call cc-option,-mtune=marvell-f,-mtune=xscale)
+ tune-$(CONFIG_CPU_V6)		:=$(call cc-option,-mtune=arm1136j-s,-mtune=strongarm)
+ tune-$(CONFIG_CPU_V6K)		:=$(call cc-option,-mtune=arm1136j-s,-mtune=strongarm)
++tune-$(CONFIG_ARCH_MESON8B)	:=-mtune=cortex-a5 -mfloat-abi=softfp -mfpu=neon-vfpv4
+ 
+ ifeq ($(CONFIG_AEABI),y)
+ CFLAGS_ABI	:=-mabi=aapcs-linux -mno-thumb-interwork
+diff --git a/drivers/amlogic/camera/Makefile b/drivers/amlogic/camera/Makefile
+index 4b7cfe08..80dbefe 100755
+--- a/drivers/amlogic/camera/Makefile
++++ b/drivers/amlogic/camera/Makefile
+@@ -1,7 +1,6 @@
+ #
+ # Makefile for the amlogic platform camera interface device drivers.
+ #
+-EXTRA_AFLAGS=-mfloat-abi=softfp -mfpu=neon
+ amlflash-objs := common/flashlight.o
+ gt2005dri-objs := gt2005.o
+ gc0307dri-objs := gc0307.o
+diff --git a/drivers/amlogic/ionvideo/Makefile b/drivers/amlogic/ionvideo/Makefile
+index 68a6169..db6224c 100755
+--- a/drivers/amlogic/ionvideo/Makefile
++++ b/drivers/amlogic/ionvideo/Makefile
+@@ -1,4 +1,2 @@
+-EXTRA_AFLAGS=-mfloat-abi=softfp -mfpu=neon
+-
+ obj-$(CONFIG_VIDEOBUF2_ION) += videobuf2-ion.o
+ obj-$(CONFIG_AMLOGIC_IONVIDEO) += ionvideo.o ppmgr2.o
+diff --git a/drivers/amlogic/mipi/Makefile b/drivers/amlogic/mipi/Makefile
+index 2d299cd..632cba0 100755
+--- a/drivers/amlogic/mipi/Makefile
++++ b/drivers/amlogic/mipi/Makefile
+@@ -1,7 +1,6 @@
+ #
+ # Makefile for Amlogic MIPI.
+ #
+-EXTRA_AFLAGS=-mfloat-abi=softfp -mfpu=neon
+ aml_mipi-objs := am_mipi_csi2.o
+ aml_mipi_mem-objs := mem/mipi_mem.o mem/convert_mem.o mem/swap_mem.o
+ aml_mipi_vdin-objs := vdin/mipi_vdin.o vdin/convert_vdin.o vdin/swap_vdin_y.o vdin/swap_vdin_uv.o vdin/csi.o
+diff --git a/drivers/amlogic/video_dev/Makefile b/drivers/amlogic/video_dev/Makefile
+index f18157f..f525b6e 100755
+--- a/drivers/amlogic/video_dev/Makefile
++++ b/drivers/amlogic/video_dev/Makefile
+@@ -1,7 +1,6 @@
+ #
+ # Makefile for the amlogic video device interface device drivers.
+ #
+-EXTRA_AFLAGS=-mfloat-abi=softfp -mfpu=neon
+ amlvideodri-objs := amlvideo.o
+ amlcm-objs := common/vfutil.o
+ amlvideo2dri-objs := amlvideo2.o
