@@ -40,10 +40,10 @@
     BOOTLOADER="u-boot"
 
   # u-boot version to use (default)
-    UBOOT_VERSION="hardkernel"
+    UBOOT_VERSION="vendor"
 
   # Configuration for u-boot
-    UBOOT_CONFIG="odroidc_config"
+    UBOOT_CONFIG=""
 
   # Target Configfile for u-boot
     UBOOT_CONFIGFILE="boot.ini"
