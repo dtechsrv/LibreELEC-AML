@@ -1,5 +1,8 @@
---- /dev/null	2017-09-03 11:58:33.353873900 +0200
-+++ b/arch/arm/boot/dts/amlogic/meson8m2_n200_2G_old.dtd	2017-08-30 09:01:45.000000000 +0200
+diff --git a/arch/arm/boot/dts/amlogic/meson8m2_n200_2G_old.dtd b/arch/arm/boot/dts/amlogic/meson8m2_n200_2G_old.dtd
+new file mode 100644
+index 0000000..6a94c8b
+--- /dev/null
++++ b/arch/arm/boot/dts/amlogic/meson8m2_n200_2G_old.dtd
 @@ -0,0 +1,1932 @@
 +/dts-v1/;
 +/// ***************************************************************************************\n
@@ -136,7 +139,7 @@
 +		compatible = "amlogic,mesonfb";
 +		dev_name = "mesonfb";
 +		status = "okay";
-+	   	reserve-memory = <0x01800000  0x00100000>;
++	   	reserve-memory = <0x04800000  0x00100000>;
 +	   	reserve-iomap = "true";
 +                vmode = <3>; /**0:VMODE_720P 1:VMODE_LCD  2:VMODE_LVDS_1080P 3:VMODE_1080P*/
 +		scale_mode = <1>; /*0:default 1:new*/

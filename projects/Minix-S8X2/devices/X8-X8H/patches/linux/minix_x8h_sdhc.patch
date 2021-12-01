@@ -1,5 +1,8 @@
---- A/arch/arm/boot/dts/amlogic/minix_x8h_sdhc.dtd	1970-01-01 01:00:00.000000000 +0100
-+++ B/arch/arm/boot/dts/amlogic/minix_x8h_sdhc.dtd	2019-03-16 14:36:59.000000000 +0100
+diff --git a/arch/arm/boot/dts/amlogic/minix_x8h_sdhc.dtd b/arch/arm/boot/dts/amlogic/minix_x8h_sdhc.dtd
+new file mode 100644
+index 0000000..eae9e1e
+--- /dev/null
++++ b/arch/arm/boot/dts/amlogic/minix_x8h_sdhc.dtd
 @@ -0,0 +1,1918 @@
 +/dts-v1/;
 +/// ***************************************************************************************\n
@@ -136,11 +139,11 @@
 +		compatible = "amlogic,mesonfb";
 +		dev_name = "mesonfb";
 +		status = "okay";
-+	   	reserve-memory = <0x01800000  0x00100000>;
++	   	reserve-memory = <0x04800000  0x00100000>;
 +	   	reserve-iomap = "true";
 +                vmode = <3>; /**0:VMODE_720P 1:VMODE_LCD  2:VMODE_LVDS_1080P 3:VMODE_1080P*/
 +		scale_mode = <1>; /*0:default 1:new*/
-+		4k2k_fb = <0>;
++		4k2k_fb = <1>;
 + 		display_size_default = <1920 1080 1920 3240 32>; //1920*1080*4*3 = 0x17BB000
 +	};
 +	
