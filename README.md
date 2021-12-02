@@ -5,11 +5,15 @@ Unofficial community sources and firmware binaries for some Amlogic TV Boxes.
 **Currently supported devices:**
 
 - S905/KI-Pro (Mecool/Videostrong),<br />
-*Amlogic S905D SoC, 2 GB RAM, 16 GB NAND Flash, 1 Gbps Ethernet (RTL8211F),*
+*Amlogic S905D SoC, 2 GB RAM, 16 GB eMMC, 1 Gbps Ethernet (RTL8211F),*
+- S905/KI-Plus (with S905 SoC only),<br />
+*Amlogic S905 SoC, 1 GB RAM, 8 GB eMMC, 10/100 Mbps Ethernet (IC+ IP101GR),*
 - S905/MXQ-4K-Pro_2G (MXQ 4K Pro+),<br />
-*Amlogic S905X SoC, 2 GB RAM, 16 GB NAND Flash, 10/100 Mbps Ethernet (IC+ IP101GR),*
+*Amlogic S905X SoC, 2 GB RAM, 16 GB eMMC, 10/100 Mbps Ethernet (IC+ IP101GR),*
 - S8X2/M8S+ (with ap6330 and bcm4335b0 wireless modules),<br />
 *Amlogic S812 SoC, 2 GB RAM, 8 GB NAND Flash, 1 Gbps Ethernet (RTL8211F),*
+- WeTek Core (with ap6330 wireless module),<br />
+*Amlogic S812-H SoC, 2 GB RAM, 8 GB eMMC, 1 Gbps Ethernet (RTL8211F),*
 - S805/HD18Q (MXQ "all black" versions),<br />
 *Amlogic S805 SoC, 1 GB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet (IC+ IP101GR),*
 - S805/m201d (MXQ with 512 MB RAM only),<br />
