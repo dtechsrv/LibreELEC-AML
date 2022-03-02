@@ -1,0 +1,13 @@
+diff --git a/tools/Makefile b/tools/Makefile
+index 2881a7c..02f3c7b 100644
+--- a/tools/Makefile
++++ b/tools/Makefile
+@@ -219,7 +219,7 @@ endif # !LOGO_BMP
+ #
+ HOST_EXTRACFLAGS += -include $(srctree)/include/libfdt_env.h \
+ 		$(patsubst -I%,-idirafter%, $(filter -I%, $(UBOOTINCLUDE))) \
+-		-I$(srctree)/lib/libfdt \
++		-I$(srctree)/scripts/dtc/libfdt \
+ 		-I$(srctree)/tools \
+ 		-DCONFIG_SYS_TEXT_BASE=$(CONFIG_SYS_TEXT_BASE) \
+ 		-DUSE_HOSTCC \
