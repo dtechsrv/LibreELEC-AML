@@ -1,9 +1,9 @@
 diff --git a/arch/arm/boot/dts/amlogic/meson8b_hd18q.dtd b/arch/arm/boot/dts/amlogic/meson8b_hd18q.dtd
 new file mode 100644
-index 0000000..af28bb1
+index 0000000..ea7c494
 --- /dev/null
 +++ b/arch/arm/boot/dts/amlogic/meson8b_hd18q.dtd
-@@ -0,0 +1,1861 @@
+@@ -0,0 +1,1875 @@
 +/dts-v1/;
 +/// ***************************************************************************************\n
 +//$$ PROJECT="meson8b"
@@ -873,6 +873,8 @@ index 0000000..af28bb1
 +    audio_spdif_codec{
 +        compatible = "amlogic,aml-spdif-codec";
 +        dev_name = "spdif-dit.0";
++        pinctrl-names = "aml_audio_spdif";
++        pinctrl-0 = <&audio_spdif_pins>;
 +        status = "okay";
 +    };
 +
@@ -1739,9 +1741,21 @@ index 0000000..af28bb1
 +//$$ L2 PROP_U32 10 = "amlogic,clrmask"
 +//$$ L2 PROP_STR 6 = "amlogic,pins"
 +        audio_pins:audio_pin{
-+            amlogic,setmask=<10 0x78000000>;
-+            amlogic,clrmask=<10 0x80002000>;
++            amlogic,setmask=<10 0x78000000
++                             1 0x80>;
++            amlogic,clrmask=<10 0x80002008
++                             1 0x10000
++                             3 0x40000>;
 +            amlogic,pins = "GPIOAO_8","GPIOAO_9","GPIOAO_10","GPIOAO_11";
++        };
++//$$ MATCH "Audio_pin_0_match" = "&audio_spdif_pins"
++//$$ L2 PROP_U32 2 = "amlogic,setmask"
++//$$ L2 PROP_U32 2 = "amlogic,clrmask"
++//$$ L2 PROP_STR 1 = "amlogic,pins"
++        audio_spdif_pins:audio_pin1{
++            amlogic,setmask=<1 0x80>;       /*spdif_out*/
++            amlogic,clrmask=<1 0x10000>;    /*spdif_out*/
++            amlogic,pins ="GPIOY_3";        /*spdif_out*/
 +        };
 +
 +//$$ MATCH "Spi_pin_0_match" = "&aml_spi_nor_pins"
