@@ -11,6 +11,11 @@ PROJECT=S905 DEVICE=KI-Pro ARCH=arm make image -j8
 # Tested and works on PCB: 'K1_S905_REV2.2', wireless module: rtl8189es.
 PROJECT=S905 DEVICE=KI-Plus ARCH=arm make image -j8
 
+# WeTek Play 2 (gxbb_p200_2G_wetek_play_2)
+# Specs: Amlogic S905-H SoC, 2 GB RAM, 8 GB eMMC, 1 Gbps Ethernet (RTL8211F),
+# Tested and works on PCB: 'WeTek Play2 V1.2', wireless module: ap6330.
+PROJECT=S905 DEVICE=WeTek_Play_2 ARCH=arm make image -j8
+
 # MXQ 4K Pro+ (gxl_p212_2g_nand)
 # Specs: Amlogic S905X SoC, 2 GB RAM, 16 GB eMMC, 10/100 Mbps Ethernet (IC+ IP101GR),
 # Tested and works with wireless module: bcm4334b1.

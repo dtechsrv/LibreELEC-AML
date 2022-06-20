@@ -8,6 +8,8 @@ Unofficial community sources and firmware binaries for some Amlogic TV Boxes.
 *Amlogic S905D SoC, 2 GB RAM, 16 GB eMMC, 1 Gbps Ethernet (RTL8211F),*
 - S905/KI-Plus (with S905 SoC only),<br />
 *Amlogic S905 SoC, 1 GB RAM, 8 GB eMMC, 10/100 Mbps Ethernet (IC+ IP101GR),*
+- S905/WeTek Play 2,<br />
+*Amlogic S905-H SoC, 2 GB RAM, 8 GB eMMC, 1 Gbps Ethernet (RTL8211F),*
 - S905/MXQ-4K-Pro_2G (MXQ 4K Pro+),<br />
 *Amlogic S905X SoC, 2 GB RAM, 16 GB eMMC, 10/100 Mbps Ethernet (IC+ IP101GR),*
 - S8X2/M8S+ (with ap6330 and bcm4335b0 wireless modules),<br />
