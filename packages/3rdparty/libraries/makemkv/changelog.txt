@@ -1,0 +1,57 @@
+115
+- updated to 1.17.0
+- added additional binaries
+- fixed binary arch selection
+
+114
+- updated to 1.16.7
+- fixed key query and parser script
+
+113
+- updated to 1.16.3
+
+112
+- updated to 1.15.4
+- dropped patches
+- updated build
+
+111
+- updated to 1.14.4
+
+110
+- updated to 1.14.3
+
+109
+- fixed OpenSSL 1.1.1 lib
+
+108
+- updated key update script
+
+107
+- updated to 1.14.2
+
+106
+- updated to 1.14.1
+
+105
+- updated to 1.14.0
+
+104
+- updated makemkv-key-update logging
+- added key update by starting the addon
+- added correct pkg version
+- added correct pkg maintainer
+- updated addon description
+
+103
+- removed key-update functions from makemkvcon 
+- added dedicated makemkv-key-update script
+
+102
+- updated MakeMKV config path
+
+101
+- fixed addon name
+
+100
+- Initial Release

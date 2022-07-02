@@ -1,0 +1,17 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0
+# Copyright (C) 2018-2021 Frank Hartung (supervisedthinking (@) gmail.com)
+# Copyright (C) 2022-present Gabor Dee (dee.gabor@gmail.com)
+
+. /etc/profile
+
+ADDON_DIR="/storage/.kodi/addons/lib.multimedia.makemkv"
+SETTINGS_FILE=$HOME/.config/MakeMKV/settings.conf
+
+if [ ! -f $SETTINGS_FILE ] || [ ! -L /storage/.MakeMKV ]; then
+  makemkv-key-update
+fi
+
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$ADDON_DIR/lib"
+
+makemkvcon.bin $@
