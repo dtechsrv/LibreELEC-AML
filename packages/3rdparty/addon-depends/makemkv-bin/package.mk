@@ -3,21 +3,15 @@
 # Copyright (C) 2022-present Gabor Dee (dee.gabor@gmail.com)
 
 PKG_NAME="makemkv-bin"
-PKG_VERSION="1.17.0"
+PKG_VERSION="1.17.1"
+PKG_SHA256="0784908b07f9fc87307a0f958105b7e2d37f5f10c0ef1a1280854e7d7c06b1f3"
 PKG_ARCH="x86_64 arm aarch64"
 PKG_LICENSE="OSS"
 PKG_SITE="http://www.makemkv.com/"
+PKG_URL="http://www.makemkv.com/download/makemkv-bin-${PKG_VERSION}.tar.gz"
 PKG_DEPENDS_TARGET="toolchain"
 PKG_LONGDESC="MakeMKV binaries & EULA"
 PKG_TOOLCHAIN="manual"
-
-if [ "${TARGET_ARCH}" = "arm" ]; then
-  PKG_URL="https://mail.makemkv.com/download/makemkv-bin-${PKG_VERSION}_armhf.tar.gz"
-  PKG_SHA256="abbbadb10fc631e80ae413a58862f4d85b590d2a18b61b6409c1070b37dacda9"
-else
-  PKG_URL="http://www.makemkv.com/download/makemkv-bin-${PKG_VERSION}.tar.gz"
-  PKG_SHA256="e277d75722aede64ac1b564969c7d64608e00591b17068dc7a88358e7a03e2c0"
-fi
 
 makeinstall_target() {
   :
