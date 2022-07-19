@@ -1,0 +1,49 @@
+diff --git a/arch/arm/boot/dts/amlogic/wetek_play.dtd b/arch/arm/boot/dts/amlogic/wetek_play.dtd
+index 1ae1d4d..b2b57d3 100755
+--- a/arch/arm/boot/dts/amlogic/wetek_play.dtd
++++ b/arch/arm/boot/dts/amlogic/wetek_play.dtd
+@@ -111,7 +111,7 @@ void root_func(){
+ 		compatible = "amlogic,mesonfb";
+ 		dev_name = "mesonfb";
+ 		status = "okay";
+-		reserve-memory = <0x01000000 0x00100000>;
++		reserve-memory = <0x01800000 0x00100000>;
+ 		reserve-iomap = "true";
+ 	  vmode = <0>; /*0:VMODE_720P 1:VMODE_LCD  2:VMODE_LVDS_1080P 3:VMODE_1080P*/
+ 	  scale_mode = <0>; /*0:default 1:new*/
+@@ -124,7 +124,7 @@ void root_func(){
+ 		compatible = "amlogic,deinterlace";
+ 		dev_name = "deinterlace";
+ 		status = "okay";
+-		reserve-memory = <0x01c00000>; // 27M
++		reserve-memory = <0x02100000>; //10x1920x1088x3/2=33M
+ 		reserve-iomap = "true";
+ 	};
+ 
+@@ -138,7 +138,7 @@ void root_func(){
+ 		compatible = "amlogic,mesonstream";
+ 		dev_name = "mesonstream.0";
+ 		status = "okay";
+-		reserve-memory = <0x00a00000>; //10M
++		reserve-memory = <0x02000000>; // 32M
+ 		reserve-iomap = "true";
+ 	};
+ 
+@@ -153,7 +153,7 @@ void root_func(){
+                 compatible = "amlogic,vdec";
+                 dev_name = "vdec.0";
+                 status = "okay";
+-                reserve-memory = <0x02000000>; //32M
++                reserve-memory = <0x04000000>; //64M
+ 		reserve-iomap = "true";
+         };
+ 
+@@ -167,7 +167,7 @@ void root_func(){
+ 		compatible = "amlogic,ppmgr";
+ 		dev_name = "ppmgr";
+ 		status = "okay";
+-		reserve-memory = <0x01300000>;	// 1280*732*21 = 19,676,160
++		reserve-memory = <0x02000000>; // 32M
+ 		reserve-iomap = "true";
+ 	};
+ 
