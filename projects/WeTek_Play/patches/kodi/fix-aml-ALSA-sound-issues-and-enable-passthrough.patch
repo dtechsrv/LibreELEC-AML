@@ -1,0 +1,86 @@
+diff --git a/xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp b/xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp
+index 878f772..f432f72 100644
+--- a/xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp
++++ b/xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp
+@@ -73,6 +73,17 @@ static unsigned int ALSASampleRateList[] =
+   0
+ };
+ 
++static int CheckNP2(unsigned x)
++{
++  --x;
++  x |= x >> 1;
++  x |= x >> 2;
++  x |= x >> 4;
++  x |= x >> 8;
++  x |= x >> 16;
++  return ++x;
++}
++
+ CAESinkALSA::CAESinkALSA() :
+   m_pcm(NULL)
+ {
+@@ -632,6 +643,27 @@ bool CAESinkALSA::InitializeHW(const ALSAConfig &inconfig, ALSAConfig &outconfig
+   snd_pcm_hw_params_set_access(m_pcm, hw_params, SND_PCM_ACCESS_RW_INTERLEAVED);
+ 
+   unsigned int sampleRate   = inconfig.sampleRate;
++
++#if defined(HAS_LIBAMCODEC)
++  // Change the sample rates that are supported by ALSA but unsupported by HDMI to the closest supported value
++  switch (sampleRate)
++  {
++  case 5512:
++  case 8000:
++  case 11025:
++  case 16000:
++  case 22050:
++    sampleRate = 44100;
++    break;
++  case 64000:
++    sampleRate = 88200;
++    break;
++  case 384000:
++    sampleRate = 192000;
++    break;
++  }
++#endif
++
+   snd_pcm_hw_params_set_rate_near    (m_pcm, hw_params, &sampleRate, NULL);
+ 
+   unsigned int channelCount = inconfig.channels;
+@@ -730,12 +762,22 @@ bool CAESinkALSA::InitializeHW(const ALSAConfig &inconfig, ALSAConfig &outconfig
+   periodSize  = std::min(periodSize, (snd_pcm_uframes_t) sampleRate / 20);
+   bufferSize  = std::min(bufferSize, (snd_pcm_uframes_t) sampleRate / 5);
+ 
++#if defined(HAS_LIBAMCODEC)
++  // must be pot for pivos.
++  bufferSize  = CheckNP2(bufferSize);
++#endif
++
+   /*
+    According to upstream we should set buffer size first - so make sure it is always at least
+    4x period size to not get underruns (some systems seem to have issues with only 2 periods)
+   */
+   periodSize = std::min(periodSize, bufferSize / 4);
+ 
++#if defined(HAS_LIBAMCODEC)
++  // must be pot for pivos.
++  periodSize = CheckNP2(periodSize);
++#endif
++
+   CLog::Log(LOGDEBUG, "CAESinkALSA::InitializeHW - Request: periodSize %lu, bufferSize %lu", periodSize, bufferSize);
+ 
+   snd_pcm_hw_params_copy(hw_params_copy, hw_params); // copy what we have and is already working
+@@ -1358,6 +1400,12 @@ void CAESinkALSA::EnumerateDevice(AEDeviceInfoList &list, const std::string &dev
+     if (snd_card_get_name(cardNr, &cardName) == 0)
+       info.m_displayName = cardName;
+ 
++    // ugly workaround to show DTS / AC3 caps
++    // but don't run into multi channel issues
++    // as we can only open 2 pcm channels
++    if (info.m_displayName == "AML-DUMMY-CODEC")
++      info.m_deviceType = AE_DEVTYPE_IEC958;
++
+     if (info.m_deviceType == AE_DEVTYPE_HDMI && info.m_displayName.size() > 5 &&
+         info.m_displayName.substr(info.m_displayName.size()-5) == " HDMI")
+     {
