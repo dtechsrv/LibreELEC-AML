@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2018-present Team LibreELEC (https://libreelec.tv)
+
+# generate uINITRD
+mkdir -p $RELEASE_DIR/target
+  rm -rf $TARGET_IMG/$IMAGE_NAME.initrd
+  mkimage -A arm -T ramdisk -n RootFS\ [$PROJECT] -C none -d $INSTALL/../initramfs.cpio \
+    $TARGET_IMG/$IMAGE_NAME.initrd
+  cp -p $TARGET_IMG/$IMAGE_NAME.initrd $RELEASE_DIR/target/INITRD
+  ( cd $RELEASE_DIR; md5sum -t target/INITRD > target/INITRD.md5; )
+
+mkdir -p $RELEASE_DIR/3rdparty/bootloader
+  cp -a $INSTALL/usr/share/bootloader/* $RELEASE_DIR/3rdparty/bootloader
+  cp -PR $PROJECT_DIR/$PROJECT/bootloader/bl1.bin $RELEASE_DIR/3rdparty/bootloader/bl1
+  cp -PR $PROJECT_DIR/$PROJECT/bootloader/u-boot.bin $RELEASE_DIR/3rdparty/bootloader/u-boot
+  cp -PR $PROJECT_DIR/$PROJECT/bootloader/boot.ini $RELEASE_DIR/3rdparty/bootloader

@@ -1,0 +1,44 @@
+diff --git a/drivers/amlogic/amports/video.c b/drivers/amlogic/amports/video.c
+index 821174f..4cf44ab 100644
+--- a/drivers/amlogic/amports/video.c
++++ b/drivers/amlogic/amports/video.c
+@@ -125,6 +125,7 @@ static int omx_pts_interval_lower = -5500;
+ 
+ 
+ bool omx_secret_mode = false;
++EXPORT_SYMBOL(omx_secret_mode);
+ #define DEBUG_FLAG_FFPLAY	(1<<0)
+ #define DEBUG_FLAG_CALC_PTS_INC	(1<<1)
+ 
+diff --git a/drivers/amlogic/ppmgr/ppmgr_drv.c b/drivers/amlogic/ppmgr/ppmgr_drv.c
+index 984469b..a11efb9 100644
+--- a/drivers/amlogic/ppmgr/ppmgr_drv.c
++++ b/drivers/amlogic/ppmgr/ppmgr_drv.c
+@@ -1181,6 +1181,7 @@ void get_ppmgr_buf_info(char **start, unsigned int *size)
+ 	*start = ppmgr_device.buffer_start;
+ 	*size = ppmgr_device.buffer_size;
+ }
++EXPORT_SYMBOL(get_ppmgr_buf_info);
+ 
+ static int ppmgr_open(struct inode *inode, struct file *file)
+ {
+diff --git a/drivers/amlogic/video_dev/Kconfig b/drivers/amlogic/video_dev/Kconfig
+index bdae148..94a2a2f 100644
+--- a/drivers/amlogic/video_dev/Kconfig
++++ b/drivers/amlogic/video_dev/Kconfig
+@@ -4,6 +4,7 @@ config V4L_AMLOGIC_VIDEO
+ 	tristate "Amlogic v4l video device support"
+ 	select VIDEO_DEV
+ 	select VIDEO_V4L2
++	select VIDEOBUF_GEN
+ 	select VIDEOBUF_RESOURCE
+ 	default n
+ 	---help---
+@@ -14,6 +15,7 @@ config V4L_AMLOGIC_VIDEO2
+ 	select VIDEO_DEV
+ 	select VIDEOBUF_GEN
+ 	select VIDEO_V4L2_COMMON
++	select VIDEOBUF_GEN
+ 	select VIDEOBUF_RESOURCE
+ 	select AM_GE2D
+     	default n

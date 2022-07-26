@@ -1,0 +1,353 @@
+From 56927e46f022b817173b58a28360719e87ff5cf4 Mon Sep 17 00:00:00 2001
+From: Markus Pfau <pfau@peak3d.de>
+Date: Tue, 27 Dec 2016 16:34:21 +0100
+Subject: [PATCH] [AML] freerun_mode_3
+
+---
+ drivers/amlogic/amports/video.c      | 10 ++++---
+ drivers/amlogic/video_dev/amlvideo.c | 51 +++++++++++++++++++++++++++++++-----
+ 2 files changed, 51 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/amlogic/amports/video.c b/drivers/amlogic/amports/video.c
+index db86c36..ec7e2fe 100755
+--- a/drivers/amlogic/amports/video.c
++++ b/drivers/amlogic/amports/video.c
+@@ -2840,13 +2840,15 @@ static irqreturn_t vsync_isr(int irq, void *dev_id)
+     int enc_line;
+     unsigned char frame_par_di_set = 0;
+     s32 i, vout_type;
++    u32 system_time;
+     vframe_t *vf;
+     unsigned long flags;
+ #if MESON_CPU_TYPE >= MESON_CPU_TYPE_MESON8
+     vdin_v4l2_ops_t *vdin_ops = NULL;
+     vdin_arg_t arg;
+ #endif
+-	bool show_nosync=false;
++    bool show_nosync=false;
++    int diff;
+ 
+ #ifdef CONFIG_AM_VIDEO_LOG
+     int toggle_cnt;
+@@ -2976,8 +2978,10 @@ static irqreturn_t vsync_isr(int irq, void *dev_id)
+         timestamp_apts_inc(vsync_pts_inc / vsync_slow_factor);
+     }
+     if (omx_secret_mode == true) {
+-        u32 system_time = timestamp_pcrscr_get();
+-        int diff = omx_pts - system_time;
++        atomic_set(&trickmode_framedone, 1);
++        video_notify_flag |= VIDEO_NOTIFY_TRICK_WAIT;
++        system_time = timestamp_pcrscr_get();
++        diff = omx_pts - system_time;
+         if (diff>11000 || diff<-11000) {
+             timestamp_pcrscr_enable(1);
+             //printk("system_time=%d,omx_pts=%d,diff=%d\n",system_time,omx_pts,diff);
+diff --git a/drivers/amlogic/video_dev/amlvideo.c b/drivers/amlogic/video_dev/amlvideo.c
+index 94162a3..e1c8a35 100755
+--- a/drivers/amlogic/video_dev/amlvideo.c
++++ b/drivers/amlogic/video_dev/amlvideo.c
+@@ -63,11 +63,12 @@
+ 
+ #define AMLVIDEO_POOL_SIZE 16
+ static vfq_t q_ready;
++static vfq_t q_omx;
+ extern bool omx_secret_mode;
++static u32 omx_frame_index = 0;
+ static u8 first_frame;
+ static u32 vpts_last;
+ 
+-
+ #define DUR2PTS(x) ((x) - ((x) >> 4))
+ #define DUR2PTS_RM(x) ((x) & 0xf)
+ 
+@@ -157,6 +158,7 @@ static struct vivi_fmt formats[] = {
+     };
+ 
+ struct vframe_s *amlvideo_pool_ready[AMLVIDEO_POOL_SIZE+1];
++struct vframe_s *amlvideo_pool_omx[AMLVIDEO_POOL_SIZE+1];
+ /* ------------------------------------------------------------------
+  *           provider operations
+  *-----------------------------------------------------------------*/
+@@ -193,8 +195,8 @@ static int amlvideo_vf_states(vframe_states_t *states, void *op_arg) {
+     //spin_lock_irqsave(&lock, flags);
+     states->vf_pool_size    = AMLVIDEO_POOL_SIZE;
+     states->buf_recycle_num = 0;
+-    states->buf_free_num    =  AMLVIDEO_POOL_SIZE - vfq_level(&q_ready);
+-    states->buf_avail_num   = vfq_level(&q_ready);
++    states->buf_free_num    = AMLVIDEO_POOL_SIZE - (vfq_level(&q_ready) + vfq_level(&q_omx));
++    states->buf_avail_num   = vfq_level(&q_ready) | (vfq_level(&q_omx) << 16);
+     //spin_unlock_irqrestore(&lock, flags);
+     return 0;
+ }
+@@ -319,6 +321,7 @@ static int video_receiver_event_fun(int type, void* data, void* private_data) {
+             vf_reg_provider(&amlvideo_vf_prov);
+             vf_notify_receiver(PROVIDER_NAME,VFRAME_EVENT_PROVIDER_START,NULL);
+             vfq_init(&q_ready, AMLVIDEO_POOL_SIZE+1, &amlvideo_pool_ready[0]);
++            vfq_init(&q_omx, AMLVIDEO_POOL_SIZE+1, &amlvideo_pool_omx[0]);
+         }
+     }
+     return 0;
+@@ -520,6 +523,31 @@ static int vidioc_qbuf(struct file *file, void *priv, struct v4l2_buffer *p) {
+     int ret = 0;
+     if (omx_secret_mode == true) {
+         trace_qbuf(p->index);
++        if (freerun_mode == 3) {
++
++            vframe_t *vf;
++
++            //skip dropped frames
++            while ((vf = vfq_peek(&q_omx)))
++            {
++                u32 index = (int)(vf->pts_us64);
++                if (index < p->index)
++                {
++                    printk("amlvideo vidioc_qbuf: skip index %u->%u\n",index, p->index);
++                    vf_put(vfq_pop(&q_omx), RECEIVER_NAME);
++                    continue;
++                }
++                else if (index == p->index)
++                {
++                    vfq_pop(&q_omx);
++                    if (!(p->flags & V4L2_BUF_FLAG_DONE))
++                        vfq_push(&q_ready, vf);
++                    else
++                        vf_put(vf, RECEIVER_NAME);
++                }
++                break;
++            }
++        }
+         return ret;
+     }
+     if (ppmgrvf) {
+@@ -576,7 +604,7 @@ static int freerun_dqbuf(struct v4l2_buffer *p) {
+     int omx_ready = 0;
+     if (omx_secret_mode == true) {
+         omx_ready = vfq_level(&q_ready);
+-        if (omx_ready > AMLVIDEO_POOL_SIZE-1) {
++        if (omx_ready + vfq_level(&q_omx)> AMLVIDEO_POOL_SIZE-1) {
+             my_wb_debug++;
+             return -EAGAIN;
+         }
+@@ -594,9 +622,7 @@ static int freerun_dqbuf(struct v4l2_buffer *p) {
+         return -EAGAIN;
+     }
+     if (omx_secret_mode == true) {
+-        vfq_push(&q_ready, ppmgrvf);
+         p->index = 0;
+-        p->timestamp.tv_sec = 0;
+ 
+         if (ppmgrvf->pts) {
+             first_frame = 1;
+@@ -611,6 +637,16 @@ static int freerun_dqbuf(struct v4l2_buffer *p) {
+         trace_dqbuf(p->index, my_wf_debug, my_wb_debug, omx_ready);
+         my_wf_debug = 0;
+         my_wb_debug = 0;
++
++        if (freerun_mode != 3)
++            vfq_push(&q_ready, ppmgrvf);
++        else
++        {
++            ppmgrvf->pts_us64 = omx_frame_index;
++            p->index = omx_frame_index++;
++            vfq_push(&q_omx, ppmgrvf);
++        }
++
+         return ret;
+     }
+     if (ppmgrvf->pts != 0) {
+@@ -714,7 +750,7 @@ static int normal_dqbuf(struct v4l2_buffer *p) {
+ static int vidioc_dqbuf(struct file *file, void *priv, struct v4l2_buffer *p) {
+     int ret = 0;
+ 
+-    if (freerun_mode == 1) {
++    if (freerun_mode == 1 || freerun_mode == 3) {
+         ret = freerun_dqbuf(p);
+     }else if (freerun_mode == 2) {
+         ret = freerun_cleancache_dqbuf(p);
+@@ -821,6 +857,7 @@ static int amlvideo_open(struct file *file) {
+     unregFlag = 0;
+     startFlag = 1;
+     freerun_start = 0;
++    omx_frame_index = 0;
+     mutex_unlock(&vfpMutex);
+     mutex_lock(&dev->mutex);
+     dev->users++;
+
+From 7f628592e739d8b6ca4497e8016e727e76bbf28f Mon Sep 17 00:00:00 2001
+From: Markus Pfau <pfau@peak3d.de>
+Date: Fri, 13 Jan 2017 19:02:17 +0100
+Subject: [PATCH] keyframe_pts_only for vc-1
+
+---
+ drivers/amlogic/amports/vvc1.c | 15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
+ mode change 100755 => 100644 drivers/amlogic/amports/vvc1.c
+
+diff --git a/drivers/amlogic/amports/vvc1.c b/drivers/amlogic/amports/vvc1.c
+old mode 100755
+new mode 100644
+index ad22b8f..7b44c4a
+--- a/drivers/amlogic/amports/vvc1.c
++++ b/drivers/amlogic/amports/vvc1.c
+@@ -113,6 +113,7 @@ static struct timer_list recycle_timer;
+ static u32 stat;
+ static u32 buf_start, buf_size, buf_offset;
+ static u32 avi_flag = 0;
++static u32 keyframe_pts_only;
+ static u32 vvc1_ratio;
+ static u32 vvc1_format;
+ 
+@@ -261,9 +262,15 @@ static irqreturn_t vvc1_isr(int irq, void *dev_id)
+             vvc1_amstream_dec_info.height = v_height;
+         } 
+         
++        repeat_count = READ_VREG(VC1_REPEAT_COUNT);
++        buffer_index = ((reg & 0x7) - 1) & 3;
++        picture_type = (reg >> 3) & 7;
++
+         if (pts_by_offset) {
+             offset = READ_VREG(VC1_OFFSET_REG);
+-            if (pts_lookup_offset_us64(PTS_TYPE_VIDEO, offset, &pts, 0, &pts_us64) == 0) {
++            if (keyframe_pts_only && (picture_type != I_PICTURE)) {
++                pts_valid = 0;
++            } else if (pts_lookup_offset_us64(PTS_TYPE_VIDEO, offset, &pts, 0, &pts_us64) == 0) {
+                 pts_valid = 1;
+ #ifdef DEBUG_PTS
+                 pts_hit++;
+@@ -275,10 +282,6 @@ static irqreturn_t vvc1_isr(int irq, void *dev_id)
+             }
+         }
+ 
+-        repeat_count = READ_VREG(VC1_REPEAT_COUNT);
+-        buffer_index = ((reg & 0x7) - 1) & 3;
+-        picture_type = (reg >> 3) & 7;
+-
+         if (buffer_index >= DECODE_BUFFER_NUM_MAX) {
+             printk("fatal error, invalid buffer index.");
+             return IRQ_HANDLED;
+@@ -744,6 +747,8 @@ static void vvc1_local_init(void)
+ 
+     avi_flag = (u32)vvc1_amstream_dec_info.param;
+ 
++    keyframe_pts_only = (u32)vvc1_amstream_dec_info.param & 0x100;
++
+     total_frame = 0;
+ 
+     next_pts = 0;
+
+From 6f39b456c5c54a209799106c9dddff095eb430b1 Mon Sep 17 00:00:00 2001
+From: Markus Pfau <pfau@peak3d.de>
+Date: Fri, 13 Jan 2017 21:21:45 +0100
+Subject: [PATCH] keyframe_pts_only for mpeg4
+
+---
+ drivers/amlogic/amports/vmpeg4.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+ mode change 100755 => 100644 drivers/amlogic/amports/vmpeg4.c
+
+diff --git a/drivers/amlogic/amports/vmpeg4.c b/drivers/amlogic/amports/vmpeg4.c
+old mode 100755
+new mode 100644
+index 6f29695..22ba05f
+--- a/drivers/amlogic/amports/vmpeg4.c
++++ b/drivers/amlogic/amports/vmpeg4.c
+@@ -148,6 +148,7 @@ static u64 vmpeg4_ratio64;
+ static u32 rate_detect;
+ static u32 vmpeg4_rotation;
+ static u32 pts_unstable = 0;
++static u32 keyframe_pts_only;
+ 
+ static u32 total_frame;
+ static u32 last_vop_time_inc, last_duration;
+@@ -335,7 +336,7 @@ static irqreturn_t vmpeg4_isr(int irq, void *dev_id)
+         if (1 == pts_unstable) {
+             trustable_pts = I_PICTURE == picture_type;
+         } else {
+-            trustable_pts = I_PICTURE == picture_type || P_PICTURE == picture_type;
++            trustable_pts = I_PICTURE == picture_type || (P_PICTURE == picture_type && keyframe_pts_only == 0);
+         }
+ 
+         /*2500-->3000,because some mpeg4 video may checkout failed;
+@@ -778,6 +779,8 @@ static void vmpeg4_local_init(void)
+     vmpeg4_rotation = (((u32)vmpeg4_amstream_dec_info.param) >> 16) & 0xffff;
+     pts_unstable = ((u32)vmpeg4_amstream_dec_info.param & 0x40) >> 6;
+ 
++    keyframe_pts_only = (u32)vmpeg4_amstream_dec_info.param & 0x100;
++
+     frame_width = frame_height = frame_dur = frame_prog = 0;
+ 
+     total_frame = 0;
+
+From a0e98d944b7baf207bfe1ee2176a9d77d90bece6 Mon Sep 17 00:00:00 2001
+From: Markus Pfau <pfau@peak3d.de>
+Date: Sun, 2 Apr 2017 18:18:59 +0200
+Subject: [PATCH] drivers/amlogic/amports/vvc1: calculate PTS from DTS for
+ PTS_ON_KEYFRAME
+
+---
+ drivers/amlogic/amports/vvc1.c | 31 ++++++++++++++++++++++++++-----
+ 1 file changed, 26 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/amlogic/amports/vvc1.c b/drivers/amlogic/amports/vvc1.c
+index 7b44c4ae1cdb1..6a88ee2001853 100644
+--- a/drivers/amlogic/amports/vvc1.c
++++ b/drivers/amlogic/amports/vvc1.c
+@@ -123,6 +123,8 @@ static u32 pts_by_offset = 1;
+ static u32 total_frame;
+ static u32 next_pts;
+ static u64 next_pts_us64;
++static u32 next_IP_pts;
++static u64 next_IP_pts_us64;
+ 
+ #ifdef DEBUG_PTS
+ static u32 pts_hit, pts_missed, pts_i_hit, pts_i_missed;
+@@ -244,7 +246,7 @@ static irqreturn_t vvc1_isr(int irq, void *dev_id)
+     u32 picture_type;
+     u32 buffer_index;
+     unsigned int pts, pts_valid = 0, offset;
+-    u32 v_width, v_height;
++    u32 v_width, v_height, dur;
+     u64 pts_us64 = 0;
+ 
+     reg = READ_VREG(VC1_BUFFEROUT);
+@@ -268,10 +270,27 @@ static irqreturn_t vvc1_isr(int irq, void *dev_id)
+ 
+         if (pts_by_offset) {
+             offset = READ_VREG(VC1_OFFSET_REG);
+-            if (keyframe_pts_only && (picture_type != I_PICTURE)) {
+-                pts_valid = 0;
+-            } else if (pts_lookup_offset_us64(PTS_TYPE_VIDEO, offset, &pts, 0, &pts_us64) == 0) {
+-                pts_valid = 1;
++		if (pts_lookup_offset_us64(PTS_TYPE_VIDEO, offset, &pts, 0, &pts_us64) == 0) {
++				pts_valid = 1;
++				if (keyframe_pts_only)
++				{
++					//pr_info("PT:%d rpc:%d pts64:%lld\n", picture_type , repeat_count, pts_us64);
++					dur = DUR2PTS(vvc1_amstream_dec_info.rate);
++					if (picture_type == B_PICTURE)
++					{
++						next_IP_pts = pts;
++						next_IP_pts_us64 = pts_us64;
++						pts -= dur;
++						pts_us64 -= (dur * 100) / 9;
++					}
++					else if (next_IP_pts)
++					{
++						pts = next_IP_pts;
++						next_IP_pts = 0;
++						pts_us64 = next_IP_pts_us64;
++						next_IP_pts_us64 = 0;
++					}
++				}
+ #ifdef DEBUG_PTS
+                 pts_hit++;
+ #endif
+@@ -754,6 +773,8 @@ static void vvc1_local_init(void)
+     next_pts = 0;
+ 
+     next_pts_us64 = 0;
++    next_IP_pts = 0;
++    next_IP_pts_us64 = 0;
+ 
+ #ifdef DEBUG_PTS
+     pts_hit = pts_missed = pts_i_hit = pts_i_missed = 0;

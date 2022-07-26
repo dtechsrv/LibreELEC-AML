@@ -1,0 +1,54 @@
+From ddaa7b6e47ed2c9c755122e94b0e97bf74f53992 Mon Sep 17 00:00:00 2001
+From: Carlo Caione <carlo@endlessm.com>
+Date: Mon, 5 Oct 2015 18:54:30 +0200
+Subject: [PATCH 25/26] sound: Hardcode 2-channels for HDMI audio
+
+This is done for two reasons:
+- We support only 2-channels in meson_set_hdmi_audio()
+- PA-hardware interaction is broken when we try to open 'hdmi:0' using 7
+  channels
+
+The second issue is problematic. When PA probes the default profile it
+loads two different mappings for the 'hdmi:0' device: 'hdmi-stereo' and
+'hdmi-surround71' in this order.
+
+The PA probing ends up calling hdmitx_set_audmode() twice: the first
+configuring 2 channels, the second one re-configuring again the hw to
+use 7 channels immediately after.
+
+This is broken since it causes at boot to have the HDMI still enabled
+even though the HP is plugged-in.
+
+With this patch we limit the number of HDMI channels to 2.
+
+Signed-off-by: Carlo Caione <carlo@endlessm.com>
+---
+ sound/soc/aml/m8/aml_spdif_codec.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/sound/soc/aml/m8/aml_spdif_codec.c b/sound/soc/aml/m8/aml_spdif_codec.c
+index 7656948..f914912 100755
+--- a/sound/soc/aml/m8/aml_spdif_codec.c
++++ b/sound/soc/aml/m8/aml_spdif_codec.c
+@@ -37,15 +37,15 @@ static struct snd_soc_dai_driver dit_stub_dai = {
+ 	.name		= "dit-hifi",
+ 	.playback 	= {
+ 		.stream_name	= "Playback",
+-		.channels_min	= 1,
+-		.channels_max	= 8,
++		.channels_min	= 2,
++		.channels_max	= 2,
+ 		.rates		= STUB_RATES,
+ 		.formats	= STUB_FORMATS,
+ 	},
+ 	.capture 	= {
+ 		.stream_name	= "Capture",
+-		.channels_min	= 1,
+-		.channels_max	= 8,
++		.channels_min	= 2,
++		.channels_max	= 2,
+ 		.rates		= STUB_RATES,
+ 		.formats	= STUB_FORMATS,
+ 	},
+-- 
+1.9.1

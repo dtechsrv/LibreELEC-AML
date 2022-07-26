@@ -1,0 +1,158 @@
+From a162cf768600164bc36ae5ac23e2ca0f28e40c05 Mon Sep 17 00:00:00 2001
+From: "charles.park" <charles.park@hardkernel.com>
+Date: Fri, 9 Sep 2016 14:58:11 +0900
+Subject: [PATCH] ODROID-C1 : odroid 3.5 lcd rotate func added.
+
+Change-Id: I6aebf1bd435ed6789f7da133ca97a361a4a5c17a
+---
+ drivers/video/fbtft/flexfb.c | 54 +++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 51 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/fbtft/flexfb.c b/drivers/video/fbtft/flexfb.c
+index 4811546..709458f 100755
+--- a/drivers/video/fbtft/flexfb.c
++++ b/drivers/video/fbtft/flexfb.c
+@@ -147,6 +147,51 @@ static int ili9488_init[] = { \
+ -1, 0x11, \
+ -1, 0x29, \
+ -3 };
++
++static void set_addr_win_odroid(struct fbtft_par *par, int xs, int ys, int xe, int ye)
++{
++	fbtft_par_dbg(DEBUG_SET_ADDR_WIN, par,
++		"%s(xs=%d, ys=%d, xe=%d, ye=%d)\n", __func__, xs, ys, xe, ye);
++
++	/* Column address */
++	write_reg(par, 0x2A, xs >> 8, xs & 0xFF, xe >> 8, xe & 0xFF);
++
++	/* Row adress */
++	write_reg(par, 0x2B, ys >> 8, ys & 0xFF, ye >> 8, ye & 0xFF);
++
++	/* Memory write */
++	write_reg(par, 0x2C);
++}
++
++#define ODROID_TFT35_MACTL_MV  0x20
++#define ODROID_TFT35_MACTL_MX  0x40
++#define ODROID_TFT35_MACTL_MY  0x80
++
++static int set_var_odroid(struct fbtft_par *par)
++{
++	u8 val;
++
++	fbtft_par_dbg(DEBUG_INIT_DISPLAY, par, "%s()\n", __func__);
++
++	switch (par->info->var.rotate) {
++	case 270:
++		val = ODROID_TFT35_MACTL_MV;
++		break;
++	case 180:
++		val = ODROID_TFT35_MACTL_MY;
++		break;
++	case 90:
++		val = ODROID_TFT35_MACTL_MV | ODROID_TFT35_MACTL_MX | ODROID_TFT35_MACTL_MY;
++		break;
++	default:
++		val = ODROID_TFT35_MACTL_MX;
++		break;
++	}
++	/* Memory Access Control  */
++	write_reg(par, 0x36, val | (par->bgr << 3));
++	return	0;
++}
++
+ #endif
+ 
+ /* ili9320, ili9325 */
+@@ -356,9 +401,9 @@ static int flexfb_probe_common(struct spi_device *sdev, struct platform_device *
+ #if defined(CONFIG_MACH_MESON8B_ODROIDC)
+ 		} else if (!strcmp(chip, "ili9488")) {
+ 			if (!width)
+-				width = 480;
++				width = 320;
+ 			if (!height)
+-				height = 320;
++				height = 480;
+ 			setaddrwin = 0;
+ 			regwidth = 8;
+ 			buswidth = 8;
+@@ -523,8 +568,11 @@ static int flexfb_probe_common(struct spi_device *sdev, struct platform_device *
+ 	par->reg_gpiox = ioremap(ODROIDC1_GPIOX_START, 64);
+ 	if (par->reg_gpiox == NULL)
+ 		pr_err("%s : ioremap gpiox register error!\n", __func__);
+-	else
++	else {
+ 		par->fbtftops.write = fbtft_write_reg_wr;
++		par->fbtftops.set_addr_win = set_addr_win_odroid;
++		par->fbtftops.set_var = set_var_odroid;
++	}
+ #endif
+ 	ret = fbtft_register_framebuffer(info);
+ 	if (ret < 0)
+
+From ef0dfd9aa7bc82bc96c695cd9eb84fda9a4adb8e Mon Sep 17 00:00:00 2001
+From: "charles.park" <charles.park@hardkernel.com>
+Date: Fri, 9 Sep 2016 16:18:47 +0900
+Subject: [PATCH] ODROID-C1 : odroid 3.5 lcd color order change.
+
+Change-Id: I04062ecc38b5ee60566c47c0bf77fde0214558fc
+---
+ drivers/video/fbtft/fbtft_device.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/video/fbtft/fbtft_device.c b/drivers/video/fbtft/fbtft_device.c
+index ccd91f1..b9eb4de 100755
+--- a/drivers/video/fbtft/fbtft_device.c
++++ b/drivers/video/fbtft/fbtft_device.c
+@@ -405,6 +405,9 @@ static struct fbtft_device_display displays[] = {
+ 			.dev = {
+ 			.release = fbtft_device_pdev_release,
+ 			.platform_data = &(struct fbtft_platform_data) {
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++				.bgr = true,
++#endif
+ 				.gpios = (const struct fbtft_gpio []) {
+ #if defined(CONFIG_MACH_MESON8B_ODROIDC)
+ 					{ "reset", 88 },
+
+From 34a7103bb04c5f83e9bbd8f2a29d03967247e175 Mon Sep 17 00:00:00 2001
+From: "Mauro (mdrjr) Ribeiro" <mauro.ribeiro@hardkernel.com>
+Date: Mon, 29 Aug 2016 20:17:24 -0300
+Subject: [PATCH] defconfig: enable USB Touchscreen support
+
+Change-Id: Id3568b2854f2b5ec215d30e3368f3d551c71ba58
+---
+ arch/arm/configs/odroidc_defconfig | 20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/configs/odroidc_defconfig b/arch/arm/configs/odroidc_defconfig
+index 79acc5ec..ea151fc 100644
+--- a/arch/arm/configs/odroidc_defconfig
++++ b/arch/arm/configs/odroidc_defconfig
+@@ -2159,7 +2159,25 @@ CONFIG_INPUT_TOUCHSCREEN=y
+ # CONFIG_TOUCHSCREEN_TOUCHWIN is not set
+ # CONFIG_TOUCHSCREEN_PIXCIR is not set
+ # CONFIG_TOUCHSCREEN_WM97XX is not set
+-# CONFIG_TOUCHSCREEN_USB_COMPOSITE is not set
++CONFIG_TOUCHSCREEN_USB_COMPOSITE=m
++CONFIG_TOUCHSCREEN_USB_EGALAX=y
++CONFIG_TOUCHSCREEN_USB_PANJIT=y
++CONFIG_TOUCHSCREEN_USB_3M=y
++CONFIG_TOUCHSCREEN_USB_ITM=y
++CONFIG_TOUCHSCREEN_USB_ETURBO=y
++CONFIG_TOUCHSCREEN_USB_GUNZE=y
++CONFIG_TOUCHSCREEN_USB_DMC_TSC10=y
++CONFIG_TOUCHSCREEN_USB_IRTOUCH=y
++CONFIG_TOUCHSCREEN_USB_IDEALTEK=y
++CONFIG_TOUCHSCREEN_USB_GENERAL_TOUCH=y
++CONFIG_TOUCHSCREEN_USB_GOTOP=y
++CONFIG_TOUCHSCREEN_USB_JASTEC=y
++CONFIG_TOUCHSCREEN_USB_ELO=y
++CONFIG_TOUCHSCREEN_USB_E2I=y
++CONFIG_TOUCHSCREEN_USB_ZYTRONIC=y
++CONFIG_TOUCHSCREEN_USB_ETT_TC45USB=y
++CONFIG_TOUCHSCREEN_USB_NEXIO=y
++CONFIG_TOUCHSCREEN_USB_EASYTOUCH=y
+ # CONFIG_TOUCHSCREEN_TOUCHIT213 is not set
+ # CONFIG_TOUCHSCREEN_TSC_SERIO is not set
+ # CONFIG_TOUCHSCREEN_TSC2005 is not set

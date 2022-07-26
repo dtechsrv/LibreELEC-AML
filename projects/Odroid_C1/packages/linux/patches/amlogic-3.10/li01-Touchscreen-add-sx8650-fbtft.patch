@@ -1,0 +1,1505 @@
+From 4ded2eda5e08185808e843f006bb46c5d6cc1047 Mon Sep 17 00:00:00 2001
+From: "charles.park" <charles.park@hardkernel.com>
+Date: Mon, 18 Jul 2016 09:56:31 +0900
+Subject: [PATCH] ODROID-C1: New touch product added.(HID Raw)
+
+Change-Id: I7b5d5e63515b5480e902e6665dd01df3653e3758
+---
+ drivers/hid/hid-core.c                  |   2 +
+ drivers/hid/hid-ids.h                   |   9 ++-
+ drivers/input/touchscreen/dwav-usb-mt.c | 104 +++++++++++++++++++++++++-------
+ 3 files changed, 92 insertions(+), 23 deletions(-)
+
+diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+index 9b1268e..47a2ae3 100755
+--- a/drivers/hid/hid-core.c
++++ b/drivers/hid/hid-core.c
+@@ -2226,6 +2226,8 @@ static const struct hid_device_id hid_ignore_list[] = {
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_YEALINK, USB_DEVICE_ID_YEALINK_P1K_P4K_B2K) },
+ 
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_DWAV, USB_DEVICE_ID_DWAV_MULTITOUCH) },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_ODROID, USB_DEVICE_ID_VU5) },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_ODROID, USB_DEVICE_ID_VU7PLUS) },
+ 	{ }
+ };
+ 
+diff --git a/drivers/hid/hid-ids.h b/drivers/hid/hid-ids.h
+index 5a3b548..5522c4d 100755
+--- a/drivers/hid/hid-ids.h
++++ b/drivers/hid/hid-ids.h
+@@ -925,8 +925,6 @@
+ #define USB_VENDOR_ID_SIS	0x0457
+ #define USB_DEVICE_ID_SIS_TS	0x1013
+ 
+-#endif
+-
+ /* Silicon Integrated Systems Corp */
+ #define USB_VENDOR_ID_SILICON		0x0457
+ #define USB_DEVICE_ID_SILICON_TOUCH	0x1057
+@@ -938,3 +936,10 @@
+ /* Acer UT220HQL tbmjz HDMI/USB Multitouch Screen */
+ #define USB_VENDOR_ID_ACER		0x25AA
+ #define USB_DEVICE_ID_UT220HQL_TOUCH	0x8882
++
++/* Hardkernel */
++#define USB_VENDOR_ID_ODROID	0x16b4
++#define USB_DEVICE_ID_VU5	0x0704
++#define USB_DEVICE_ID_VU7PLUS	0x0705
++
++#endif
+diff --git a/drivers/input/touchscreen/dwav-usb-mt.c b/drivers/input/touchscreen/dwav-usb-mt.c
+index 5b9ff36..4ab963d 100755
+--- a/drivers/input/touchscreen/dwav-usb-mt.c
++++ b/drivers/input/touchscreen/dwav-usb-mt.c
+@@ -16,17 +16,62 @@
+ #include <linux/input/mt.h>
+ 
+ //[*]-------------------------------------------------------------------------[*]
+-#define DWAV_TOUCH_MAX_X            800
+-#define DWAV_TOUCH_MAX_Y            480
+-#define DWAV_TOUCH_MAX_ID           5
+-#define DWAV_TOUCH_MAX_PRESSURE     255
++#define USB_VENDOR_ID_DWAV	0x0eef	/* 800 x 480, 7" DWAV touch */
++#define USB_DEVICE_ID_VU7	0x0005
++
++#define USB_VENDOR_ID_ODROID	0x16b4
++#define	USB_DEVICE_ID_VU5	0x0704
++#define	USB_DEVICE_ID_VU7PLUS	0x0705
++
++enum	{
++	ODROID_VU7 = 0,	/* 800 x 480, 7" Touch */
++	ODROID_VU5,	/* 800 x 480, 5" Touch */
++	ODROID_VU7PLUS,	/* 1024 x 600, 7" Touch */
++};
++
++//[*]-------------------------------------------------------------------------[*]
++struct usbtouch_device_info	{
++	char	name[64];
++	int	max_x;
++	int	max_y;
++	int	max_press;
++	int	max_finger;
++};
++
++//[*]-------------------------------------------------------------------------[*]
++const struct usbtouch_device_info DEV_INFO[] = {
++	[ODROID_VU7] = {
++		.name		= "ODROID VU7 MultiTouch(800x480)",
++		.max_x		= 800,
++		.max_y		= 480,
++		.max_press	= 255,
++		.max_finger	= 5,
++	},
++	[ODROID_VU5] = {
++		.name		= "ODROID VU5 MultiTouch(800x480)",
++		.max_x		= 800,
++		.max_y		= 480,
++		.max_press	= 255,
++		.max_finger	= 5,
++	},
++	[ODROID_VU7PLUS] = {
++		.name		= "ODROID VU7 Plus MultiTouch(1024x600)",
++		.max_x		= 1024,
++		.max_y		= 600,
++		.max_press	= 255,
++		.max_finger	= 5,
++	},
++};
+ 
+ //[*]-------------------------------------------------------------------------[*]
+-#define USB_VENDOR_ID_DWAV		        0x0eef
+-#define USB_DEVICE_ID_DWAV_MULTITOUCH   0x0005
+ 
+ static const struct usb_device_id dwav_usb_mt_devices[] = {
+-	{USB_DEVICE(USB_VENDOR_ID_DWAV, USB_DEVICE_ID_DWAV_MULTITOUCH), 0},
++	{USB_DEVICE(USB_VENDOR_ID_DWAV,   USB_DEVICE_ID_VU7),
++		.driver_info = ODROID_VU7},
++	{USB_DEVICE(USB_VENDOR_ID_ODROID, USB_DEVICE_ID_VU5),
++		.driver_info = ODROID_VU5},
++	{USB_DEVICE(USB_VENDOR_ID_ODROID, USB_DEVICE_ID_VU7PLUS),
++		.driver_info = ODROID_VU7PLUS},
+ 	{}
+ };
+ 
+@@ -67,7 +112,8 @@ typedef	struct	finger__t	{
+ struct dwav_usb_mt  {
+ 	char            name[128], phys[64];
+ 
+-    // for URB Data DMA
++	int		dev_id;
++	// for URB Data DMA
+ 	dma_addr_t      data_dma;
+ 	unsigned char   *data;
+ 	int             data_size;
+@@ -82,14 +128,20 @@ struct dwav_usb_mt  {
+ //[*]-------------------------------------------------------------------------[*]
+ static void dwav_usb_mt_report(struct dwav_usb_mt *dwav_usb_mt)
+ {
+-	int		id;
++	int	id, max_x, max_y, max_press, max_finger;
+ 
+-	for(id = 0; id < DWAV_TOUCH_MAX_ID; id++)	{
++	max_x      = DEV_INFO[dwav_usb_mt->dev_id].max_x;
++	max_y      = DEV_INFO[dwav_usb_mt->dev_id].max_y;
++	max_press  = DEV_INFO[dwav_usb_mt->dev_id].max_press;
++	max_finger = DEV_INFO[dwav_usb_mt->dev_id].max_finger;
++
++	for (id = 0; id < max_finger; id++)	{
+ 
+ 		if(dwav_usb_mt->finger[id].status == TS_EVENT_UNKNOWN)  continue;
+ 
+-		if( dwav_usb_mt->finger[id].x >= DWAV_TOUCH_MAX_X ||
+-			dwav_usb_mt->finger[id].y >= DWAV_TOUCH_MAX_Y  )	continue;
++		if (dwav_usb_mt->finger[id].x >= max_x ||
++		    dwav_usb_mt->finger[id].y >= max_y)
++			continue;
+ 
+     	input_mt_slot(dwav_usb_mt->input, id);
+ 
+@@ -97,7 +149,7 @@ static void dwav_usb_mt_report(struct dwav_usb_mt *dwav_usb_mt)
+             input_mt_report_slot_state(dwav_usb_mt->input, MT_TOOL_FINGER, true);
+ 			input_report_abs(dwav_usb_mt->input, ABS_MT_POSITION_X,  dwav_usb_mt->finger[id].x);
+ 			input_report_abs(dwav_usb_mt->input, ABS_MT_POSITION_Y,	 dwav_usb_mt->finger[id].y);
+-			input_report_abs(dwav_usb_mt->input, ABS_MT_PRESSURE, DWAV_TOUCH_MAX_PRESSURE);
++			input_report_abs(dwav_usb_mt->input, ABS_MT_PRESSURE, max_press);
+ 		}
+ 		else	{
+             input_mt_report_slot_state(dwav_usb_mt->input, MT_TOOL_FINGER, false);
+@@ -115,7 +167,7 @@ static void dwav_usb_mt_process(struct dwav_usb_mt *dwav_usb_mt,
+     struct  dwav_raw    *dwav_raw = (struct dwav_raw *)pkt;
+     unsigned char       bit_mask, cnt;
+ 
+-    for(cnt = 0, bit_mask = 0x01; cnt < DWAV_TOUCH_MAX_ID; cnt++, bit_mask <<= 1)   {
++    for(cnt = 0, bit_mask = 0x01; cnt < DEV_INFO[dwav_usb_mt->dev_id].max_finger; cnt++, bit_mask <<= 1)   {
+         if((dwav_raw->ids & bit_mask) && dwav_raw->press)    {
+             dwav_usb_mt->finger[cnt].status = TS_EVENT_PRESS;
+             switch(cnt) {
+@@ -311,13 +363,18 @@ static int dwav_usb_mt_init (struct dwav_usb_mt *dwav_usb_mt, void *dev)
+ 	input_dev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_ABS);
+ 	input_dev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
+ 
+-	input_set_abs_params(input_dev, ABS_X, 0, DWAV_TOUCH_MAX_X, 0, 0);
+-	input_set_abs_params(input_dev, ABS_Y, 0, DWAV_TOUCH_MAX_Y, 0, 0);
++	input_set_abs_params(input_dev, ABS_X, 0,
++			     DEV_INFO[dwav_usb_mt->dev_id].max_x, 0, 0);
++	input_set_abs_params(input_dev, ABS_Y, 0,
++			     DEV_INFO[dwav_usb_mt->dev_id].max_y, 0, 0);
+ 
+ 	/* multi touch */
+-	input_set_abs_params(input_dev, ABS_MT_POSITION_X, 0, DWAV_TOUCH_MAX_X, 0, 0);
+-	input_set_abs_params(input_dev, ABS_MT_POSITION_Y, 0, DWAV_TOUCH_MAX_Y, 0, 0);
+-	input_mt_init_slots (input_dev, DWAV_TOUCH_MAX_ID, 0);
++	input_set_abs_params(input_dev, ABS_MT_POSITION_X, 0,
++			     DEV_INFO[dwav_usb_mt->dev_id].max_x, 0, 0);
++	input_set_abs_params(input_dev, ABS_MT_POSITION_Y, 0,
++			     DEV_INFO[dwav_usb_mt->dev_id].max_y, 0, 0);
++	input_mt_init_slots(input_dev,
++			     DEV_INFO[dwav_usb_mt->dev_id].max_finger, 0);
+ 
+ 	if ((err = input_register_device(input_dev))) {
+ 		pr_err("%s - input_register_device failed, err: %d\n", __func__, err);
+@@ -339,14 +396,17 @@ static int dwav_usb_mt_probe(struct usb_interface *intf,
+ 	struct usb_device *udev = interface_to_usbdev(intf);
+ 
+ 	int err = 0;
+-
+     if(!(endpoint = dwav_usb_mt_get_input_endpoint(intf->cur_altsetting)))
+         return  -ENXIO;
+ 
+     if(!(dwav_usb_mt = kzalloc(sizeof(struct dwav_usb_mt), GFP_KERNEL)))
+         return  -ENOMEM;
+ 
+-	if(!(dwav_usb_mt->finger = kzalloc(sizeof(finger_t) * DWAV_TOUCH_MAX_ID , GFP_KERNEL)))
++	dwav_usb_mt->dev_id = id->driver_info;
++	dwav_usb_mt->finger = kzalloc(sizeof(finger_t) *
++				      DEV_INFO[dwav_usb_mt->dev_id].max_finger,
++				      GFP_KERNEL);
++	if (!dwav_usb_mt->finger)
+         goto    err_free_mem;
+ 
+     if(!(input_dev = input_allocate_device()))
+@@ -411,6 +471,8 @@ static int dwav_usb_mt_probe(struct usb_interface *intf,
+ 
+ 	usb_set_intfdata(intf, dwav_usb_mt);
+ 
++	dev_info(&intf->dev, "%s\n", DEV_INFO[dwav_usb_mt->dev_id].name);
++
+ 	return 0;
+ 
+ err_free_urb:
+
+From 30372343243c07c2d1e76bb2b4d61f421de8b458 Mon Sep 17 00:00:00 2001
+From: "charles.park" <charles.park@hardkernel.com>
+Date: Thu, 4 Aug 2016 17:14:28 +0900
+Subject: [PATCH] ODROID-C1 : ODROID-3.5 Inch touchscreen driver(sx8650)
+
+Change-Id: Ib6ad602ccbdb9b99454ba55df5ea7dc8e09a517c
+---
+ arch/arm/boot/dts/meson8b_odroidc.dts |  18 +
+ arch/arm/configs/odroidc_defconfig    |   7 +
+ drivers/input/touchscreen/Kconfig     |   6 +
+ drivers/input/touchscreen/Makefile    |   1 +
+ drivers/input/touchscreen/sx865x.c    | 622 ++++++++++++++++++++++++++++++++++
+ 5 files changed, 654 insertions(+)
+ create mode 100755 drivers/input/touchscreen/sx865x.c
+
+diff --git a/arch/arm/boot/dts/meson8b_odroidc.dts b/arch/arm/boot/dts/meson8b_odroidc.dts
+index e2e909c..b1f097f 100755
+--- a/arch/arm/boot/dts/meson8b_odroidc.dts
++++ b/arch/arm/boot/dts/meson8b_odroidc.dts
+@@ -287,6 +287,24 @@
+                 #size-cells = <0>;
+                 use_pio = <0>;
+                 master_i2c_speed = <100000>;
++
++		/* Hardkernel I2C 3.5" Touchscreen */
++		/* drivers/input/sx865x.c */
++		sx865x: sx865x@49	{
++			status = "okay";
++			compatible = "semtech,sx8650";
++			reg = <0x49>;
++			#clock-cells = <0>;
++
++			/* H/W Pin control setup */
++			gpio-pendown = "GPIOX_1";
++			gpio-reset = "GPIOX_2";
++
++			/* platform data setup */
++			invert-x = <0>;
++			invert-y = <1>;
++			swap-xy = <1>;
++		};
+         };
+ 
+     i2c@c11087e0{ /*I2C-C*/
+diff --git a/arch/arm/configs/odroidc_defconfig b/arch/arm/configs/odroidc_defconfig
+index 40e1ccf..79acc5ec 100644
+--- a/arch/arm/configs/odroidc_defconfig
++++ b/arch/arm/configs/odroidc_defconfig
+@@ -3,6 +3,7 @@
+ # Linux/arm 3.10.96 Kernel Configuration
+ #
+ CONFIG_ARM=y
++CONFIG_ARM_HAS_SG_CHAIN=y
+ CONFIG_SYS_SUPPORTS_APM_EMULATION=y
+ CONFIG_HAVE_PROC_CPU=y
+ CONFIG_STACKTRACE_SUPPORT=y
+@@ -1559,6 +1560,11 @@ CONFIG_DEINTERLACE=y
+ # CONFIG_AM_IOBUS is not set
+ 
+ #
++# ION support
++#
++CONFIG_AMLOGIC_ION=y
++
++#
+ # Amlogic Crypto Support
+ #
+ CONFIG_CRYPTO_AML_HW_CRYPRO=y
+@@ -2162,6 +2168,7 @@ CONFIG_INPUT_TOUCHSCREEN=y
+ # CONFIG_TOUCHSCREEN_ST1232 is not set
+ # CONFIG_TOUCHSCREEN_TPS6507X is not set
+ CONFIG_TOUCHSCREEN_DWAV_USB_MT=m
++CONFIG_TOUCHSCREEN_SX865X=m
+ CONFIG_INPUT_MISC=y
+ # CONFIG_INPUT_AD714X is not set
+ # CONFIG_INPUT_BMA150 is not set
+diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
+index 6a08b0b..931cf5f7 100755
+--- a/drivers/input/touchscreen/Kconfig
++++ b/drivers/input/touchscreen/Kconfig
+@@ -901,4 +901,10 @@ config TOUCHSCREEN_DWAV_USB_MT
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called dwav-usb-mt.
+ 
++config TOUCHSCREEN_SX865X
++	tristate "Semtech multitouch resistive touchscreen"
++	depends on I2C
++	help
++	  This enables support for Semtech multitouch resistive touchscreen.
++
+ endif
+diff --git a/drivers/input/touchscreen/Makefile b/drivers/input/touchscreen/Makefile
+index 1ba06611..4af74d94 100755
+--- a/drivers/input/touchscreen/Makefile
++++ b/drivers/input/touchscreen/Makefile
+@@ -73,3 +73,4 @@ obj-$(CONFIG_TOUCHSCREEN_WM97XX_ZYLONITE)	+= zylonite-wm97xx.o
+ obj-$(CONFIG_TOUCHSCREEN_W90X900)	+= w90p910_ts.o
+ obj-$(CONFIG_TOUCHSCREEN_TPS6507X)	+= tps6507x-ts.o
+ obj-$(CONFIG_TOUCHSCREEN_DWAV_USB_MT)   += dwav-usb-mt.o
++obj-$(CONFIG_TOUCHSCREEN_SX865X)	+= sx865x.o
+\ No newline at end of file
+diff --git a/drivers/input/touchscreen/sx865x.c b/drivers/input/touchscreen/sx865x.c
+new file mode 100755
+index 0000000..677758c
+--- /dev/null
++++ b/drivers/input/touchscreen/sx865x.c
+@@ -0,0 +1,622 @@
++/*
++ * drivers/input/touchscreen/sx865x.c
++ *
++ * Copyright (c) 2013 U-MoBo Srl
++ *      Pierluigi Passaro <p.passaro@u-mobo.com>
++ *
++ * Using code from:
++ *  - sx8650.c
++ *      Copyright (c) 2009 Wayne Roberts
++ *  - tsc2007.c
++ *      Copyright (c) 2008 Kwangwoo Lee
++ *  - ads7846.c
++ *      Copyright (c) 2005 David Brownell
++ *      Copyright (c) 2006 Nokia Corporation
++ *  - corgi_ts.c
++ *      Copyright (C) 2004-2005 Richard Purdie
++ *  - omap_ts.[hc], ads7846.h, ts_osk.c
++ *      Copyright (C) 2002 MontaVista Software
++ *      Copyright (C) 2004 Texas Instruments
++ *      Copyright (C) 2005 Dirk Behme
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License version 2 as
++ *  published by the Free Software Foundation.
++ */
++
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/i2c.h>
++#include <linux/input.h>
++#include <linux/slab.h>
++#include <linux/sched.h>
++#include <linux/interrupt.h>
++#include <linux/irq.h>
++#include <linux/of.h>
++#include <linux/of_gpio.h>
++#include <linux/of_device.h>
++#include <linux/delay.h>
++
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++
++#include <linux/amlogic/aml_gpio_consumer.h>
++
++#endif
++
++/* timeout expires after pen is lifted, no more PENIRQs comming */
++/* adjust with POWDLY setting */
++#define TS_TIMEOUT		(8 * 1000000)
++
++/* analog channels */
++#define CH_X			0
++#define CH_Y			1
++#define CH_Z1			2
++#define CH_Z2			3
++#define CH_AUX			4
++#define CH_RX			5
++#define CH_RY			6
++#define CH_SEQ			7
++
++/* commands */
++#define SX865X_WRITE_REGISTER	0x00
++#define SX865X_READ_REGISTER	0x40
++#define SX865X_SELECT_CH(ch)	(0x80 | ch)
++#define SX865X_CONVERT_CH(ch)	(0x90 | ch)
++#define SX865X_POWDWN		0xb0	/* power down, ignore pen */
++#define SX865X_PENDET		0xc0	/* " " with pen sensitivity */
++#define SX865X_PENTRG		0xe0	/* " " " " and sample channels */
++
++/* register addresses */
++#define I2C_REG_CTRL0		0x00
++#define I2C_REG_CTRL1		0x01
++#define I2C_REG_CTRL2		0x02
++#define I2C_REG_CTRL3		0x03
++#define I2C_REG_CHANMASK	0x04
++#define I2C_REG_STAT		0x05
++#define I2C_REG_SOFTRESET	0x1f
++
++#define I2C_EXTENDED_REG_STAT		0x24
++#define I2C_EXTENDED_REG_SOFTRESET	0x3f
++
++#define SOFTRESET_VALUE		0xde
++
++/* bits for I2C_REG_STAT */
++/* I2C_REG_STAT: end of conversion flag */
++#define STATUS_CONVIRQ		0x80
++/* I2C_REG_STAT: pen detected */
++#define STATUS_PENIRQ		0x40
++
++/* bits for I2C_EXTENDED_REG_STAT */
++/* I2C_EXTENDED_REG_STAT: end of conversion flag */
++#define EXTENDED_STATUS_CONVIRQ	0x08
++/* I2C_EXTENDED_REG_STAT: pen detected */
++#define EXTENDED_STATUS_PENIRQ	0x04
++
++/* sx865x bits for RegCtrl1 */
++#define CONDIRQ			0x20
++/* no averaging */
++#define FILT_NONE		0x00
++/* 3 sample averaging */
++#define FILT_3SA		0x01
++/* 5 sample averaging */
++#define FILT_5SA		0x02
++/* 7 samples, sort, then average of 3 middle samples */
++#define FILT_7SA		0x03
++
++/* bits for register 2, I2CRegChanMsk */
++#define CONV_X			0x80
++#define CONV_Y			0x40
++#define CONV_Z1			0x20
++#define CONV_Z2			0x10
++#define CONV_AUX		0x08
++#define CONV_RX			0x04
++#define CONV_RY			0x02
++
++/* power delay: lower nibble of CTRL0 register */
++#define POWDLY_IMMEDIATE	0x00
++#define POWDLY_1_1US		0x01
++#define POWDLY_2_2US		0x02
++#define POWDLY_4_4US		0x03
++#define POWDLY_8_9US		0x04
++#define POWDLY_17_8US		0x05
++#define POWDLY_35_5US		0x06
++#define POWDLY_71US		0x07
++#define POWDLY_140US		0x08
++#define POWDLY_280US		0x09
++#define POWDLY_570US		0x0a
++#define POWDLY_1_1MS		0x0b
++#define POWDLY_2_3MS		0x0c
++#define POWDLY_4_6MS		0x0d
++#define POWDLY_9MS		0x0e
++#define POWDLY_18MS		0x0f
++
++#define MAX_12BIT		((1 << 12) - 1)
++
++/* when changing the channel mask, also change the read length appropriately */
++#define CHAN_MASK		(CONV_X | CONV_Y | CONV_Z1 | CONV_RX | CONV_RY)
++#define NUM_CHANNELS_SEQ	5
++#define CHAN_READ_LENGTH	(NUM_CHANNELS_SEQ * 2)
++
++#define SX_MULTITOUCH		0x01
++#define SX_PROXIMITY_SENSING	0x02
++#define SX_HAPTICS_GENERIC	0x04
++#define SX_HAPTICS_IMMERSION	0x08
++#define SX_EXTENDED_REGS	(SX_PROXIMITY_SENSING | SX_HAPTICS_GENERIC | SX_HAPTICS_IMMERSION)
++
++#define SX865X_UP_SCANTIME_MS	(100)
++#define SX865X_DOWN_SCANTIME_MS	(20)
++
++struct ts_event {
++	u16 x, y;
++	u16 z1;
++	u16 rx, ry;
++};
++
++struct sx865x {
++	struct input_dev *input;
++	struct ts_event tc;
++
++	struct i2c_client *client;
++
++	u32 invert_x;
++	u32 invert_y;
++	u32 swap_xy;
++	u32 gpio_pendown;
++	u32 gpio_reset;
++
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++	int irq_bank;
++#endif
++	unsigned pendown;
++	int irq;
++};
++
++static struct i2c_device_id sx865x_idtable[] = {
++	{ "sx8650", 0 },
++	{ }
++};
++
++MODULE_DEVICE_TABLE(i2c, sx865x_idtable);
++
++static const struct of_device_id sx865x_of_match[] = {
++	{ .compatible = "semtech,sx8650", .data = (void *)0 },
++	{}
++};
++
++MODULE_DEVICE_TABLE(of, sx865x_of_match);
++
++static void sx865x_send_event(struct sx865x *ts)
++{
++	u32 rt;
++	u16 x, y, z1;
++
++	x  = ts->tc.x;
++	y  = ts->tc.y;
++	z1 = ts->tc.z1;
++
++	/* range filtering */
++	if (y == MAX_12BIT)
++		y = 0;
++
++	/* compute touch pressure resistance */
++	if (likely(y && z1))
++		rt = z1;
++	else
++		rt = 0;
++
++	/* Sample found inconsistent by debouncing or pressure is beyond
++	 * the maximum. Don't report it to user space, repeat at least
++	 * once more the measurement
++	 */
++	if (rt > MAX_12BIT) {
++		dev_dbg(&ts->client->dev, "ignored pressure %d\n", rt);
++		return;
++	}
++
++	/* NOTE: We can't rely on the pressure to determine the pen down
++	 * state, even this controller has a pressure sensor. The pressure
++	 * value can fluctuate for quite a while after lifting the pen and
++	 * in some cases may not even settle at the expected value.
++	 *
++	 * The only safe way to check for the pen up condition is in the
++	 * timer by reading the pen signal state (it's a GPIO _and_ IRQ).
++	 */
++	if (rt) {
++		struct input_dev *input = ts->input;
++
++		if (ts->invert_x)	x = (~x) & MAX_12BIT;
++
++		if (ts->invert_y)	y = (~y) & MAX_12BIT;
++
++		if (ts->swap_xy)	swap(x, y);
++
++		if (!ts->pendown) {
++			dev_dbg(&ts->client->dev, "DOWN\n");
++			ts->pendown = 1;
++			input_report_key(input, BTN_TOUCH, 1);
++		}
++
++		input_report_abs(input, ABS_X, x);
++		input_report_abs(input, ABS_Y, y);
++		input_report_abs(input, ABS_PRESSURE, rt);
++		input_sync(input);
++
++		dev_dbg(&ts->client->dev, "point(%4d,%4d), pressure (%4u)\n",
++			x, y, rt);
++	}
++}
++
++static int sx865x_read_values(struct sx865x *ts)
++{
++	s32 data;
++	u16 vals[NUM_CHANNELS_SEQ+1];	/* +1 for last dummy read */
++	int length;
++	int i;
++
++	memset(&(ts->tc), 0, sizeof(ts->tc));
++	/* The protocol and raw data format from i2c interface:
++	 * S Addr R A [DataLow] A [DataHigh] A (repeat) NA P
++	 * Where DataLow has (channel | [D11-D8]), DataHigh has [D7-D0].
++	 */
++	length = i2c_master_recv(ts->client, (char *)vals, CHAN_READ_LENGTH);
++
++	if (likely(length == CHAN_READ_LENGTH)) {
++		length >>= 1;
++		for (i = 0; i < length; i++) {
++			u16 ch;
++			data = swab16(vals[i]);
++			if (unlikely(data & 0x8000)) {
++				dev_dbg(&ts->client->dev,
++					"hibit @ %d [0x%04x]\n", i, data);
++				continue;
++			}
++			ch = data >> 12;
++			if        (ch == CH_X) {
++				ts->tc.x = data & 0xfff;
++			} else if (ch == CH_Y) {
++				ts->tc.y = data & 0xfff;
++			} else if (ch == CH_Z1) {
++				ts->tc.z1 = data & 0xfff;
++			} else if (ch == CH_RX) {
++				ts->tc.rx = data & 0xfff;
++			} else if (ch == CH_RY) {
++				ts->tc.ry = data & 0xfff;
++			} else {
++				dev_err(&ts->client->dev, "? CH%d %x\n",
++					ch, data & 0xfff);
++			}
++		}
++	} else {
++		dev_err(&ts->client->dev, "%d = recv()\n", length);
++	}
++
++	dev_dbg(&ts->client->dev, "X:%03x Y:%03x Z1:%03x RX:%03x RY:%03x\n",
++		ts->tc.x, ts->tc.y, ts->tc.z1, ts->tc.rx, ts->tc.ry);
++
++	return !ts->tc.z1;	/* return 0 only if pressure not 0 */
++}
++
++static void sx865x_pen_up(struct sx865x *ts)
++{
++	struct input_dev *input = ts->input;
++
++	/* This timer expires after PENIRQs havent been coming in for some time.
++	 * It means that the pen is now UP. */
++	input_report_key(input, BTN_TOUCH, 0);
++	input_report_abs(input, ABS_PRESSURE, 0);
++	input_sync(input);
++
++	ts->pendown = 0;
++	dev_dbg(&ts->client->dev, "UP\n");
++}
++
++static int sx865x_data_available(struct sx865x *ts)
++{
++	u8 status;
++
++	status = i2c_smbus_read_byte_data(ts->client,
++					(SX865X_READ_REGISTER | I2C_REG_STAT));
++	return status & STATUS_CONVIRQ;
++}
++
++static int get_pendown_status(struct sx865x *ts)
++{
++	return	gpio_get_value(ts->gpio_pendown) ? 0 : 1;
++}
++
++static irqreturn_t sx865x_hw_irq(int irq, void *handle)
++{
++	struct sx865x *ts = handle;
++
++	return get_pendown_status(ts) ? IRQ_WAKE_THREAD : IRQ_HANDLED;
++}
++
++static irqreturn_t sx865x_irq(int irq, void *handle)
++{
++	struct sx865x *ts = handle;
++
++	while (sx865x_data_available(ts)) {
++		/* valid data was read in */
++		if (likely(sx865x_read_values(ts) == 0))
++			sx865x_send_event(ts);
++		else
++			dev_dbg(&ts->client->dev, "data error!\n");
++
++		msleep(SX865X_DOWN_SCANTIME_MS);
++	}
++
++	if (ts->pendown)
++		sx865x_pen_up(ts);
++
++	return IRQ_HANDLED;
++}
++
++static void sx865x_hw_reset(struct sx865x *ts)
++{
++	gpio_direction_output(ts->gpio_reset, 0);
++	udelay(1000);
++	gpio_direction_output(ts->gpio_reset, 1);
++	udelay(1000);
++}
++
++static int sx865x_dt_probe(struct i2c_client *client, struct sx865x *ts)
++{
++	struct device_node *node = client->dev.of_node;
++	const struct of_device_id *match;
++
++	if (!node) {
++		dev_err(&client->dev,
++			"Device dost not have associated DT data\n");
++		return -EINVAL;
++	}
++
++	match = of_match_device(sx865x_of_match, &client->dev);
++	if (!match) {
++		dev_err(&client->dev,
++			"Unknown device model\n");
++		return -EINVAL;
++	}
++
++	of_property_read_u32(node, "swap-xy",	   &ts->swap_xy);
++	of_property_read_u32(node, "invert-x",	   &ts->invert_x);
++	of_property_read_u32(node, "invert-y",	   &ts->invert_y);
++
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++	{
++		const char  *str;
++		int err;
++
++		if(of_property_read_string(node, "gpio-pendown", &str)) {
++			dev_err(&client->dev,
++				"Unknown ts-pendown\n");
++			return -EINVAL;
++		}
++		ts->gpio_pendown = amlogic_gpio_name_map_num(str);
++
++		err = amlogic_gpio_request_one(ts->gpio_pendown, GPIOF_IN,
++						"ts-pendown");
++		if (err) {
++			dev_err(&client->dev,
++				"failed to request/setup pendown GPIO%d: %d\n",
++				ts->gpio_pendown, err);
++			return -EINVAL;
++		}
++
++		if(of_property_read_string(node, "gpio-reset", &str)) {
++			dev_err(&client->dev,
++				"Unknown ts-reset\n");
++			return -EINVAL;
++		}
++		ts->gpio_reset = amlogic_gpio_name_map_num(str);
++
++		err = amlogic_gpio_request_one(ts->gpio_reset, GPIOF_INIT_LOW,
++						"ts-reset");
++		if (err) {
++			dev_err(&client->dev,
++				"failed to request/setup reset GPIO%d: %d\n",
++				ts->gpio_reset, err);
++			return -EINVAL;
++		}
++		sx865x_hw_reset(ts);
++	}
++
++#else
++	ts->gpio_pendown = of_get_named_gpio(node, "gpio-pendown", 0);
++	ts->gpio_reset   = of_get_named_gpio(node, "gpio-reset", 0);
++
++	if (gpio_request(ts->gpio_pendown, "ts-pendown"))
++		dev_err(&client->dev,
++			"gpio request fail (%d)!\n", ts->gpio_pendown);
++	else
++		gpio_direction_input(ts->gpio_pendown);
++
++	if (gpio_request(ts->gpio_reset, "ts-reset"))
++		dev_err(&client->dev,
++			"gpio request fail (%d)!\n", ts->gpio_reset);
++	else
++		sx865x_hw_reset(ts);
++#endif
++
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++	/* irq setup */
++	ts->irq_bank = meson_fix_irqbank(ts->irq_bank);
++	if (ts->irq_bank < 0) {
++		dev_err(&client->dev,
++			"Could not find irq bank!\n");
++		return -EINVAL;
++	}
++
++	{
++		int ret;
++		/* AMLogic gpio irq setup */
++		ret = amlogic_gpio_to_irq(ts->gpio_pendown, "ts-pendown",
++			AML_GPIO_IRQ(ts->irq_bank, FILTER_NUM7, GPIO_IRQ_FALLING));
++
++		if (ret) {
++			dev_err(&client->dev,
++				"AML_GPIO_IRQ setup fail!\n");
++			return -EINVAL;
++		}
++		/* Amlogic gpio based irq setup */
++		ts->irq = INT_GPIO_0 + ts->irq_bank;
++	}
++#else
++	ts->irq = gpio_to_irq(ts->gpio_pendown);
++	if (ts->irq < 0)
++		return -EINVAL;
++#endif
++
++	/* platform data info display */
++	dev_info(&client->dev, "swap_xy (%d)\n", 	ts->swap_xy);
++	dev_info(&client->dev, "invert_x (%d)\n", 	ts->invert_x);
++	dev_info(&client->dev, "invert_y (%d)\n", 	ts->invert_y);
++	dev_info(&client->dev, "gpio pendown (%d)\n",	ts->gpio_pendown);
++	dev_info(&client->dev, "gpio reset (%d)\n",	ts->gpio_reset);
++	dev_info(&client->dev, "gpio irq (%d)\n",	ts->irq);
++
++	return 0;
++}
++
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++static void sx865x_irq_free(struct i2c_client *client, struct sx865x *ts)
++{
++	int	irq_banks[2];
++
++	meson_free_irq(ts->gpio_pendown, &irq_banks[0]);
++
++	/* rising irq bank */
++	if (irq_banks[0] != -1)
++		free_irq(irq_banks[0] + INT_GPIO_0, ts);
++
++	/* falling irq bank */
++	if (irq_banks[1] != -1)
++		free_irq(irq_banks[1] + INT_GPIO_0, ts);
++}
++#endif
++
++static int sx865x_probe(struct i2c_client *client,
++			const struct i2c_device_id *id)
++{
++	struct sx865x *ts;
++	struct input_dev *input_dev;
++	int err = 0;
++
++	dev_info(&client->dev, "sx865x_probe()\n");
++
++	if (!i2c_check_functionality(client->adapter,
++					I2C_FUNC_SMBUS_READ_WORD_DATA))
++		return -EIO;
++
++	ts = devm_kzalloc(&client->dev, sizeof(struct sx865x), GFP_KERNEL);
++	input_dev = devm_input_allocate_device(&client->dev);
++	if (!ts || !input_dev)
++		return -ENOMEM;
++
++	if (sx865x_dt_probe(client, ts) != 0)
++		return -EIO;
++
++	i2c_set_clientdata(client, ts);
++
++	input_dev->name 	= "SX865X Touchscreen";
++	input_dev->id.bustype 	= BUS_I2C;
++	input_dev->dev.parent 	= &client->dev;
++	input_set_drvdata(input_dev, ts);
++
++	input_dev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_ABS);
++	input_dev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
++
++	input_set_abs_params(input_dev, ABS_X, 0, MAX_12BIT, 0, 0);
++	input_set_abs_params(input_dev, ABS_Y, 0, MAX_12BIT, 0, 0);
++	input_set_abs_params(input_dev, ABS_PRESSURE, 0, MAX_12BIT, 0, 0);
++
++	/* soft reset: SX8650 fails to nak at the end, ignore return value */
++	i2c_smbus_write_byte_data(client, I2C_REG_SOFTRESET, SOFTRESET_VALUE);
++
++	/* set mask to convert X, Y, Z1, RX, RY for CH_SEQ */
++	err = i2c_smbus_write_byte_data(client, I2C_REG_CHANMASK, CHAN_MASK);
++	if (err != 0)	return -EIO;
++
++	err = i2c_smbus_write_byte_data(client, I2C_REG_CTRL1,
++					CONDIRQ | FILT_7SA);
++	if (err != 0)	return -EIO;
++
++	/* set POWDLY settling time -- adjust TS_TIMEOUT accordingly */
++	err = i2c_smbus_write_byte_data(client, I2C_REG_CTRL0, POWDLY_1_1MS);
++	if (err != 0)	return -EIO;
++
++	/* enter pen-trigger mode */
++	err = i2c_smbus_write_byte(client, SX865X_PENTRG);
++	if (err != 0)	return -EIO;
++
++	err = request_threaded_irq(ts->irq, sx865x_hw_irq, sx865x_irq,
++			IRQF_DISABLED | IRQF_ONESHOT,
++			client->dev.driver->name, ts);
++
++	if (err < 0) {
++		dev_err(&client->dev, "irq %d busy?\n", ts->irq);
++		return -EIO;
++	}
++
++	err = input_register_device(input_dev);
++	if (err)
++		goto err_free_irq;
++
++	ts->client = client;
++	ts->input = input_dev;
++
++	dev_info(&client->dev, "probe ok! registered with irq (%d)\n", ts->irq);
++
++	return 0;
++
++err_free_irq:
++	if (ts->gpio_pendown)
++		gpio_free(ts->gpio_pendown);
++	if (ts->gpio_reset)
++		gpio_free(ts->gpio_pendown);
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++	sx865x_irq_free(client, ts);
++#else
++	if (ts->irq)
++		free_irq(ts->irq, ts);
++#endif
++	return err;
++}
++
++static int sx865x_remove(struct i2c_client *client)
++{
++	struct sx865x *ts = i2c_get_clientdata(client);
++	struct sx865x_platform_data *pdata;
++
++	pdata = client->dev.platform_data;
++
++	if (ts->gpio_pendown)
++		gpio_free(ts->gpio_pendown);
++	if (ts->gpio_reset)
++		gpio_free(ts->gpio_pendown);
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++	sx865x_irq_free(client, ts);
++#else
++	if (ts->irq)
++		free_irq(ts->irq, ts);
++#endif
++	input_unregister_device(ts->input);
++
++	return 0;
++}
++
++static struct i2c_driver sx865x_driver = {
++	.driver = {
++		.owner = THIS_MODULE,
++		.name = "sx865x",
++		.of_match_table = of_match_ptr(sx865x_of_match),
++	},
++	.id_table = sx865x_idtable,
++	.probe = sx865x_probe,
++	.remove = sx865x_remove,
++};
++
++module_i2c_driver(sx865x_driver);
++
++MODULE_AUTHOR("Pierluigi Passaro <info@phoenixsoftware.it>");
++MODULE_DESCRIPTION("SX865X TouchScreen Driver");
++MODULE_LICENSE("GPL");
+
+From 118518cbe38972910ac02977b0fbad0c94871b79 Mon Sep 17 00:00:00 2001
+From: "charles.park" <charles.park@hardkernel.com>
+Date: Tue, 28 Jun 2016 16:28:21 +0900
+Subject: [PATCH] ODROID-C1 : modified fbtft(flex) driver.(use ioremap)
+
+Change-Id: Ie0e47f8c985f841ef17da85ae5fb6e91f8cd8e07
+---
+ drivers/video/fbtft/fbtft-io.c | 72 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/video/fbtft/fbtft.h    | 13 ++++++++
+ drivers/video/fbtft/flexfb.c   | 19 +++++++++++
+ 3 files changed, 104 insertions(+)
+ mode change 100644 => 100755 drivers/video/fbtft/fbtft-io.c
+ mode change 100644 => 100755 drivers/video/fbtft/fbtft.h
+ mode change 100644 => 100755 drivers/video/fbtft/flexfb.c
+
+diff --git a/drivers/video/fbtft/fbtft-io.c b/drivers/video/fbtft/fbtft-io.c
+old mode 100644
+new mode 100755
+index dfa2c46..2f31c92
+--- a/drivers/video/fbtft/fbtft-io.c
++++ b/drivers/video/fbtft/fbtft-io.c
+@@ -298,6 +298,75 @@ EXPORT_SYMBOL(fbtft_write_gpio16_wr_latched);
+  * Optimized use of gpiolib is twice as fast as no optimization
+  * only one driver can use the optimized version at a time
+  */
++
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++
++union	regx_bitfield {
++	unsigned int	wvalue;
++	struct {
++		unsigned int	unused0:5;
++		unsigned int	bit2:1;	/* GPX.5 */
++		unsigned int	bit4:1;	/* GPX.6 */
++		unsigned int	bit1:1;	/* GPX.7 */
++		unsigned int	bit6:1;	/* GPX.8 */
++		unsigned int	bit5:1;	/* GPX.9 */
++		unsigned int	bit3:1;	/* GPX.10 */
++		unsigned int	unused2:7;
++		unsigned int	bit0:1;	/* GPX.18 */
++		unsigned int	unused3:1;
++		unsigned int	bit7:1;	/* GPX.20 */
++		unsigned int	unused4:11;
++	} bits;
++};
++
++union	regy_bitfield {
++	unsigned int	wvalue;
++	struct {
++		unsigned int	unused0:8;
++		unsigned int	wr:1;	/* GPY.8 */
++		unsigned int	unused1:23;
++	} bits;
++};
++
++int fbtft_write_gpio8_wr(struct fbtft_par *par, void *buf, size_t len)
++{
++	u8 	data;
++	union	regx_bitfield	dbusx;
++	union	regy_bitfield	dbusy;
++
++	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
++		"%s(len=%d): ", __func__, len);
++
++	dbusx.wvalue = ioread32(par->regrd_gpiox);
++	dbusy.wvalue = ioread32(par->regrd_gpioy);
++
++	while (len--) {
++		data = *(u8 *) buf;
++
++		/* Start writing by pulling down /WR */
++		dbusy.bits.wr = 0;
++		iowrite32(dbusy.wvalue, par->regwr_gpioy);
++
++		dbusx.bits.bit0 = (data & 0x01) ? 1 : 0;
++		dbusx.bits.bit1 = (data & 0x02) ? 1 : 0;
++		dbusx.bits.bit2 = (data & 0x04) ? 1 : 0;
++		dbusx.bits.bit3 = (data & 0x08) ? 1 : 0;
++		dbusx.bits.bit4 = (data & 0x10) ? 1 : 0;
++		dbusx.bits.bit5 = (data & 0x20) ? 1 : 0;
++		dbusx.bits.bit6 = (data & 0x40) ? 1 : 0;
++		dbusx.bits.bit7 = (data & 0x80) ? 1 : 0;
++		iowrite32(dbusx.wvalue, par->regwr_gpiox);
++
++		dbusy.bits.wr = 1;
++		iowrite32(dbusy.wvalue, par->regwr_gpioy);
++		buf++;
++	}
++
++	return 0;
++}
++
++#else
++
+ int fbtft_write_gpio8_wr(struct fbtft_par *par, void *buf, size_t len)
+ {
+ 	u8 data;
+@@ -346,6 +415,9 @@ int fbtft_write_gpio8_wr(struct fbtft_par *par, void *buf, size_t len)
+ 
+ 	return 0;
+ }
++
++#endif	/* #if defined(CONFIG_MACH_MESON8B_ODROIDC) */
++
+ EXPORT_SYMBOL(fbtft_write_gpio8_wr);
+ 
+ int fbtft_write_gpio16_wr(struct fbtft_par *par, void *buf, size_t len)
+diff --git a/drivers/video/fbtft/fbtft.h b/drivers/video/fbtft/fbtft.h
+old mode 100644
+new mode 100755
+index 0dbf3f9..12a1fadd
+--- a/drivers/video/fbtft/fbtft.h
++++ b/drivers/video/fbtft/fbtft.h
+@@ -254,8 +254,21 @@ struct fbtft_par {
+ 	struct timespec update_time;
+ 	bool bgr;
+ 	void *extra;
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++	void __iomem *regrd_gpiox;
++	void __iomem *regwr_gpiox;
++	void __iomem *regrd_gpioy;
++	void __iomem *regwr_gpioy;
++#endif
+ };
+ 
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++	#define	ODROIDC1_GPIOX_REGIN	0xC1108038
++	#define	ODROIDC1_GPIOX_REGOUT	0xC1108034
++	#define	ODROIDC1_GPIOY_REGIN	0xC1108044
++	#define	ODROIDC1_GPIOY_REGOUT	0xC1108040
++#endif
++
+ #define NUMARGS(...)  (sizeof((int[]){__VA_ARGS__})/sizeof(int))
+ 
+ #define write_reg(par, ...)                                              \
+diff --git a/drivers/video/fbtft/flexfb.c b/drivers/video/fbtft/flexfb.c
+old mode 100644
+new mode 100755
+index 45574a0..31213ba
+--- a/drivers/video/fbtft/flexfb.c
++++ b/drivers/video/fbtft/flexfb.c
+@@ -490,6 +490,19 @@ static int flexfb_probe_common(struct spi_device *sdev, struct platform_device *
+ 	if (!nobacklight)
+ 		par->fbtftops.register_backlight = fbtft_register_backlight;
+ 
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++	par->regrd_gpiox = ioremap(ODROIDC1_GPIOX_REGIN, 4);
++	par->regwr_gpiox = ioremap(ODROIDC1_GPIOX_REGOUT, 4);
++
++	par->regrd_gpioy = ioremap(ODROIDC1_GPIOY_REGIN, 4);
++	par->regwr_gpioy = ioremap(ODROIDC1_GPIOY_REGOUT, 4);
++
++	if ((par->regrd_gpiox == NULL) || (par->regwr_gpiox == NULL) ||
++	    (par->regrd_gpioy == NULL) || (par->regwr_gpioy == NULL)) {
++		pr_err("%s : ioremap gpio x/y register error!\n", __func__);
++		goto out_release;
++	}
++#endif
+ 	ret = fbtft_register_framebuffer(info);
+ 	if (ret < 0)
+ 		goto out_release;
+@@ -512,6 +525,12 @@ static int flexfb_remove_common(struct device *dev, struct fb_info *info)
+ 	if (par)
+ 		fbtft_par_dbg(DEBUG_DRIVER_INIT_FUNCTIONS, par,
+ 			"%s()\n", __func__);
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++	if (par->regrd_gpiox)	iounmap(par->regrd_gpiox);
++	if (par->regwr_gpiox)	iounmap(par->regwr_gpiox);
++	if (par->regrd_gpioy)	iounmap(par->regrd_gpioy);
++	if (par->regwr_gpioy)	iounmap(par->regwr_gpioy);
++#endif
+ 	fbtft_unregister_framebuffer(info);
+ 	fbtft_framebuffer_release(info);
+ 
+
+From ce367ae8cfbb7de664e6bded0d6118f2157c1011 Mon Sep 17 00:00:00 2001
+From: "charles.park" <charles.park@hardkernel.com>
+Date: Fri, 5 Aug 2016 17:46:43 +0900
+Subject: [PATCH] ODROID-C1 : sx865x driver remove error fix.
+
+Change-Id: Ie10ed683f54f7e4c128c73fa933be997df087ebb
+---
+ drivers/input/touchscreen/sx865x.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/input/touchscreen/sx865x.c b/drivers/input/touchscreen/sx865x.c
+index 677758c..204d6bf 100755
+--- a/drivers/input/touchscreen/sx865x.c
++++ b/drivers/input/touchscreen/sx865x.c
+@@ -409,7 +409,7 @@ static int sx865x_dt_probe(struct i2c_client *client, struct sx865x *ts)
+ 		}
+ 		ts->gpio_reset = amlogic_gpio_name_map_num(str);
+ 
+-		err = amlogic_gpio_request_one(ts->gpio_reset, GPIOF_INIT_LOW,
++		err = amlogic_gpio_request_one(ts->gpio_reset, GPIOF_OUT_INIT_LOW,
+ 						"ts-reset");
+ 		if (err) {
+ 			dev_err(&client->dev,
+@@ -572,7 +572,7 @@ static int sx865x_probe(struct i2c_client *client,
+ 	if (ts->gpio_pendown)
+ 		gpio_free(ts->gpio_pendown);
+ 	if (ts->gpio_reset)
+-		gpio_free(ts->gpio_pendown);
++		gpio_free(ts->gpio_reset);
+ #if defined(CONFIG_MACH_MESON8B_ODROIDC)
+ 	sx865x_irq_free(client, ts);
+ #else
+@@ -592,7 +592,7 @@ static int sx865x_remove(struct i2c_client *client)
+ 	if (ts->gpio_pendown)
+ 		gpio_free(ts->gpio_pendown);
+ 	if (ts->gpio_reset)
+-		gpio_free(ts->gpio_pendown);
++		gpio_free(ts->gpio_reset);
+ #if defined(CONFIG_MACH_MESON8B_ODROIDC)
+ 	sx865x_irq_free(client, ts);
+ #else
+
+From 9a22709497da47d0e702a828ef8073337795d8e7 Mon Sep 17 00:00:00 2001
+From: "charles.park" <charles.park@hardkernel.com>
+Date: Fri, 5 Aug 2016 17:49:04 +0900
+Subject: [PATCH] ODROID-C1 : ODROID-3.5 Inch fbtft driver
+
+Change-Id: I5f7b66491fa3b92fc4ebd3be767762eae15df821
+---
+ drivers/video/fbtft/fbtft-io.c     | 136 ++++++++++++++++++-------------------
+ drivers/video/fbtft/fbtft.h        |  17 ++---
+ drivers/video/fbtft/fbtft_device.c |  15 ++++
+ drivers/video/fbtft/flexfb.c       |  52 +++++++++-----
+ 4 files changed, 126 insertions(+), 94 deletions(-)
+
+diff --git a/drivers/video/fbtft/fbtft-io.c b/drivers/video/fbtft/fbtft-io.c
+index 2f31c92..f29ce77 100755
+--- a/drivers/video/fbtft/fbtft-io.c
++++ b/drivers/video/fbtft/fbtft-io.c
+@@ -299,74 +299,6 @@ EXPORT_SYMBOL(fbtft_write_gpio16_wr_latched);
+  * only one driver can use the optimized version at a time
+  */
+ 
+-#if defined(CONFIG_MACH_MESON8B_ODROIDC)
+-
+-union	regx_bitfield {
+-	unsigned int	wvalue;
+-	struct {
+-		unsigned int	unused0:5;
+-		unsigned int	bit2:1;	/* GPX.5 */
+-		unsigned int	bit4:1;	/* GPX.6 */
+-		unsigned int	bit1:1;	/* GPX.7 */
+-		unsigned int	bit6:1;	/* GPX.8 */
+-		unsigned int	bit5:1;	/* GPX.9 */
+-		unsigned int	bit3:1;	/* GPX.10 */
+-		unsigned int	unused2:7;
+-		unsigned int	bit0:1;	/* GPX.18 */
+-		unsigned int	unused3:1;
+-		unsigned int	bit7:1;	/* GPX.20 */
+-		unsigned int	unused4:11;
+-	} bits;
+-};
+-
+-union	regy_bitfield {
+-	unsigned int	wvalue;
+-	struct {
+-		unsigned int	unused0:8;
+-		unsigned int	wr:1;	/* GPY.8 */
+-		unsigned int	unused1:23;
+-	} bits;
+-};
+-
+-int fbtft_write_gpio8_wr(struct fbtft_par *par, void *buf, size_t len)
+-{
+-	u8 	data;
+-	union	regx_bitfield	dbusx;
+-	union	regy_bitfield	dbusy;
+-
+-	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
+-		"%s(len=%d): ", __func__, len);
+-
+-	dbusx.wvalue = ioread32(par->regrd_gpiox);
+-	dbusy.wvalue = ioread32(par->regrd_gpioy);
+-
+-	while (len--) {
+-		data = *(u8 *) buf;
+-
+-		/* Start writing by pulling down /WR */
+-		dbusy.bits.wr = 0;
+-		iowrite32(dbusy.wvalue, par->regwr_gpioy);
+-
+-		dbusx.bits.bit0 = (data & 0x01) ? 1 : 0;
+-		dbusx.bits.bit1 = (data & 0x02) ? 1 : 0;
+-		dbusx.bits.bit2 = (data & 0x04) ? 1 : 0;
+-		dbusx.bits.bit3 = (data & 0x08) ? 1 : 0;
+-		dbusx.bits.bit4 = (data & 0x10) ? 1 : 0;
+-		dbusx.bits.bit5 = (data & 0x20) ? 1 : 0;
+-		dbusx.bits.bit6 = (data & 0x40) ? 1 : 0;
+-		dbusx.bits.bit7 = (data & 0x80) ? 1 : 0;
+-		iowrite32(dbusx.wvalue, par->regwr_gpiox);
+-
+-		dbusy.bits.wr = 1;
+-		iowrite32(dbusy.wvalue, par->regwr_gpioy);
+-		buf++;
+-	}
+-
+-	return 0;
+-}
+-
+-#else
+-
+ int fbtft_write_gpio8_wr(struct fbtft_par *par, void *buf, size_t len)
+ {
+ 	u8 data;
+@@ -416,8 +348,6 @@ int fbtft_write_gpio8_wr(struct fbtft_par *par, void *buf, size_t len)
+ 	return 0;
+ }
+ 
+-#endif	/* #if defined(CONFIG_MACH_MESON8B_ODROIDC) */
+-
+ EXPORT_SYMBOL(fbtft_write_gpio8_wr);
+ 
+ int fbtft_write_gpio16_wr(struct fbtft_par *par, void *buf, size_t len)
+@@ -478,4 +408,70 @@ int fbtft_write_gpio16_wr_latched(struct fbtft_par *par, void *buf, size_t len)
+ }
+ EXPORT_SYMBOL(fbtft_write_gpio16_wr_latched);
+ 
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++
++union	reg_bitfield {
++	unsigned int	wvalue;
++	struct {
++		/* GPIOX.0 - GPIOX.4 */
++		unsigned int	bit0_bit4 : 5;
++		unsigned int	db00 : 1;	/* GPIOX.5 */
++		unsigned int	db01 : 1;	/* GPIOX.6 */
++		unsigned int	db02 : 1;	/* GPIOX.7 */
++		unsigned int	db03 : 1;	/* GPIOX.8 */
++		unsigned int	db04 : 1;	/* GPIOX.9 */
++		unsigned int	db05 : 1;	/* GPIOX.10 */
++
++		/* GPIOX.11 - GPIOX.17 */
++		unsigned int	bit11_bit_17 : 7;
++		unsigned int	db06 : 1;	/* GPIOX.18 */
++		unsigned int	db07 : 1;	/* GPIOX.19 */
++		unsigned int	wr : 1;		/* GPIOX.20 */
++
++		/* GPIOX.21 - GPIOX.31 */
++		unsigned int	bit21_bit31 : 11;
++	} bits;
++};
++
++int fbtft_write_reg_wr(struct fbtft_par *par, void *buf, size_t len)
++{
++	u8 	data;
++	union	reg_bitfield	dbus;
++
++	fbtft_par_dbg_hex(DEBUG_WRITE, par, par->info->device, u8, buf, len,
++		"%s(len=%d): ", __func__, len);
++
++	if (par->reg_gpiox == NULL) {
++		pr_err("%s : ioremap gpio register fail!\n", __func__);
++		return	0;
++	}
++
++	dbus.wvalue = ioread32(par->reg_gpiox + OFFSET_GPIOX_IN);
++
++	while (len--) {
++		data = *(u8 *) buf;
++		dbus.bits.db00 = (data & 0x01) ? 1 : 0;
++		dbus.bits.db01 = (data & 0x02) ? 1 : 0;
++		dbus.bits.db02 = (data & 0x04) ? 1 : 0;
++		dbus.bits.db03 = (data & 0x08) ? 1 : 0;
++		dbus.bits.db04 = (data & 0x10) ? 1 : 0;
++		dbus.bits.db05 = (data & 0x20) ? 1 : 0;
++		dbus.bits.db06 = (data & 0x40) ? 1 : 0;
++		dbus.bits.db07 = (data & 0x80) ? 1 : 0;
++		/* Start writing by pulling down /WR */
++		dbus.bits.wr = 0;
++		iowrite32(dbus.wvalue, par->reg_gpiox + OFFSET_GPIOX_OUT);
++		dbus.bits.wr = 1;
++		iowrite32(dbus.wvalue, par->reg_gpiox + OFFSET_GPIOX_OUT);
++
++		buf++;
++	}
++
++	return 0;
++}
++
++EXPORT_SYMBOL(fbtft_write_reg_wr);
++
++#endif /* #if defined(CONFIG_MACH_MESON8B_ODROIDC) */
++
+ #endif /* CONFIG_ARCH_BCM2708 */
+diff --git a/drivers/video/fbtft/fbtft.h b/drivers/video/fbtft/fbtft.h
+index 12a1fadd..9cd52b8 100755
+--- a/drivers/video/fbtft/fbtft.h
++++ b/drivers/video/fbtft/fbtft.h
+@@ -255,18 +255,15 @@ struct fbtft_par {
+ 	bool bgr;
+ 	void *extra;
+ #if defined(CONFIG_MACH_MESON8B_ODROIDC)
+-	void __iomem *regrd_gpiox;
+-	void __iomem *regwr_gpiox;
+-	void __iomem *regrd_gpioy;
+-	void __iomem *regwr_gpioy;
++	void __iomem *reg_gpiox;
+ #endif
+ };
+ 
+ #if defined(CONFIG_MACH_MESON8B_ODROIDC)
+-	#define	ODROIDC1_GPIOX_REGIN	0xC1108038
+-	#define	ODROIDC1_GPIOX_REGOUT	0xC1108034
+-	#define	ODROIDC1_GPIOY_REGIN	0xC1108044
+-	#define	ODROIDC1_GPIOY_REGOUT	0xC1108040
++	#define	ODROIDC1_GPIO_START	0xC1108030
++	#define	ODROIDC1_GPIOX_START	ODROIDC1_GPIO_START
++	#define	OFFSET_GPIOX_OUT	0x04
++	#define	OFFSET_GPIOX_IN		0x08
+ #endif
+ 
+ #define NUMARGS(...)  (sizeof((int[]){__VA_ARGS__})/sizeof(int))
+@@ -301,6 +298,10 @@ extern int fbtft_write_gpio16_wr(struct fbtft_par *par, void *buf, size_t len);
+ extern int fbtft_write_gpio16_wr_latched(struct fbtft_par *par,
+ 	void *buf, size_t len);
+ 
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++extern int fbtft_write_reg_wr(struct fbtft_par *par, void *buf, size_t len);
++#endif
++
+ /* fbtft-bus.c */
+ extern int fbtft_write_vmem8_bus8(struct fbtft_par *par, size_t offset, size_t len);
+ extern int fbtft_write_vmem16_bus16(struct fbtft_par *par, size_t offset, size_t len);
+diff --git a/drivers/video/fbtft/fbtft_device.c b/drivers/video/fbtft/fbtft_device.c
+index c3911f5..ccd91f1 100755
+--- a/drivers/video/fbtft/fbtft_device.c
++++ b/drivers/video/fbtft/fbtft_device.c
+@@ -406,6 +406,20 @@ static struct fbtft_device_display displays[] = {
+ 			.release = fbtft_device_pdev_release,
+ 			.platform_data = &(struct fbtft_platform_data) {
+ 				.gpios = (const struct fbtft_gpio []) {
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++					{ "reset", 88 },
++					{ "dc", 101 },
++					{ "wr", 117 },
++					{ "cs", 87 },
++					{ "db00", 102 },
++					{ "db01", 103 },
++					{ "db02", 104 },
++					{ "db03", 105 },
++					{ "db04", 106 },
++					{ "db05", 107 },
++					{ "db06", 115 },
++					{ "db07", 116 },
++#else
+ 					{ "reset", 17 },
+ 					{ "dc", 1 },
+ 					{ "wr", 0 },
+@@ -419,6 +433,7 @@ static struct fbtft_device_display displays[] = {
+ 					{ "db06", 8 },
+ 					{ "db07", 7 },
+ 					{ "led", 4 },
++#endif
+ 					{},
+ 				},
+ 			},
+diff --git a/drivers/video/fbtft/flexfb.c b/drivers/video/fbtft/flexfb.c
+index 31213ba..4811546 100755
+--- a/drivers/video/fbtft/flexfb.c
++++ b/drivers/video/fbtft/flexfb.c
+@@ -132,6 +132,22 @@ static int ssd1351_init[] = { -1,0xfd,0x12,-1,0xfd,0xb1,-1,0xae,-1,0xb3,0xf1,-1,
+                               -1,0xab,0x01,-1,0xb1,0x32,-1,0xb4,0xa0,0xb5,0x55,-1,0xbb,0x17,-1,0xbe,0x05, \
+                               -1,0xc1,0xc8,0x80,0xc8,-1,0xc7,0x0f,-1,0xb6,0x01,-1,0xa6,-1,0xaf,-3 };
+ 
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++static int ili9488_init[] = { \
++-1, 0xB0,0x00, \
++-1, 0x11, \
++-2,  120, \
++-1, 0x3A,0x55, \
++-1, 0xC2,0x33, \
++-1, 0xC5,0x00,0x1E,0x80, \
++-1, 0x36,0x28, \
++-1, 0xB1,0xB0, \
++-1, 0xE0,0x00,0x04,0x0E,0x08,0x17,0x0A,0x40,0x79,0x4D,0x07,0x0E,0x0A,0x1A,0x1D,0x0F, \
++-1, 0xE1,0x00,0x1B,0x1F,0x02,0x10,0x05,0x32,0x34,0x43,0x02,0x0A,0x09,0x33,0x37,0x0F, \
++-1, 0x11, \
++-1, 0x29, \
++-3 };
++#endif
+ 
+ /* ili9320, ili9325 */
+ static void flexfb_set_addr_win_1(struct fbtft_par *par, int xs, int ys, int xe, int ye)
+@@ -337,7 +353,20 @@ static int flexfb_probe_common(struct spi_device *sdev, struct platform_device *
+ 				initp = ili9341_init;
+ 				initp_num = ARRAY_SIZE(ili9341_init);
+ 			}
+-
++#if defined(CONFIG_MACH_MESON8B_ODROIDC)
++		} else if (!strcmp(chip, "ili9488")) {
++			if (!width)
++				width = 480;
++			if (!height)
++				height = 320;
++			setaddrwin = 0;
++			regwidth = 8;
++			buswidth = 8;
++			if (init_num == 0) {
++				initp = ili9488_init;
++				initp_num = ARRAY_SIZE(ili9488_init);
++			}
++#endif
+ 
+ 		} else if (!strcmp(chip, "ssd1289")) {
+ 			if (!width)
+@@ -491,17 +520,11 @@ static int flexfb_probe_common(struct spi_device *sdev, struct platform_device *
+ 		par->fbtftops.register_backlight = fbtft_register_backlight;
+ 
+ #if defined(CONFIG_MACH_MESON8B_ODROIDC)
+-	par->regrd_gpiox = ioremap(ODROIDC1_GPIOX_REGIN, 4);
+-	par->regwr_gpiox = ioremap(ODROIDC1_GPIOX_REGOUT, 4);
+-
+-	par->regrd_gpioy = ioremap(ODROIDC1_GPIOY_REGIN, 4);
+-	par->regwr_gpioy = ioremap(ODROIDC1_GPIOY_REGOUT, 4);
+-
+-	if ((par->regrd_gpiox == NULL) || (par->regwr_gpiox == NULL) ||
+-	    (par->regrd_gpioy == NULL) || (par->regwr_gpioy == NULL)) {
+-		pr_err("%s : ioremap gpio x/y register error!\n", __func__);
+-		goto out_release;
+-	}
++	par->reg_gpiox = ioremap(ODROIDC1_GPIOX_START, 64);
++	if (par->reg_gpiox == NULL)
++		pr_err("%s : ioremap gpiox register error!\n", __func__);
++	else
++		par->fbtftops.write = fbtft_write_reg_wr;
+ #endif
+ 	ret = fbtft_register_framebuffer(info);
+ 	if (ret < 0)
+@@ -526,10 +549,7 @@ static int flexfb_remove_common(struct device *dev, struct fb_info *info)
+ 		fbtft_par_dbg(DEBUG_DRIVER_INIT_FUNCTIONS, par,
+ 			"%s()\n", __func__);
+ #if defined(CONFIG_MACH_MESON8B_ODROIDC)
+-	if (par->regrd_gpiox)	iounmap(par->regrd_gpiox);
+-	if (par->regwr_gpiox)	iounmap(par->regwr_gpiox);
+-	if (par->regrd_gpioy)	iounmap(par->regrd_gpioy);
+-	if (par->regwr_gpioy)	iounmap(par->regwr_gpioy);
++	if (par->reg_gpiox)	iounmap(par->reg_gpiox);
+ #endif
+ 	fbtft_unregister_framebuffer(info);
+ 	fbtft_framebuffer_release(info);

@@ -1,0 +1,51 @@
+From 8b23fa19c5de7d1084d3bbfac439ce402d3d3388 Mon Sep 17 00:00:00 2001
+From: "Mauro (mdrjr) Ribeiro" <mauro.ribeiro@hardkernel.com>
+Date: Thu, 18 Aug 2016 01:00:34 -0300
+Subject: [PATCH] DTS: fix overclock freq/volt table
+
+Change-Id: Ieaa2b578f68b7afd170efe3d73061aafcc28a32b
+---
+ arch/arm/boot/dts/meson8b_odroidc.dts | 30 +++++++++++++++---------------
+ 1 file changed, 15 insertions(+), 15 deletions(-)
+
+diff --git a/arch/arm/boot/dts/meson8b_odroidc.dts b/arch/arm/boot/dts/meson8b_odroidc.dts
+index e2e909c..5ed5cc4 100755
+--- a/arch/arm/boot/dts/meson8b_odroidc.dts
++++ b/arch/arm/boot/dts/meson8b_odroidc.dts
+@@ -330,21 +330,21 @@
+             dvfs_table  = <
+             /* NOTE: frequent in this table must be ascending order */
+             /* frequent(Khz)    min_uV      max_uV                  */
+-                  96000         825000      825000
+-                 192000         825000      825000
+-                 312000         825000      825000
+-                 408000         825000      825000
+-                 504000         825000      825000
+-                 600000         825000      825000
+-                 720000         825000      825000
+-                 816000         850000      850000
+-                1008000         875000      875000
+-                1200000         925000      925000
+-                1320000        1100000     1100000
+-                1488000        1100000     1100000
+-		1536000	       1140000     1140000
+-		1632000	       1150000     1150000
+-                1728000        1160000     1160000
++					96000         825000      825000
++					192000         825000      825000
++					312000         825000      825000
++					408000         825000      825000
++					504000         825000      825000
++					600000         825000      825000
++					720000         825000      825000
++					816000         850000      850000
++					1008000         875000      875000
++					1200000         925000      925000
++					1320000        1100000     1100000
++					1488000        1100000     1100000
++					1536000	       1140000     1140000
++					1632000	       1140000     1140000
++					1728000        1140000     1140000
+             >;
+         };
+     };

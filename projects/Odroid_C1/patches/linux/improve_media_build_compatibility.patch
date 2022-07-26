@@ -1,0 +1,74 @@
+From 35623446c9129bebeeb2d0d619618a374942f89d Mon Sep 17 00:00:00 2001
+From: kszaq <kszaquitto@gmail.com>
+Date: Sun, 11 Dec 2016 14:01:48 +0100
+Subject: [PATCH] drivers/amlogic/video_dev: improve media_build compatibility
+
+---
+ drivers/amlogic/video_dev/amlvideo.c  | 8 +++++---
+ drivers/amlogic/video_dev/amlvideo2.c | 6 +++---
+ 2 files changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/amlogic/video_dev/amlvideo.c b/drivers/amlogic/video_dev/amlvideo.c
+index eeaf950baaf6..47d001564c12 100755
+--- a/drivers/amlogic/video_dev/amlvideo.c
++++ b/drivers/amlogic/video_dev/amlvideo.c
+@@ -965,7 +965,7 @@ static int amlvideo_mmap(struct file *file, struct vm_area_struct *vma) {
+     return ret;
+ }
+ 
+-static const struct v4l2_file_operations amlvideo_fops = { .owner = THIS_MODULE, .open = amlvideo_open, .release = amlvideo_close, .read = amlvideo_read, .poll = amlvideo_poll, .ioctl = video_ioctl2, /* V4L2 ioctl handler */
++static const struct v4l2_file_operations amlvideo_fops = { .owner = THIS_MODULE, .open = amlvideo_open, .release = amlvideo_close, .read = amlvideo_read, .poll = amlvideo_poll, .unlocked_ioctl = video_ioctl2, /* V4L2 ioctl handler */
+ .mmap = amlvideo_mmap, };
+ 
+ static const struct v4l2_ioctl_ops amlvideo_ioctl_ops = {
+@@ -991,7 +991,7 @@ static const struct v4l2_ioctl_ops amlvideo_ioctl_ops = {
+ 
+ static struct video_device amlvideo_template = { .name = "amlvideo", .fops = &amlvideo_fops, .ioctl_ops = &amlvideo_ioctl_ops, .release = video_device_release,
+ 
+-.tvnorms = V4L2_STD_525_60, .current_norm = V4L2_STD_NTSC_M , };
++.tvnorms = V4L2_STD_525_60, /* .current_norm = V4L2_STD_NTSC_M , */ };
+ 
+ /* -----------------------------------------------------------------
+  Initialization and module stuff
+@@ -1042,7 +1042,9 @@ static int __init amlvideo_create_instance(int inst) {
+         goto unreg_dev;
+ 
+     *vfd = amlvideo_template;
+-    vfd->debug = debug;
++    // vfd->debug = debug;
++    vfd->v4l2_dev = &dev->v4l2_dev;
++
+     ret = video_register_device(vfd, VFL_TYPE_GRABBER, video_nr);
+     if (ret < 0)
+         goto rel_vdev;
+diff --git a/drivers/amlogic/video_dev/amlvideo2.c b/drivers/amlogic/video_dev/amlvideo2.c
+index de1e4f11d37c..3b8e24eb149a 100755
+--- a/drivers/amlogic/video_dev/amlvideo2.c
++++ b/drivers/amlogic/video_dev/amlvideo2.c
+@@ -3470,7 +3470,7 @@ static const struct v4l2_file_operations amlvideo2_fops = {
+ 	.release        = amlvideo2_close,
+ 	.read           = amlvideo2_read,
+ 	.poll		= amlvideo2_poll,
+-	.ioctl          = video_ioctl2, /* V4L2 ioctl handler */
++	.unlocked_ioctl          = video_ioctl2, /* V4L2 ioctl handler */
+ 	.mmap           = amlvideo2_mmap,
+ };
+ 
+@@ -3509,7 +3509,7 @@ static struct video_device amlvideo2_template = {
+ 	.release	= video_device_release,
+ 
+ 	.tvnorms              = V4L2_STD_525_60,
+-	.current_norm         = V4L2_STD_NTSC_M,
++	// .current_norm         = V4L2_STD_NTSC_M,
+ };
+ 
+ static int amlvideo2_receiver_event_fun(int type, void* data, void* private_data)
+@@ -3678,7 +3678,7 @@ static int amlvideo2_create_node(struct platform_device *pdev)
+ 			break;
+ 		}
+ 		*vfd = amlvideo2_template;
+-		vfd->debug = debug;
++		// vfd->debug = debug;
+ 		ret = video_register_device(vfd, VFL_TYPE_GRABBER, video_nr);
+ 		if (ret < 0){
+ 			ret = -ENODEV;

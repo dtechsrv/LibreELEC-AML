@@ -1,0 +1,35 @@
+From 6d7ccb3796f8d6c09860c7e8418f6f4cbf8d4cf0 Mon Sep 17 00:00:00 2001
+From: Sam Nazarko <email@samnazarko.co.uk>
+Date: Sat, 20 Feb 2016 18:53:30 +0000
+Subject: [PATCH] aml_i2s: byte align buffer
+
+Signed-off-by: Sam Nazarko <email@samnazarko.co.uk>
+---
+ sound/soc/aml/m8/aml_i2s.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/sound/soc/aml/m8/aml_i2s.c b/sound/soc/aml/m8/aml_i2s.c
+index 4a5fa941b3a..f32decee799 100755
+--- a/sound/soc/aml/m8/aml_i2s.c
++++ b/sound/soc/aml/m8/aml_i2s.c
+@@ -139,15 +139,15 @@ static const struct snd_pcm_hardware aml_i2s_hardware = {
+ 
+     .formats        = SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S24_LE | SNDRV_PCM_FMTBIT_S32_LE,
+ 
+-    .period_bytes_min   = 64,
+-    .period_bytes_max   = 32 * 1024 * 2,
++    .period_bytes_min   = 32,
++    .period_bytes_max   = 32 * 1024,
+     .periods_min        = 2,
+     .periods_max        = 1024,
+-    .buffer_bytes_max   = 128 * 1024 * 2 * 2,
++    .buffer_bytes_max   = 32 * 1024 * 2,
+ 
+     .rate_min = 8000,
+-    .rate_max = 48000,
+-    .channels_min = 2,
++    .rate_max = 192000,
++    .channels_min = 1,
+     .channels_max = 8,
+     .fifo_size = 0,
+ };
