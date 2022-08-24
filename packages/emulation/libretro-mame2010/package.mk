@@ -25,7 +25,7 @@ make_target() {
     arm1176jzf-s)
       make platform=armv6-hardfloat-$TARGET_CPU
       ;;
-    cortex-a7|cortex-a9)
+    cortex-a5|cortex-a7|cortex-a9)
       make platform=armv7-neon-hardfloat-$TARGET_CPU
       ;;
     *cortex-a53|cortex-a17)
