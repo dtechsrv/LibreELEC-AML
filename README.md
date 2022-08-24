@@ -29,19 +29,23 @@ This repository is based on [LibreELEC/LibreELEC.tv](https://github.com/LibreELE
 
 **Create bootable SD Card**
 
-To create bootable SD card media you need to download the [LibreELEC USB-SD Creator](https://libreelec.tv/downloads_new/) tool from the LibreELEC website. Then click on the 'Select file' button and browse the previously downloaded 'img.gz' disk image.
+To create bootable SD card media you need to download the [LibreELEC-AML USB-SD Creator](https://github.com/dtechsrv/usb-sd-creator/releases) tool. Select the file you want to download and click the 'Download' button, or click the 'Select file' button and browse the previously downloaded 'img.gz' disk image.
 
 **Start LibreELEC from SD Card**
 
-If you want to boot the device from an SD Card, you need to perform the toothpick method: disconnect the power plug, insert the prepared SD Card on, which the image file is written (img.gz), and then press and hold the reset button. The reset button on MXQ and M8S+ is located behind the A/V connector, but on the KI Pro, the reset button is located behind the hole on the bottom of the device. Reconnect the power jack while holding down the reset button, then release it after about 3-5 seconds.
+If you want to boot the device from an SD Card, you need to perform the toothpick method: disconnect the power plug, insert the prepared SD Card on, which the image file is written (img.gz), and then press and hold the reset button. The reset button on MXQ and M8S+ is located behind the A/V connector, but on the Mecool and WeTek devices, the reset button is located behind the hole on the bottom of the device. Reconnect the power jack while holding down the reset button, then release it after about 3-5 seconds.
 
 *NOTICE: If the Android recovery menu appeared, you pressed the button for too long.*
 
-**Install image from SD Card to internal memory (eMMC or onboard NAND Flash)**
+**Install image from SD Card to internal memory (eMMC or onboard NAND Flash) - for non-WeTek devices only!**
 
 If you want to install the firmware into the internal memory, you need to log in to the device via SSH and run the 'installtointernal' command. The default password for the root user is 'libreelec'.
 
 *NOTICE: The command will completely overwrite the previously installed firmware, so it will no longer be possible to boot the originally installed system.*
+
+**NAND installation guide for WeTek devices**
+
+Download the NAND installation zip file, extract it, and copy the contents of the file to the root folder of an FAT32-formatted SD card. Disconnect the power cord from the WeTek device, insert the prepared SD card, and plug in the power jack while pressing the reset button through the toothpick-sized hole in the bottom panel. You need to hold the button about 8-10 seconds until the LibreELEC installation begins.
 
 **Install an update package**
 
@@ -57,7 +61,7 @@ Please report issues via the [LibreELEC forum: Bug Reports](https://forum.libree
 
 **Donations**
 
-Contributions towards current project funding goals can be sent via PayPal to donations@libreelec.tv
+Contributions towards current project funding goals can be made via [OpenCollective](https://opencollective.com/libreelec/donate).
 
 **License**
 
