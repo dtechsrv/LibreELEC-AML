@@ -4,4 +4,4 @@
 # additional packages to install:
 # Space separated list is supported,
 # e.g. ADDITIONAL_PACKAGES="PACKAGE1 PACKAGE2"
-  ADDITIONAL_PACKAGES+=" autoscript-amlogic"
+  ADDITIONAL_PACKAGES+=" u-boot-script"
