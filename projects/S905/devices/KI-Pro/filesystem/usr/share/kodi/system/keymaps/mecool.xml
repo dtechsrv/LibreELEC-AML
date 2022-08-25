@@ -12,12 +12,6 @@
       <f11>AudioNextLanguage</f11>
     </keyboard>
   </global>
-  <VirtualKeyboard>
-    <keyboard>
-      <escape>Backspace</escape>
-      <backspace>PreviousMenu</backspace>
-    </keyboard>
-  </VirtualKeyboard>
   <Teletext>
     <keyboard>
       <f1>Red</f1>
