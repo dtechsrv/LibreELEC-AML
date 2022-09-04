@@ -22,8 +22,16 @@ PROJECT=S8X2 DEVICE=MXIII-Plus ARCH=arm make image -j8
 PROJECT=Minix-S8X2 DEVICE=X8-X8H ARCH=arm make image -j8
 
 # MINIX Neo X8-H Plus
-# Specs: Amlogic S812-H SoC, 2 GB RAM, Gigabit Mbps LAN, AP6335e WiFi
+# Specs: Amlogic S812-H SoC, 2 GB RAM, Gigabit LAN, AP6335e WiFi
 PROJECT=Minix-S8X2 DEVICE=X8H-Plus ARCH=arm make image -j8
+
+# Odroid C1/C1+
+# Specs: Amlogic S805 SoC, 1 GB RAM, Gigabit LAN, without WiFi
+PROJECT=Odroid_C1 ARCH=arm make image -j8
+
+# WeTek Hub
+# Specs: Amlogic S905-H SoC, 1 GB RAM, Gigabit LAN, AP6335 or AP6255 WiFi
+PROJECT=S905 DEVICE=WeTek_Hub ARCH=arm make amlpkg -j8
 
 # MXQ S85
 # Specs: Amlogic S805 SoC, 1 GB RAM, 10/100 LAN, AP6210/AP6212 WiFi
