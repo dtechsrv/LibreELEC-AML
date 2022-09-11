@@ -40,3 +40,4 @@ PROJECT=S905 DEVICE=WeTek_Hub ARCH=arm make amlpkg -j8
 # Remove unnecessary files after the build process
 rm -rf target/*.kernel
 rm -rf target/*.system
+rm -rf target/*.initrd
