@@ -1,6 +1,9 @@
 #!/bin/sh
 # Create image for 3rdParty devices
 
+# Generic S905x devices (gxbb, gxl)
+PROJECT=S905 DEVICE=Generic_S905 ARCH=arm make image -j8
+
 # Universal build for multiple k200-based S802 TV boxes
 # Specs: Amlogic S802 SoC, 2 GB RAM, 10/100 Mbps LAN, AP6330 or Realtek WiFi
 PROJECT=S8X2 DEVICE=k200-AP6330_2G ARCH=arm make image -j8
