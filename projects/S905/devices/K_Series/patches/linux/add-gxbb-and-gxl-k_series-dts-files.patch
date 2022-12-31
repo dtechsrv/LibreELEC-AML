@@ -1,0 +1,426 @@
+diff --git a/arch/arm64/boot/dts/amlogic/gxbb_p200_k1_plus.dts b/arch/arm64/boot/dts/amlogic/gxbb_p200_k1_plus.dts
+new file mode 100644
+index 0000000..2a7445e
+--- /dev/null
++++ b/arch/arm64/boot/dts/amlogic/gxbb_p200_k1_plus.dts
+@@ -0,0 +1,84 @@
++#include "gxbb_p200.dts"
++
++/{
++	le-dt-id = "gxbb_p200_k1_plus";
++	ethmac: ethernet@0xc9410000 {
++		compatible = "amlogic, gxbb-rmii-dwmac";
++		phy-mode= "rmii";
++		mc_val = <0x1800>;
++	};
++
++	/delete-node/ bt-dev;
++
++	wifi {
++		irq_trigger_type = "GPIO_IRQ_HIGH";
++		/delete-property/ dhd_static_buf;
++		power_on_pin2 = <&gpio	   GPIOX_20	   GPIO_ACTIVE_HIGH>;
++	};
++
++	sdio {
++		interrupts = <	0 216 4>;
++	};
++
++	dwc2_a {
++		port-id-mode = <0>; /** 0: hardware, 1: sw_host, 2: sw_slave*/
++		/delete-property/ gpio-vbus-power;
++		/delete-property/ gpios;
++	};
++
++	dvb {
++		compatible = "amlogic,dvb";
++		dev_name = "dvb";
++		status = "okay";
++		fec_reset_gpio-gpios = <&gpio GPIOY_13 GPIO_ACTIVE_HIGH>;
++		power_ctrl_gpio-gpios = <&gpio GPIOY_11 GPIO_ACTIVE_LOW>;
++		//"parallel","serial","disable"
++		ts0 = "parallel";
++		ts0_control = <0>;
++		ts0_invert = <0>;
++		pinctrl-names = "p_ts0", "s_ts0";
++		pinctrl-0 = <&dvb_p_ts0_pins>;
++		pinctrl-1 = <&dvb_s_ts0_pins>;
++		resets = <&clock GCLK_IDX_DEMUX
++				&clock GCLK_IDX_ASYNC_FIFO
++				&clock GCLK_IDX_AHB_ARB0
++				&clock GCLK_IDX_HIU_PARSER_TOP>;
++		reset-names = "demux", "asyncfifo", "ahbarb0", "uparsertop";
++	};
++
++	dvbfe {
++		compatible = "amlogic,dvbfe";
++		//dev_name = "avl6211";
++		status = "okay";
++		dtv_demod0 = "Avl6211";
++		dtv_demod0_i2c_adap_id = <1>;
++		dtv_demod0_i2c_addr = <0xC0>;
++		dtv_demod0_reset_value = <0>;
++		//dtv_demod0_reset_gpio = <&gpio GPIOY_13 GPIO_ACTIVE_HIGH>;
++		dtv_demod0_reset_gpio-gpios = <&gpio GPIOY_13 GPIO_ACTIVE_LOW>;
++		dtv_demod0_power_gpio-gpios = <&gpio GPIOY_11 GPIO_ACTIVE_LOW>;
++		fe0_dtv_demod = <0>;
++		fe0_ts = <0>;
++		fe0_dev = <0>;
++	};
++};
++
++&i2c_a {
++	status = "okay";
++};
++
++&i2c_b {
++	status = "okay";
++};
++
++&i2c_c {
++	status = "okay";
++};
++
++&i2c_d {
++	status = "okay";
++};
++ 
++&i2c_slave {
++	status = "disabled";
++};
+\ No newline at end of file
+diff --git a/arch/arm64/boot/dts/amlogic/gxbb_p200_k2_pro.dts b/arch/arm64/boot/dts/amlogic/gxbb_p200_k2_pro.dts
+new file mode 100644
+index 0000000..b8ae571
+--- /dev/null
++++ b/arch/arm64/boot/dts/amlogic/gxbb_p200_k2_pro.dts
+@@ -0,0 +1,76 @@
++#include "gxbb_p200_2G.dts"
++
++/{
++	le-dt-id = "gxbb_p200_k2_pro";
++	ethmac: ethernet@0xc9410000 {
++		compatible = "amlogic, gxbb-rmii-dwmac";
++		phy-mode= "rmii";
++		mc_val = <0x1800>;
++	};
++
++	emmc {
++		interrupts = <	0 218 4>;
++	};
++
++	dwc2_a {
++		port-id-mode = <0>; /** 0: hardware, 1: sw_host, 2: sw_slave*/
++		gpio-vbus-power = "GPIODV_15";
++		gpios = <&gpio       GPIODV_15       GPIO_ACTIVE_HIGH>;
++	};
++
++	dvb {
++		compatible = "amlogic,dvb";
++		dev_name = "dvb";
++		status = "okay";
++		fec_reset_gpio-gpios = <&gpio GPIOY_13 GPIO_ACTIVE_HIGH>;
++		power_ctrl_gpio-gpios = <&gpio GPIOY_11 GPIO_ACTIVE_LOW>;
++		//"parallel","serial","disable"
++		ts0 = "parallel";
++		ts0_control = <0>;
++		ts0_invert = <0>;
++		pinctrl-names = "p_ts0", "s_ts0";
++		pinctrl-0 = <&dvb_p_ts0_pins>;
++		pinctrl-1 = <&dvb_s_ts0_pins>;
++		resets = <&clock GCLK_IDX_DEMUX
++				&clock GCLK_IDX_ASYNC_FIFO
++				&clock GCLK_IDX_AHB_ARB0
++				&clock GCLK_IDX_HIU_PARSER_TOP>;
++		reset-names = "demux", "asyncfifo", "ahbarb0", "uparsertop";
++	};
++
++	dvbfe {
++		compatible = "amlogic,dvbfe";
++		//dev_name = "avl6211";
++		status = "okay";
++		dtv_demod0 = "Avl6211";
++		dtv_demod0_i2c_adap_id = <1>;
++		dtv_demod0_i2c_addr = <0xC0>;
++		dtv_demod0_reset_value = <0>;
++		//dtv_demod0_reset_gpio = <&gpio GPIOY_13 GPIO_ACTIVE_HIGH>;
++		dtv_demod0_reset_gpio-gpios = <&gpio GPIOY_13 GPIO_ACTIVE_LOW>;
++		dtv_demod0_power_gpio-gpios = <&gpio GPIOY_11 GPIO_ACTIVE_LOW>;
++		fe0_dtv_demod = <0>;
++		fe0_ts = <0>;
++		fe0_dev = <0>;
++	};
++};
++
++&i2c_a {
++	status = "okay";
++};
++
++&i2c_b {
++	status = "okay";
++};
++
++&i2c_c {
++	status = "okay";
++};
++
++&i2c_d {
++	status = "okay";
++};
++ 
++&i2c_slave {
++	status = "disabled";
++};
+\ No newline at end of file
+diff --git a/arch/arm64/boot/dts/amlogic/gxl_p230_k1_pro.dts b/arch/arm64/boot/dts/amlogic/gxl_p230_k1_pro.dts
+new file mode 100644
+index 0000000..8dbc902
+--- /dev/null
++++ b/arch/arm64/boot/dts/amlogic/gxl_p230_k1_pro.dts
+@@ -0,0 +1,77 @@
++#include "gxl_p230_2g.dts"
++
++/{
++	le-dt-id = "gxl_p230_k1_pro";
++	dvb {
++		compatible = "amlogic,dvb";
++		dev_name = "dvb";
++		ts0 = "parallel";
++		ts0_control = <0x0>;
++		ts0_invert = <0x0>;
++		fec_reset_gpio-gpios = <&gpio GPIODV_13 GPIO_ACTIVE_HIGH>;
++		power_ctrl_gpio-gpios = <&gpio GPIODV_11 GPIO_ACTIVE_LOW>;
++		pinctrl-names = "p_ts0", "s_ts0", "s_ts1";
++		pinctrl-0 = <&dvb_p_ts0_pins>;
++		pinctrl-1 = <&dvb_s_ts0_pins>;
++		pinctrl-2 = <&dvb_s_ts1_pins>;
++		resets = <&clock GCLK_IDX_DEMUX &clock GCLK_IDX_ASYNC_FIFO &clock GCLK_IDX_AHB_ARB0 &clock GCLK_IDX_HIU_PARSER_TOP>;
++		reset-names = "demux", "asyncfifo", "ahbarb0", "uparsertop";
++	};
++
++	dvbfe {
++		compatible = "amlogic,dvbfe";
++		//dev_name = "dvbfe";
++		status = "okay";
++		dtv_demod0 = "Avl6211";
++		dtv_demod0_i2c_adap_id = <2>;
++		dtv_demod0_i2c_addr = <0x60>;
++		dtv_demod0_reset_value = <0>;
++		dtv_demod0_reset_gpio-gpios = <&gpio GPIODV_13 GPIO_ACTIVE_LOW>;
++		dtv_demod0_power_gpio-gpios = <&gpio GPIODV_14 GPIO_ACTIVE_LOW>;
++		fe0_dtv_demod = <0>;
++		fe0_ts = <0>;
++		fe0_dev = <0>;
++	};
++};
++
++&pinmux {
++	dvb_p_ts0_pins:dvb_p_ts0_pins {
++		amlogic,setmask = <0x2 0x1f>;
++		amlogic,clrmask = <0x3 0x787 0x2 0xff000400>;
++		amlogic,pins = "GPIODV_0", "GPIODV_1", "GPIODV_2", "GPIODV_3", "GPIODV_4", "GPIODV_5", "GPIODV_6", "GPIODV_7", "GPIODV_8", "GPIODV_9", "GPIODV_10";
++	};
++
++	dvb_s_ts0_pins:dvb_s_ts0_pins {
++		amlogic,setmask = <0x2 0x17>;
++		amlogic,clrmask = <0x3 0x584 0x2 0x7000000 0x1 0x100>;
++		amlogic,pins = "GPIODV_0", "GPIODV_8", "GPIODV_9", "GPIODV_10";
++	};
++
++	dvb_s_ts1_pins:dvb_s_ts1_pins {
++		amlogic,setmask = <0x3 0x17>;
++		amlogic,clrmask = <0x2 0xf0000 0x1 0x7>;
++		amlogic,pins = "GPIODV_0", "GPIODV_8", "GPIODV_9", "GPIODV_10";
++	};
++
++	dtv_params_pin:dtv_params_pin {
++		amlogic,clrmask = <0x1 0x38000000 0x3 0x80>;
++		amlogic,pins = "GPIODV_13", "GPIODV_14", "GPIODV_15";
++	};
++
++};
++
++&i2c_a {
++	status = "okay";
++};
++
++&i2c_b {
++	status = "okay";
++};
++
++&i2c_c {
++	status = "okay";
++};
++
++&i2c_d {
++	status = "okay";
++};
+\ No newline at end of file
+diff --git a/arch/arm64/boot/dts/amlogic/gxl_p231_1g_dvb.dts b/arch/arm64/boot/dts/amlogic/gxl_p231_1g_dvb.dts
+new file mode 100644
+index 0000000..e6a53db
+--- /dev/null
++++ b/arch/arm64/boot/dts/amlogic/gxl_p231_1g_dvb.dts
+@@ -0,0 +1,77 @@
++#include "gxl_p231_1g.dts"
++
++/{
++	le-dt-id = "gxl_p231_1g_dvb";
++	dvb {
++		compatible = "amlogic,dvb";
++		dev_name = "dvb";
++		ts0 = "parallel";
++		ts0_control = <0x0>;
++		ts0_invert = <0x0>;
++		fec_reset_gpio-gpios = <&gpio GPIODV_13 GPIO_ACTIVE_HIGH>;
++		power_ctrl_gpio-gpios = <&gpio GPIODV_11 GPIO_ACTIVE_LOW>;
++		pinctrl-names = "p_ts0", "s_ts0", "s_ts1";
++		pinctrl-0 = <&dvb_p_ts0_pins>;
++		pinctrl-1 = <&dvb_s_ts0_pins>;
++		pinctrl-2 = <&dvb_s_ts1_pins>;
++		resets = <&clock GCLK_IDX_DEMUX &clock GCLK_IDX_ASYNC_FIFO &clock GCLK_IDX_AHB_ARB0 &clock GCLK_IDX_HIU_PARSER_TOP>;
++		reset-names = "demux", "asyncfifo", "ahbarb0", "uparsertop";
++	};
++
++	dvbfe {
++		compatible = "amlogic,dvbfe";
++		//dev_name = "dvbfe";
++		status = "okay";
++		dtv_demod0 = "Avl6211";
++		dtv_demod0_i2c_adap_id = <2>;
++		dtv_demod0_i2c_addr = <0x60>;
++		dtv_demod0_reset_value = <0>;
++		dtv_demod0_reset_gpio-gpios = <&gpio GPIODV_13 GPIO_ACTIVE_LOW>;
++		dtv_demod0_power_gpio-gpios = <&gpio GPIODV_14 GPIO_ACTIVE_LOW>;
++		fe0_dtv_demod = <0>;
++		fe0_ts = <0>;
++		fe0_dev = <0>;
++	};
++};
++
++&pinmux {
++	dvb_p_ts0_pins:dvb_p_ts0_pins {
++		amlogic,setmask = <0x2 0x1f>;
++		amlogic,clrmask = <0x3 0x787 0x2 0xff000400>;
++		amlogic,pins = "GPIODV_0", "GPIODV_1", "GPIODV_2", "GPIODV_3", "GPIODV_4", "GPIODV_5", "GPIODV_6", "GPIODV_7", "GPIODV_8", "GPIODV_9", "GPIODV_10";
++	};
++
++	dvb_s_ts0_pins:dvb_s_ts0_pins {
++		amlogic,setmask = <0x2 0x17>;
++		amlogic,clrmask = <0x3 0x584 0x2 0x7000000 0x1 0x100>;
++		amlogic,pins = "GPIODV_0", "GPIODV_8", "GPIODV_9", "GPIODV_10";
++	};
++
++	dvb_s_ts1_pins:dvb_s_ts1_pins {
++		amlogic,setmask = <0x3 0x17>;
++		amlogic,clrmask = <0x2 0xf0000 0x1 0x7>;
++		amlogic,pins = "GPIODV_0", "GPIODV_8", "GPIODV_9", "GPIODV_10";
++	};
++
++	dtv_params_pin:dtv_params_pin {
++		amlogic,clrmask = <0x1 0x38000000 0x3 0x80>;
++		amlogic,pins = "GPIODV_13", "GPIODV_14", "GPIODV_15";
++	};
++
++};
++
++&i2c_a {
++	status = "okay";
++};
++
++&i2c_b {
++	status = "okay";
++};
++
++&i2c_c {
++	status = "okay";
++};
++
++&i2c_d {
++	status = "okay";
++};
+\ No newline at end of file
+diff --git a/arch/arm64/boot/dts/amlogic/gxl_p231_2g_dvb.dts b/arch/arm64/boot/dts/amlogic/gxl_p231_2g_dvb.dts
+new file mode 100644
+index 0000000..c6d439c
+--- /dev/null
++++ b/arch/arm64/boot/dts/amlogic/gxl_p231_2g_dvb.dts
+@@ -0,0 +1,77 @@
++#include "gxl_p231_2g.dts"
++
++/{
++	le-dt-id = "gxl_p231_2g_dvb";
++	dvb {
++		compatible = "amlogic,dvb";
++		dev_name = "dvb";
++		ts0 = "parallel";
++		ts0_control = <0x0>;
++		ts0_invert = <0x0>;
++		fec_reset_gpio-gpios = <&gpio GPIODV_13 GPIO_ACTIVE_HIGH>;
++		power_ctrl_gpio-gpios = <&gpio GPIODV_11 GPIO_ACTIVE_LOW>;
++		pinctrl-names = "p_ts0", "s_ts0", "s_ts1";
++		pinctrl-0 = <&dvb_p_ts0_pins>;
++		pinctrl-1 = <&dvb_s_ts0_pins>;
++		pinctrl-2 = <&dvb_s_ts1_pins>;
++		resets = <&clock GCLK_IDX_DEMUX &clock GCLK_IDX_ASYNC_FIFO &clock GCLK_IDX_AHB_ARB0 &clock GCLK_IDX_HIU_PARSER_TOP>;
++		reset-names = "demux", "asyncfifo", "ahbarb0", "uparsertop";
++	};
++
++	dvbfe {
++		compatible = "amlogic,dvbfe";
++		//dev_name = "dvbfe";
++		status = "okay";
++		dtv_demod0 = "Avl6211";
++		dtv_demod0_i2c_adap_id = <2>;
++		dtv_demod0_i2c_addr = <0x60>;
++		dtv_demod0_reset_value = <0>;
++		dtv_demod0_reset_gpio-gpios = <&gpio GPIODV_13 GPIO_ACTIVE_LOW>;
++		dtv_demod0_power_gpio-gpios = <&gpio GPIODV_14 GPIO_ACTIVE_LOW>;
++		fe0_dtv_demod = <0>;
++		fe0_ts = <0>;
++		fe0_dev = <0>;
++	};
++};
++
++&pinmux {
++	dvb_p_ts0_pins:dvb_p_ts0_pins {
++		amlogic,setmask = <0x2 0x1f>;
++		amlogic,clrmask = <0x3 0x787 0x2 0xff000400>;
++		amlogic,pins = "GPIODV_0", "GPIODV_1", "GPIODV_2", "GPIODV_3", "GPIODV_4", "GPIODV_5", "GPIODV_6", "GPIODV_7", "GPIODV_8", "GPIODV_9", "GPIODV_10";
++	};
++
++	dvb_s_ts0_pins:dvb_s_ts0_pins {
++		amlogic,setmask = <0x2 0x17>;
++		amlogic,clrmask = <0x3 0x584 0x2 0x7000000 0x1 0x100>;
++		amlogic,pins = "GPIODV_0", "GPIODV_8", "GPIODV_9", "GPIODV_10";
++	};
++
++	dvb_s_ts1_pins:dvb_s_ts1_pins {
++		amlogic,setmask = <0x3 0x17>;
++		amlogic,clrmask = <0x2 0xf0000 0x1 0x7>;
++		amlogic,pins = "GPIODV_0", "GPIODV_8", "GPIODV_9", "GPIODV_10";
++	};
++
++	dtv_params_pin:dtv_params_pin {
++		amlogic,clrmask = <0x1 0x38000000 0x3 0x80>;
++		amlogic,pins = "GPIODV_13", "GPIODV_14", "GPIODV_15";
++	};
++
++};
++
++&i2c_a {
++	status = "okay";
++};
++
++&i2c_b {
++	status = "okay";
++};
++
++&i2c_c {
++	status = "okay";
++};
++
++&i2c_d {
++	status = "okay";
++};
+\ No newline at end of file
