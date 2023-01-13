@@ -1,5 +1,5 @@
   # Kernel extra targets to build
-    KERNEL_UBOOT_EXTRA_TARGET="gxbb_p200.dtb gxbb_p200_2G.dtb gxl_p212_1g.dtb gxl_p212_2g.dtb gxl_p230_2g.dtb"
+    KERNEL_UBOOT_EXTRA_TARGET="gxl_p212_2g_nand.dtb"
 
   # additional drivers to install:
   # for a list of additinoal drivers see packages/linux-drivers
