@@ -37,14 +37,7 @@ then
       exec "$XMLTV_LOCATION_SCRIPT"
     fi
   elif [ "$XMLTV_TYPE" = "WEB" ]; then
-    case "$XMLTV_LOCATION_WEB" in
-    *.gz | *.bz2 | *.xz)
-        wget -qO - "$XMLTV_LOCATION_WEB" | zcat
-        ;;
-    *)
-        wget -qO - "$XMLTV_LOCATION_WEB"
-        ;;
-    esac
+    wget -qO - "$XMLTV_LOCATION_WEB"
     exit 0
   fi
 fi

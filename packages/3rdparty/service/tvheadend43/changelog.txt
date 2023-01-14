@@ -1,9 +1,3 @@
-224
-- Update to 4.3-2069
-
-223
-- Update to 4.3-1979
-
 222
 - update to 4.3.xxx
 - Update to Tvheadend-4.3-1906
