@@ -130,6 +130,9 @@
   # build with installer (yes / no)
     INSTALLER_SUPPORT="no"
 
+  # kernel image name
+    KERNEL_NAME="kernel.img"
+
   # build and install driver addons (yes / no)
     DRIVER_ADDONS_SUPPORT="no"
 
