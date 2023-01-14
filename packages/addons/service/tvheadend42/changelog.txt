@@ -1,9 +1,3 @@
-125
-- fix download zipped content for epg data with epg_grab_file
-
-124
-- fix query url for imdb.com and thetvdb.com
-
 123
 - update gnutls to 3.6.14
 
