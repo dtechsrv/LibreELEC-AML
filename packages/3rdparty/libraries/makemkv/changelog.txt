@@ -1,6 +1,3 @@
-117
-- updated to 1.17.2
-
 116
 - updated to 1.17.1
 
