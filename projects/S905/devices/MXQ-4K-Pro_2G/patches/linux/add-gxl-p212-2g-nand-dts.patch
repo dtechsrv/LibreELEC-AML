@@ -1,0 +1,14 @@
+diff --git a/arch/arm64/boot/dts/amlogic/gxl_p212_2g_nand.dts b/arch/arm64/boot/dts/amlogic/gxl_p212_2g_nand.dts
+new file mode 100644
+index 0000000..86b4494
+--- /dev/null
++++ b/arch/arm64/boot/dts/amlogic/gxl_p212_2g_nand.dts
+@@ -0,0 +1,8 @@
++#include "gxl_p212_2g.dts"
++
++/ {
++	le-dt-id = "gxl_p212_2g_nand";
++	nand {
++		status = "okay";
++	};
++};
