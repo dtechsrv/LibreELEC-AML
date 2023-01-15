@@ -1,5 +1,5 @@
 102
--
+- updated to transmission 3.0.0 stable
 
 101
 - reworked build opts
