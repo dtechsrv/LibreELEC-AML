@@ -1,0 +1,12 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ab5c34f..74ced44 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -25,6 +25,7 @@ set(TESTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test)
+ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
+ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
++set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lm")
+ if(CMAKE_GENERATOR MATCHES "Unix Makefiles|Ninja")
+ # some LSP servers expect compile_commands.json in the project root
+ add_custom_target(
