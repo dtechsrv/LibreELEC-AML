@@ -1,2 +1,11 @@
+103
+- Minimizes artifacts: include COMPRECT in min calculation
+
+102
+- Added plugin configuration for port and password protection
+
+101
+- Fix dependencies
+
 100
 - Initial release
