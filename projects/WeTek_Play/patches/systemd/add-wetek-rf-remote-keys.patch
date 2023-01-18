@@ -1,0 +1,73 @@
+diff --git a/hwdb/60-keyboard.hwdb b/hwdb/60-keyboard.hwdb
+index 71aecd8..54e66b0 100644
+--- a/hwdb/60-keyboard.hwdb
++++ b/hwdb/60-keyboard.hwdb
+@@ -1378,6 +1378,68 @@ evdev:atkbd:dmi:bvn*:bvr*:bd*:svnVIA:pnK8N800:pvr*
+ evdev:name:SIPODEV USB Composite Device:dmi:bvn*:bvr*:bd*:svnVIOS:pnLTH17:pvr*
+  KEYBOARD_KEY_70073=f21                                 # Touchpad toggle
+ 
++###########################################################
++# WeTek
++###########################################################
++
++# WeTek Play OpenELEC Remote
++evdev:input:b0003v2252p0106*
++ KEYBOARD_KEY_c00e2=f6
++ KEYBOARD_KEY_c019e=mute
++ KEYBOARD_KEY_7001e=1
++ KEYBOARD_KEY_7001f=2
++ KEYBOARD_KEY_70020=3
++ KEYBOARD_KEY_70021=4
++ KEYBOARD_KEY_70022=5
++ KEYBOARD_KEY_70023=6
++ KEYBOARD_KEY_70024=7
++ KEYBOARD_KEY_70025=8
++ KEYBOARD_KEY_70026=9
++ KEYBOARD_KEY_7003a=esc
++ KEYBOARD_KEY_70027=0
++ KEYBOARD_KEY_7003b=i
++ KEYBOARD_KEY_7003d=c
++ KEYBOARD_KEY_7003c=home
++ KEYBOARD_KEY_70029=back
++ KEYBOARD_KEY_7003e=l
++ KEYBOARD_KEY_70040=f11
++ KEYBOARD_KEY_70050=left
++ KEYBOARD_KEY_70052=up
++ KEYBOARD_KEY_70051=down
++ KEYBOARD_KEY_7004f=right
++ KEYBOARD_KEY_70028=enter
++ KEYBOARD_KEY_c00e9=volumeup
++ KEYBOARD_KEY_c00ea=volumedown
++ KEYBOARD_KEY_c0204=f5
++ KEYBOARD_KEY_70044=v
++ KEYBOARD_KEY_7004b=pageup
++ KEYBOARD_KEY_7004e=pagedown
++ KEYBOARD_KEY_70041=f1
++ KEYBOARD_KEY_70042=f2
++ KEYBOARD_KEY_70043=f3
++ KEYBOARD_KEY_c01c2=f4
++ KEYBOARD_KEY_c00b6=previoussong
++ KEYBOARD_KEY_c00b4=rewind
++ KEYBOARD_KEY_c00b3=fastforward
++ KEYBOARD_KEY_c00b5=nextsong
++ KEYBOARD_KEY_c00b2=f7
++ KEYBOARD_KEY_c00cd=playpause
++ KEYBOARD_KEY_c00b7=stopcd
++
++# WeTek Core Remote
++evdev:input:b0003v22A1p2801*
++ KEYBOARD_KEY_70040=c
++ KEYBOARD_KEY_7003f=f5
++ KEYBOARD_KEY_7004a=home
++ KEYBOARD_KEY_70029=back
++ KEYBOARD_KEY_70050=left
++ KEYBOARD_KEY_70052=up
++ KEYBOARD_KEY_70051=down
++ KEYBOARD_KEY_7004f=right
++ KEYBOARD_KEY_70028=enter
++ KEYBOARD_KEY_c00e9=volumeup
++ KEYBOARD_KEY_c00ea=volumedown
++
+ ###########################################################
+ # Zepto
+ ###########################################################
