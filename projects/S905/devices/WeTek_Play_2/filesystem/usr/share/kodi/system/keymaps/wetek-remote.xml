@@ -10,6 +10,7 @@
       <f6>ActivateWindow(TVRecordings)</f6>
       <f7>Record</f7>
       <f11>AudioNextLanguage</f11>
+      <f5 mod="longpress">Screenshot</f5>
     </keyboard>
   </global>
   <Teletext>
