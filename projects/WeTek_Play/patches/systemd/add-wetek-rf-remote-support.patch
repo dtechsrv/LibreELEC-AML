@@ -1,3 +1,33 @@
+diff --git a/hwdb/20-usb-vendor-model.hwdb b/hwdb/20-usb-vendor-model.hwdb
+index 3bb26ad..4a82769 100644
+--- a/hwdb/20-usb-vendor-model.hwdb
++++ b/hwdb/20-usb-vendor-model.hwdb
+@@ -56921,6 +56921,12 @@ usb:v2237*
+ usb:v2237p4161*
+  ID_MODEL_FROM_DATABASE=eReader White
+ 
++usb:v2252*
++ ID_VENDOR_FROM_DATABASE=HBGIC Technology Co., Ltd.
++
++usb:v2252p0106*
++ ID_MODEL_FROM_DATABASE=USB Keyboard Mouse
++
+ usb:v225D*
+  ID_VENDOR_FROM_DATABASE=Morpho
+ 
+@@ -56954,6 +56960,12 @@ usb:v228D*
+ usb:v228Dp0001*
+  ID_MODEL_FROM_DATABASE=Terminal Bike Key Reader
+ 
++usb:v22A1*
++ ID_VENDOR_FROM_DATABASE=MHTF
++
++usb:v22A1p2801*
++ ID_MODEL_FROM_DATABASE=MHTF
++
+ usb:v22A6*
+  ID_VENDOR_FROM_DATABASE=Pie Digital, Inc.
+ 
 diff --git a/hwdb/60-keyboard.hwdb b/hwdb/60-keyboard.hwdb
 index 71aecd8..d5824cf 100644
 --- a/hwdb/60-keyboard.hwdb
@@ -71,3 +101,25 @@ index 71aecd8..d5824cf 100644
  ###########################################################
  # Zepto
  ###########################################################
+diff --git a/hwdb/usb.ids b/hwdb/usb.ids
+index 0f21774..e1bcdee 100644
+--- a/hwdb/usb.ids
++++ b/hwdb/usb.ids
+@@ -18994,6 +18994,8 @@
+ 	6323  USB Electronic Scale
+ 2237  Kobo Inc.
+ 	4161  eReader White
++2252  HBGIC Technology Co., Ltd.
++	0106  USB Keyboard Mouse
+ 225d  Morpho
+ 	0001  FINGER VP Multimodal Biometric Sensor
+ 	0008  CBM-E3 Fingerprint Sensor
+@@ -19005,6 +19007,8 @@
+ 	000e  MorphoAccess SIGMA Biometric Access Control Terminal
+ 228d  8D Technologies inc.
+ 	0001  Terminal Bike Key Reader
++22a1  MHTF
++	2801  MHTF
+ 22a6  Pie Digital, Inc.
+ 	ffff  PieKey "beta" 4GB model 4E4F41482E4F5247 (SM3251Q BB)
+ 22b8  Motorola PCS
