@@ -1,0 +1,10 @@
+[Unit]
+Description=OpenVFD Configuration
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c "/usr/bin/openvfd-config"
+
+[Install]
+WantedBy=multi-user.target

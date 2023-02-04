@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2018-present Team LibreELEC (https://libreelec.tv)
+
+. /run/libreelec/openvfd.conf
+
+/sbin/modprobe openvfd vfd_gpio_clk=${vfd_gpio_clk} \
+                       vfd_gpio_dat=${vfd_gpio_dat} \
+                       vfd_gpio_stb=${vfd_gpio_stb} \
+                       vfd_chars=${vfd_chars} \
+                       vfd_dot_bits=${vfd_dot_bits} \
+                       vfd_display_type=${vfd_display_type}
+
+(/usr/sbin/OpenVFDService)&

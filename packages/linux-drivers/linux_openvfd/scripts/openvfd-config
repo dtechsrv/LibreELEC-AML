@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2018-present Team LibreELEC (https://libreelec.tv)
+
+if [ ! -e /proc/device-tree/openvfd/compatible -a -e /flash/dtb.img ]; then
+  mount -o remount,rw /flash
+    fdtput -p -t s /flash/dtb.img /openvfd status "okay"
+    fdtput -p -t s /flash/dtb.img /openvfd dev_name "openvfd"
+    fdtput -p -t s /flash/dtb.img /openvfd compatible "open,vfd"
+  mount -o remount,ro /flash
+fi
+
+if [ -f /storage/.config/vfd.conf ]; then
+  cp /storage/.config/vfd.conf /run/libreelec/openvfd.conf
+elif [ -f /storage/.config/openvfd.conf ]; then
+  cp /storage/.config/openvfd.conf /run/libreelec/openvfd.conf
+elif [ -f /storage/.cache/openvfd/openvfd.conf ]; then
+  cp /storage/.cache/openvfd/openvfd.conf /run/libreelec/openvfd.conf
+elif [ -f /etc/openvfd.conf ]; then
+  cp /etc/openvfd.conf /run/libreelec/openvfd.conf
+fi

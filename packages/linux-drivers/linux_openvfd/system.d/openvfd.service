@@ -1,0 +1,14 @@
+[Unit]
+Description=OpenVFD Service
+After=syslog.target openvfd-config.service
+Requires=openvfd-config.service
+
+ConditionPathExists=/run/libreelec/openvfd.conf
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c '/usr/bin/openvfd'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=basic.target
