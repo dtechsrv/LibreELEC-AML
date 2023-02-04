@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="@PKG_ADDON_ID@"
+       name="@ADDON_NAME@"
+       version="@ADDON_VERSION@"
+       provider-name="@PKG_MAINTAINER@">
+  <requires>
+    <import addon="os.libreelec.tv" version="@OS_VERSION@"/>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.service" library="service.py" start="startup" />
+  <extension point="xbmc.addon.metadata">
+    <summary>@PKG_SHORTDESC@</summary>
+    <description>
+@PKG_LONGDESC@
+    </description>
+    <source>
+@PKG_SITE@
+    </source>
+    <platform>all</platform>
+    <news>
+@PKG_ADDON_NEWS@
+    </news>
+    <assets>
+      <icon>resources/icon.png</icon>
+      <fanart>resources/fanart.png</fanart>
+@PKG_ADDON_SCREENSHOT@
+    </assets>
+  </extension>
+</addon>
