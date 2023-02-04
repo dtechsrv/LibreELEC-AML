@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2009-2014 Stephan Raue (stephan@openelec.tv)
+# Copyright (C) 2018-present Team LibreELEC (https://libreelec.tv)
+
+TEMP="$(cat /sys/class/thermal/thermal_zone0/temp)"
+
+# Fix millidegree issue, if the kernel return value is specified in it
+if [ $TEMP -gt 1000 ]; then
+  echo "$(( $TEMP / 1000 )) C"
+else
+  echo "$(( $TEMP )) C"
+fi
