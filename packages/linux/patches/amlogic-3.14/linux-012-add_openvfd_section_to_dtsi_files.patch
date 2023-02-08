@@ -1,0 +1,47 @@
+diff --git a/arch/arm64/boot/dts/amlogic/mesongxbb.dtsi b/arch/arm64/boot/dts/amlogic/mesongxbb.dtsi
+index f4b3bbb..46d5859 100644
+--- a/arch/arm64/boot/dts/amlogic/mesongxbb.dtsi
++++ b/arch/arm64/boot/dts/amlogic/mesongxbb.dtsi
+@@ -832,5 +832,10 @@
+ 		};
+ 	};
+ 
++	openvfd {
++		compatible = "open,vfd";
++		dev_name = "openvfd";
++		status = "okay";
++	};
+ 
+ };/* end of / */
+diff --git a/arch/arm64/boot/dts/amlogic/mesongxl.dtsi b/arch/arm64/boot/dts/amlogic/mesongxl.dtsi
+index 66df452..5ecb490 100644
+--- a/arch/arm64/boot/dts/amlogic/mesongxl.dtsi
++++ b/arch/arm64/boot/dts/amlogic/mesongxl.dtsi
+@@ -755,6 +755,12 @@
+ 		 reg = <0x0 0xc883e000 0x0 0x28>;
+ 	 };
+ 
++	openvfd {
++		compatible = "open,vfd";
++		dev_name = "openvfd";
++		status = "okay";
++	};
++
+ };/* end of / */
+ 
+ &gpu{
+diff --git a/arch/arm64/boot/dts/amlogic/mesongxm.dtsi b/arch/arm64/boot/dts/amlogic/mesongxm.dtsi
+index c0a83c4..1cfc8b0 100644
+--- a/arch/arm64/boot/dts/amlogic/mesongxm.dtsi
++++ b/arch/arm64/boot/dts/amlogic/mesongxm.dtsi
+@@ -839,4 +839,10 @@
+ 		 reg = <0x0 0xc883e000 0x0 0x28>;
+ 	 };
+ 
++	openvfd {
++		compatible = "open,vfd";
++		dev_name = "openvfd";
++		status = "okay";
++	};
++
+ };/* end of / */
