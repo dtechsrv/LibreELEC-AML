@@ -1,0 +1,10 @@
+diff --git a/gxl_p212_2g_nand.dts b/gxl_p212_2g_nand.dts
+index 383fd3e..86b4494 100644
+--- a/gxl_p212_2g_nand.dts
++++ b/gxl_p212_2g_nand.dts
+@@ -1,4 +1,4 @@
+-#include "gxl_p212_1g.dts"
++#include "gxl_p212_2g.dts"
+ 
+ / {
+ 	le-dt-id = "gxl_p212_2g_nand";
