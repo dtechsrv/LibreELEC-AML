@@ -1,0 +1,26 @@
+diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-meson.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-meson.c
+index 55addb8..34342bf 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/dwmac-meson.c
++++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-meson.c
+@@ -43,7 +43,7 @@ static void __iomem *network_interface_setup(struct platform_device *pdev)
+ 	struct pinctrl *pin_ctl;
+ 	struct resource *res;
+ 	struct resource *res2;
+-	u32 mc_val, cali_val, internal_phy;
++	u32 mc_val, internal_phy;
+ 	void __iomem *addr = NULL;
+ 	void __iomem *addr2 = NULL;
+ 
+@@ -65,12 +65,6 @@ static void __iomem *network_interface_setup(struct platform_device *pdev)
+ 		pr_debug("Ethernet :got mc_val 0x%x .set it\n", mc_val);
+ 		writel(mc_val, addr);
+ 	}
+-	if (of_property_read_u32(np, "cali_val", &cali_val)) {
+-		pr_debug("detect cbus[2051]=null, plesae setting cali_val\n");
+-	} else {
+-		pr_debug("Ethernet :got cali_val 0x%x .set it\n", cali_val);
+-		writel(cali_val, addr+4);
+-	}
+ 	if (!of_property_read_u32(np, "internal_phy", &internal_phy)) {
+ 		res2 = platform_get_resource(pdev, IORESOURCE_MEM, 2);
+ 		addr2 = devm_ioremap_resource(dev, res2);
