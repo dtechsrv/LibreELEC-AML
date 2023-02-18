@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: GPL-2.0
 # Copyright (C) 2018-2021 Frank Hartung (supervisedthinking (@) gmail.com)
-# Copyright (C) 2022-present Gabor Dee (dee.gabor@gmail.com)
+# Copyright (C) 2023-present Gabor Dee (dee.gabor@gmail.com)
 
 PKG_NAME="makemkv"
-PKG_VERSION="1.17.2"
-PKG_SHA256="a83f8abb3f23def0dc8783e535062a75b7df2f7612291a8a83a21f90b93f2da4"
-PKG_REV="117"
+PKG_VERSION="1.17.3"
+PKG_SHA256="16be3ee29c1dd3d5292f793e9f5efbcd30a59bf035de79586e9afbfa98a6a4cb"
+PKG_REV="118"
 PKG_ARCH="x86_64 arm aarch64"
 PKG_LICENSE="OSS"
 PKG_SITE="http://makemkv.com/"
