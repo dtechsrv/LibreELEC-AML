@@ -19,7 +19,7 @@ make_target() {
   EXTRA_TREES=( \
                 gxbb_p201 gxbb_p200_1G_wetek_hub gxbb_p200_2G_wetek_play_2 \
                 gxl_p212_1g gxl_p212_2g gxl_p212_1g_lepotato gxl_p212_2g_lepotato \
-                gxm_q200_2g gxm_q201_1g gxm_q201_2g \
+                gxl_p281_1g gxl_p281_2g gxm_q200_2g gxm_q201_1g gxm_q201_2g \
               )
 
   # Add trees to the list
