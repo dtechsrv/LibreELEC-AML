@@ -1,0 +1,144 @@
+diff --git a/arch/arm64/boot/dts/amlogic/gxbb_p200.dts b/arch/arm64/boot/dts/amlogic/gxbb_p200.dts
+index f57752a..5da750d 100644
+--- a/arch/arm64/boot/dts/amlogic/gxbb_p200.dts
++++ b/arch/arm64/boot/dts/amlogic/gxbb_p200.dts
+@@ -14,6 +14,7 @@
+ #include <dt-bindings/pwm/meson.h>
+ #include "mesongxbb.dtsi"
+ / {
++	le-dt-id = "gxb_p200_1g";
+ 	model = "Amlogic";
+ 	amlogic-dt-id = "gxb_p200_1g";
+ 	compatible = "amlogic, Gxbb";
+diff --git a/arch/arm64/boot/dts/amlogic/gxbb_p200_2G.dts b/arch/arm64/boot/dts/amlogic/gxbb_p200_2G.dts
+index 50fb930..05a0df8 100644
+--- a/arch/arm64/boot/dts/amlogic/gxbb_p200_2G.dts
++++ b/arch/arm64/boot/dts/amlogic/gxbb_p200_2G.dts
+@@ -14,6 +14,7 @@
+ #include <dt-bindings/pwm/meson.h>
+ #include "mesongxbb.dtsi"
+ / {
++	le-dt-id = "gxb_p200_2g";
+ 	model = "Amlogic";
+ 	amlogic-dt-id = "gxb_p200_2g";
+ 	compatible = "amlogic, Gxbb";
+diff --git a/arch/arm64/boot/dts/amlogic/gxbb_p201.dts b/arch/arm64/boot/dts/amlogic/gxbb_p201.dts
+index 01da912..9bdd137 100644
+--- a/arch/arm64/boot/dts/amlogic/gxbb_p201.dts
++++ b/arch/arm64/boot/dts/amlogic/gxbb_p201.dts
+@@ -14,6 +14,7 @@
+ #include <dt-bindings/pwm/meson.h>
+ #include "mesongxbb.dtsi"
+ / {
++	le-dt-id = "gxbb_p201_1g";
+ 	model = "Amlogic";
+ 	compatible = "amlogic, Gxbb";
+ 	interrupt-parent = <&gic>;
+diff --git a/arch/arm64/boot/dts/amlogic/gxl_p212_1g.dts b/arch/arm64/boot/dts/amlogic/gxl_p212_1g.dts
+index c656683..8459991 100644
+--- a/arch/arm64/boot/dts/amlogic/gxl_p212_1g.dts
++++ b/arch/arm64/boot/dts/amlogic/gxl_p212_1g.dts
+@@ -26,6 +26,7 @@
+ #include <dt-bindings/pwm/meson.h>
+ #include "mesongxl.dtsi"
+ / {
++	le-dt-id = "gxl_p212_1g";
+ 	model = "Amlogic";
+ 	compatible = "amlogic, Gxbb";
+ 	amlogic-dt-id = "gxl_p212_1g";
+diff --git a/arch/arm64/boot/dts/amlogic/gxl_p212_2g.dts b/arch/arm64/boot/dts/amlogic/gxl_p212_2g.dts
+index 77d1853..c2cf7b8 100644
+--- a/arch/arm64/boot/dts/amlogic/gxl_p212_2g.dts
++++ b/arch/arm64/boot/dts/amlogic/gxl_p212_2g.dts
+@@ -26,6 +26,7 @@
+ #include <dt-bindings/pwm/meson.h>
+ #include "mesongxl.dtsi"
+ / {
++	le-dt-id = "gxl_p212_2g";
+ 	model = "Amlogic";
+ 	amlogic-dt-id = "gxl_p212_2g";
+ 	compatible = "amlogic, Gxbb";
+diff --git a/arch/arm64/boot/dts/amlogic/gxl_p230_2g.dts b/arch/arm64/boot/dts/amlogic/gxl_p230_2g.dts
+index 73bacca..fd29de5 100644
+--- a/arch/arm64/boot/dts/amlogic/gxl_p230_2g.dts
++++ b/arch/arm64/boot/dts/amlogic/gxl_p230_2g.dts
+@@ -26,6 +26,7 @@
+ #include <dt-bindings/pwm/meson.h>
+ #include "mesongxl.dtsi"
+ / {
++	le-dt-id = "gxl_p230_2g";
+ 	model = "Amlogic";
+ 	compatible = "amlogic, Gxbb";
+ 	amlogic-dt-id = "gxl_p230_2g";
+diff --git a/arch/arm64/boot/dts/amlogic/gxl_p231_1g.dts b/arch/arm64/boot/dts/amlogic/gxl_p231_1g.dts
+index 78dd21c..75d60c1 100644
+--- a/arch/arm64/boot/dts/amlogic/gxl_p231_1g.dts
++++ b/arch/arm64/boot/dts/amlogic/gxl_p231_1g.dts
+@@ -26,6 +26,7 @@
+ #include <dt-bindings/pwm/meson.h>
+ #include "mesongxl.dtsi"
+ / {
++	le-dt-id = "gxl_p231_1g";
+ 	model = "Amlogic";
+ 	compatible = "amlogic, Gxbb";
+ 	amlogic-dt-id = "gxl_p231_1g";
+diff --git a/arch/arm64/boot/dts/amlogic/gxl_p231_2g.dts b/arch/arm64/boot/dts/amlogic/gxl_p231_2g.dts
+index 9220d7b..9b13113 100644
+--- a/arch/arm64/boot/dts/amlogic/gxl_p231_2g.dts
++++ b/arch/arm64/boot/dts/amlogic/gxl_p231_2g.dts
+@@ -26,6 +26,7 @@
+ #include <dt-bindings/pwm/meson.h>
+ #include "mesongxl.dtsi"
+ / {
++	le-dt-id = "gxl_p231_2g";
+ 	model = "Amlogic";
+ 	compatible = "amlogic, Gxbb";
+ 	amlogic-dt-id = "gxl_p231_2g";
+diff --git a/arch/arm64/boot/dts/amlogic/gxl_p281_1g.dts b/arch/arm64/boot/dts/amlogic/gxl_p281_1g.dts
+index da247d0..ef7f328 100644
+--- a/arch/arm64/boot/dts/amlogic/gxl_p281_1g.dts
++++ b/arch/arm64/boot/dts/amlogic/gxl_p281_1g.dts
+@@ -26,6 +26,7 @@
+ #include <dt-bindings/pwm/meson.h>
+ #include "mesongxl.dtsi"
+ / {
++	le-dt-id = "gxl_p281_1g";
+ 	model = "Amlogic";
+ 	compatible = "amlogic, Gxbb";
+ 	amlogic-dt-id = "gxl_p281_1g";
+diff --git a/arch/arm64/boot/dts/amlogic/gxm_q200_2g.dts b/arch/arm64/boot/dts/amlogic/gxm_q200_2g.dts
+index 876f8f3..17bbf64 100644
+--- a/arch/arm64/boot/dts/amlogic/gxm_q200_2g.dts
++++ b/arch/arm64/boot/dts/amlogic/gxm_q200_2g.dts
+@@ -26,6 +26,7 @@
+ #include <dt-bindings/pwm/meson.h>
+ #include "mesongxm.dtsi"
+ / {
++	le-dt-id = "gxm_q200_2g";
+ 	model = "Amlogic";
+ 	compatible = "amlogic, Gxm";
+ 	amlogic-dt-id = "gxm_q200_2g";
+diff --git a/arch/arm64/boot/dts/amlogic/gxm_q201_1g.dts b/arch/arm64/boot/dts/amlogic/gxm_q201_1g.dts
+index 6007db9..7c99178 100644
+--- a/arch/arm64/boot/dts/amlogic/gxm_q201_1g.dts
++++ b/arch/arm64/boot/dts/amlogic/gxm_q201_1g.dts
+@@ -26,6 +26,7 @@
+ #include <dt-bindings/pwm/meson.h>
+ #include "mesongxm.dtsi"
+ / {
++	le-dt-id = "gxm_q201_1g";
+ 	model = "Amlogic";
+ 	compatible = "amlogic, Gxm";
+ 	amlogic-dt-id = "gxm_q201_1g";
+diff --git a/arch/arm64/boot/dts/amlogic/gxm_q201_2g.dts b/arch/arm64/boot/dts/amlogic/gxm_q201_2g.dts
+index 051bbb2..7775564 100644
+--- a/arch/arm64/boot/dts/amlogic/gxm_q201_2g.dts
++++ b/arch/arm64/boot/dts/amlogic/gxm_q201_2g.dts
+@@ -26,6 +26,7 @@
+ #include <dt-bindings/pwm/meson.h>
+ #include "mesongxm.dtsi"
+ / {
++	le-dt-id = "gxm_q201_2g";
+ 	model = "Amlogic";
+ 	compatible = "amlogic, Gxm";
+ 	amlogic-dt-id = "gxm_q201_2g";
