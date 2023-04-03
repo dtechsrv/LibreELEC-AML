@@ -8,6 +8,10 @@ PROJECT=S905 DEVICE=K_Series ARCH=arm make image -j$(nproc)
 # Specs: Amlogic S905-H SoC, 2 GB RAM, 8 GB eMMC, 1 Gbps Ethernet (RTL8211F), AP6330 WiFi.
 PROJECT=S905 DEVICE=WeTek_Play_2 ARCH=arm make amlpkg -j$(nproc)
 
+# WeTek Hub (gxbb_p200_1G_wetek_hub)
+# Specs: Amlogic S905-H SoC, 1 GB RAM, 8 GB eMMC, 1 Gbps Ethernet (RTL8211F), AP6255 WiFi.
+PROJECT=S905 DEVICE=WeTek_Hub ARCH=arm make amlpkg -j$(nproc)
+
 # OTT M8S+ (m8m2_KII)
 # Specs: Amlogic S812 SoC, 2 GB RAM, 8 GB NAND Flash, 1 Gbps Ethernet (RTL8211F), AP6330 or BCM4335B0 WiFi.
 PROJECT=S8X2 DEVICE=M8S-Plus ARCH=arm make image -j$(nproc)
