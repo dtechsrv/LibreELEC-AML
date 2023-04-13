@@ -2,7 +2,7 @@
 
 Unofficial community sources and firmware binaries for some Amlogic TV Boxes. This repository is based on [LibreELEC/LibreELEC.tv](https://github.com/LibreELEC/LibreELEC.tv).
 
-This project also maintains a binary addon repository and all the images are also available on the external website: [http://libreelec.dtech.hu/](http://libreelec.dtech.hu/).
+This project also maintains a binary addon repository and all the images are also available on the external website: [https://libreelec.dtech.hu/](https://libreelec.dtech.hu/).
 
 **Issues & Support**
 
@@ -37,7 +37,7 @@ The same copyright applies to the modifications I made as to the original projec
 - WeTek Play (Meson6),<br />
 *Amlogic AML8726-MX SoC, 1 GB RAM, 4 GB NAND Flash, 10/100 Mbps Ethernet (SMSC LAN8720A).*
 
-*NOTICE: Images made for 3rdParty devices are only available from here: [http://libreelec.dtech.hu/images/3rdParty/](http://libreelec.dtech.hu/images/3rdParty/).*
+*NOTICE: Images made for 3rdParty devices are only available from here: [https://libreelec.dtech.hu/images/3rdParty/](https://libreelec.dtech.hu/images/3rdParty/).*
 
 # How to create bootable media, boot, install to NAND and update
 
@@ -78,7 +78,7 @@ start automatically after the restart.
 
 *NOTICE: This section is a copy from the original project, but the information may have changed over time. The current version is available [here](https://github.com/LibreELEC/LibreELEC.tv/blob/master/README.md).*
 
-LibreELEC is a 'Just enough OS' Linux distribution for running the award-winning [Kodi](https://kodi.tv) software on popular mediacentre hardware. LibreELEC is a conservative fork of the popular [OpenELEC](http://openelec.tv) project with a stronger focus on pre-release testing and post-release change management. Further information on the project can be found on the [LibreELEC website](https://libreelec.tv).
+LibreELEC is a 'Just enough OS' Linux distribution for running the award-winning [Kodi](https://kodi.tv) software on popular mediacentre hardware. LibreELEC is a conservative fork of the popular [OpenELEC](https://github.com/OpenELEC/OpenELEC.tv) project with a stronger focus on pre-release testing and post-release change management. Further information on the project can be found on the [LibreELEC website](https://libreelec.tv).
 
 **Issues & Support**
 
