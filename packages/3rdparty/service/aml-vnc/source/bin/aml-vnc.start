@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2016-2020 Team LibreELEC (https://libreelec.tv)
+# Copyright (C) 2021-present Gabor Dee (dee.gabor@gmail.com)
+
+. /etc/profile
+
+oe_setup_addon service.system.aml-vnc
+
+if [ "$AML_VNC_AUTH" == "true" ] ; then
+	exec aml-vnc -P "$AML_VNC_PORT" -p "$AML_VNC_PWD" &>$ADDON_HOME/service.log
+else
+	exec aml-vnc -P "$AML_VNC_PORT" &>$ADDON_HOME/service.log
+fi

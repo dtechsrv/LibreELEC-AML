@@ -1,0 +1,22 @@
+# Kodi Media Center language file
+# Addon Name: Amlogic VNC Server
+# Addon id: service.system.aml-vnc
+# Addon Provider: dtech(.hu)
+msgid ""
+msgstr ""
+
+msgctxt "#30000"
+msgid "Server settings"
+msgstr ""
+
+msgctxt "#30001"
+msgid "Port"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Use authentication"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Password"
+msgstr ""

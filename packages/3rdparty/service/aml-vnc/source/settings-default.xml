@@ -1,0 +1,5 @@
+<settings version="2">
+    <setting id="AML_VNC_PORT" value="5900" />
+    <setting id="AML_VNC_AUTH" value="true" />
+    <setting id="AML_VNC_PWD" value="libreelec" />
+</settings>

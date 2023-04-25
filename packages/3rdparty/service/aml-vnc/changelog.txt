@@ -1,3 +1,9 @@
+105
+- Create static addon source files
+- Add service logging capability
+- Replace the old language string file format
+- Change service start dependencies
+
 104
 - Update libvncserver to 0.9.14
 
