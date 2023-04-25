@@ -1,0 +1,16 @@
+[Unit]
+Description=ASUS Xonar U1 Service
+After=graphical.target
+
+[Service]
+Type=forking
+ExecStart=/bin/sh -c "exec sh /storage/.kodi/addons/service.xonard/bin/xonard.start"
+ExecReload=/bin/kill -HUP $MAINPID
+PIDFile=/run/xonard.pid
+TimeoutStopSec=2
+Restart=always
+RestartSec=10
+StartLimitInterval=0
+
+[Install]
+WantedBy=default.target

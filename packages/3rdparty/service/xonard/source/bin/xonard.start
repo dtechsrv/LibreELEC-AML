@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2023-present Gabor Dee (dee.gabor@gmail.com)
+
+. /etc/profile
+
+oe_setup_addon service.xonard
+
+DEVNAME="/dev/hidraw0"
+
+if [ -e "$DEVNAME" ]; then
+  xonard "$DEVNAME"
+  PID=$(ps aux | awk '/xonard \/dev\/hidraw0/ {print $1; exit 0}')
+  echo $PID > /run/xonard.pid
+fi
