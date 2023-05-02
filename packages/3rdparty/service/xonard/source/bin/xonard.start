@@ -7,10 +7,13 @@
 
 oe_setup_addon service.xonard
 
-DEVNAME="/dev/hidraw0"
-
-if [ -e "$DEVNAME" ]; then
+for DEVNAME in /dev/hidraw*
+do
   xonard "$DEVNAME"
-  PID=$(ps aux | awk '/xonard \/dev\/hidraw0/ {print $1; exit 0}')
-  echo $PID > /run/xonard.pid
-fi
+  PID=$(ps aux | awk '/xonard \/dev\/hidraw/ {print $1; exit 0}')
+  if [ "$PID" != "" ]
+  then
+    echo "$PID" > /run/xonard.pid
+    break
+  fi
+done
