@@ -12,7 +12,7 @@ index a2398d5..d7a66a7 100755
 +	  Help message of RTL8723AS
  
 diff --git a/rtl8723AU/Makefile b/rtl8723AU/Makefile
-index 70981c2..97c702f 100755
+index 70981c2..ab7bde7 100755
 --- a/rtl8723AU/Makefile
 +++ b/rtl8723AU/Makefile
 @@ -25,9 +25,9 @@ CONFIG_RTL8192D = n
@@ -27,7 +27,19 @@ index 70981c2..97c702f 100755
  CONFIG_GSPI_HCI = n
  
  CONFIG_MP_INCLUDED = y
-@@ -827,11 +827,11 @@ ifeq ($(CONFIG_RTL8723A), y)
+@@ -771,7 +771,10 @@ KSRC:= $(CFGDIR)/../../kernel/linux-$(KERNEL_VER)
+ endif
+ 
+ ifeq ($(CONFIG_PLATFORM_AML), y)
+-EXTRA_CFLAGS += -DCONFIG_LITTLE_ENDIAN
++EXTRA_CFLAGS += -DCONFIG_LITTLE_ENDIAN -fno-pic
++EXTRA_CFLAGS += -DCONFIG_IOCTL_CFG80211
++EXTRA_CFLAGS += -DCONFIG_P2P_IPS -DRTW_USE_CFG80211_STA_EVENT
++EXTRA_CFLAGS += -DCONFIG_RADIO_WORK
+ ARCH := arm
+ CROSS_COMPILE := arm-linux-gnueabihf-
+ KSRC := ../../../../../../common
+@@ -827,11 +830,11 @@ ifeq ($(CONFIG_RTL8723A), y)
  $(MODULE_NAME)-$(CONFIG_MP_INCLUDED)+= core/rtw_bt_mp.o
  endif
  
