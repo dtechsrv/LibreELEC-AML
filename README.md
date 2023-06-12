@@ -1,4 +1,4 @@
-# LibreELEC-AML
+# LibreELEC-AML - Long-Term Support (LTS)
 
 Unofficial community sources and firmware binaries for some Amlogic TV Boxes. This repository is based on [LibreELEC/LibreELEC.tv](https://github.com/LibreELEC/LibreELEC.tv).
 
@@ -26,6 +26,8 @@ The same copyright applies to the modifications I made as to the original projec
 *Amlogic S905(-H) or S905D SoC, 1 or 2 GB RAM, 8 or 16 GB eMMC/NAND Flash, 10/100 Mbps or Gigabit Ethernet,*
 - WeTek Play 2,<br />
 *Amlogic S905-H SoC, 2 GB RAM, 8 GB eMMC, 1 Gbps Ethernet (RTL8211F),*
+- WeTek Hub,<br />
+*Amlogic S905-H SoC, 1 GB RAM, 8 GB eMMC, 1 Gbps Ethernet (RTL8211F),*
 - OTT M8S+,<br />
 *Amlogic S812 SoC, 2 GB RAM, 8 GB NAND Flash, 1 Gbps Ethernet (RTL8211F),*
 - WeTek Core,<br />
