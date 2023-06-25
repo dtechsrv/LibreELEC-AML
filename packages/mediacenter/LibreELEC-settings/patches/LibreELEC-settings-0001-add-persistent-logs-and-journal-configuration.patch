@@ -1,0 +1,1208 @@
+diff --git a/language/resource.language.ast_es/strings.po b/language/resource.language.ast_es/strings.po
+index 9cccad8..4ff0aca 100644
+--- a/language/resource.language.ast_es/strings.po
++++ b/language/resource.language.ast_es/strings.po
+@@ -1166,3 +1166,31 @@ msgstr ""
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr ""
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr ""
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr ""
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr ""
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr ""
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr ""
+diff --git a/language/resource.language.bg_bg/strings.po b/language/resource.language.bg_bg/strings.po
+index eda6143..29d69aa 100644
+--- a/language/resource.language.bg_bg/strings.po
++++ b/language/resource.language.bg_bg/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Домашен режим"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "Публичен режим"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr ""
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr ""
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr ""
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr ""
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr ""
+diff --git a/language/resource.language.cs_cz/strings.po b/language/resource.language.cs_cz/strings.po
+index 0121355..2fbae4b 100644
+--- a/language/resource.language.cs_cz/strings.po
++++ b/language/resource.language.cs_cz/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Domácí"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "Veřejný"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr "Protokolování"
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr "Použít trvalé logy"
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr "Použít trvalé logy a žurnály místo výchozích dočasných logů. Restartujte pro použití změny."
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr "Velikost žurnálu"
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr "Nastavte max. velikost trvalého žurnálu. Restartujte pro použití změny."
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr "Zrušit journald Rate Limit"
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr "Restartovat pro použití změny."
+diff --git a/language/resource.language.de_de/strings.po b/language/resource.language.de_de/strings.po
+index b9c5cc2..e4281c2 100644
+--- a/language/resource.language.de_de/strings.po
++++ b/language/resource.language.de_de/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Privat"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "Öffentlich"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr "Protokollierung"
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr "Dauerhafte Protokolle verwenden"
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr "Anstelle der standardmäßigen flüchtigen Protokolle und Journale persistente verwenden. Um die Änderungen zu aktivieren, bitte das System neu starten."
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr "Journalgröße"
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr "Maximale Größe für das dauerhafte Journal festlegen. Um die Änderungen zu aktivieren, bitte das System neu starten."
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr "Ratenbegrenzung des \"journald\" deaktivieren"
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr "Um die Änderungen zu aktivieren, bitte das System neu starten."
+diff --git a/language/resource.language.en_gb/strings.po b/language/resource.language.en_gb/strings.po
+index 3e81115..16ce693 100644
+--- a/language/resource.language.en_gb/strings.po
++++ b/language/resource.language.en_gb/strings.po
+@@ -1039,3 +1039,31 @@ msgstr ""
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr ""
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr ""
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr ""
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr ""
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr ""
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr ""
+diff --git a/language/resource.language.es_es/strings.po b/language/resource.language.es_es/strings.po
+index ee50fad..e15918e 100644
+--- a/language/resource.language.es_es/strings.po
++++ b/language/resource.language.es_es/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Hogar"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "Público"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr "Registro"
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr "Usar registro continuo"
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr "Usar ficheros de diario y registro persistentes en lugar de los temporales predeterminados. Reiniciar para aplicar los cambios."
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr "Tamaño de diario"
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr "Tamaño máximo de diario persistente. Reiniciar para aplicar cambios."
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr "Desabilitar limitación de frecuencia de registro jourlad"
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr "Reiniciar para aplicar cambios."
+diff --git a/language/resource.language.eu_es/strings.po b/language/resource.language.eu_es/strings.po
+index 64dc35b..e6149c6 100644
+--- a/language/resource.language.eu_es/strings.po
++++ b/language/resource.language.eu_es/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Etxekoa"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "Publikoa"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr ""
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr ""
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr ""
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr ""
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr ""
+diff --git a/language/resource.language.fi_fi/strings.po b/language/resource.language.fi_fi/strings.po
+index c519722..4154472 100644
+--- a/language/resource.language.fi_fi/strings.po
++++ b/language/resource.language.fi_fi/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Koti"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "Julkinen"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr "Lokikirjaus"
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr "Käytä pysyviä lokeja"
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr "Käytä oletusarvoisesti poistuvien journal- ja lokitiedostojen sijaan pysyviä tiedostoja. Käynnistä uudelleen muutosten käyttöönottamiseksi."
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr "Journalin koko"
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr "Määritä pysyvän journalin enimmäiskoko. Käynnistä uudelleen muutosten käyttöönottamiseksi."
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr "Poista journaloinnin nopeusrajoitus käytöstä"
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr "Käynnistä uudelleen muutosten käyttööottamiseksi."
+diff --git a/language/resource.language.fr_ca/strings.po b/language/resource.language.fr_ca/strings.po
+index ee4aefc..d4d2236 100644
+--- a/language/resource.language.fr_ca/strings.po
++++ b/language/resource.language.fr_ca/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Accueil"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "Public"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr ""
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr ""
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr ""
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr ""
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr ""
+diff --git a/language/resource.language.fr_fr/strings.po b/language/resource.language.fr_fr/strings.po
+index 2e2dc44..33d96f0 100644
+--- a/language/resource.language.fr_fr/strings.po
++++ b/language/resource.language.fr_fr/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Accueil"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "Public"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr "Journalisation"
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr "Utiliser des fichiers de log persistants"
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr "Utiliser des fichiers de log de journal persistants à la place des fichiers volatiles par défaut. Redémarrer pour appliquer les modifications."
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr "Taille du journal"
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr "Définir la taille max. du journal persistent. Redémarrer pour appliquer les modifications."
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr "Désactiver le débit limite de journald"
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr "Redémarrer pour appliquer les modifications."
+diff --git a/language/resource.language.he_il/strings.po b/language/resource.language.he_il/strings.po
+index c083068..be50eab 100644
+--- a/language/resource.language.he_il/strings.po
++++ b/language/resource.language.he_il/strings.po
+@@ -1166,3 +1166,31 @@ msgstr ""
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr ""
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr ""
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr ""
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr ""
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr ""
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr ""
+diff --git a/language/resource.language.hu_hu/strings.po b/language/resource.language.hu_hu/strings.po
+index b593748..b06e676 100644
+--- a/language/resource.language.hu_hu/strings.po
++++ b/language/resource.language.hu_hu/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Kezdőlap"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "Nyilvános"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr "Naplózás"
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr "Maradandó naplók használata"
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr "Maradandó Journal és naplófájlok használata az ideiglenesek helyett. A változtatáshoz újraindítást szükséges."
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr "Journal mérete"
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr "Állítsd be a maximális maradandó Journal méretet. A változtatáshoz újraindítást szükséges."
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr "A journald arányküszöbének letiltása"
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr "A változtatáshoz újraindítást szükséges."
+diff --git a/language/resource.language.it_it/strings.po b/language/resource.language.it_it/strings.po
+index 11efedd..49e6ad9 100644
+--- a/language/resource.language.it_it/strings.po
++++ b/language/resource.language.it_it/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Casa"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "Pubblico"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr "Registrazione eventi"
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr "Usa registri persistenti"
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr "Usa i file di registro e diario persistenti invece di quelli volatili predefiniti. Riavvia per applicare le modifiche."
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr "Dimensione diario"
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr "Imposta la dimensione massima del diario persistente. Riavvia per applicare le modifiche."
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr "Disabilita il limite di frequenza di registrazione di journald"
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr "Riavvia per applicare le modifiche."
+diff --git a/language/resource.language.ja_jp/strings.po b/language/resource.language.ja_jp/strings.po
+index 9fbd6b3..2070c39 100644
+--- a/language/resource.language.ja_jp/strings.po
++++ b/language/resource.language.ja_jp/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "ホーム"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "パブリック"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr ""
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr ""
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr ""
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr ""
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr ""
+diff --git a/language/resource.language.ko_kr/strings.po b/language/resource.language.ko_kr/strings.po
+index 54a3d1b..7b0587f 100644
+--- a/language/resource.language.ko_kr/strings.po
++++ b/language/resource.language.ko_kr/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "집"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "공용"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr "로그"
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr "지속되는 로그 사용"
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr "기본 휘발성 파일 대신 지속적인 저널 및 로그 파일을 사용합니다. 다시 시작하면 변경 사항이 적용됩니다."
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr "저널 크기"
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr "지속적인 저널의 최대 설정 크기. 다시 시작하면 변경 사항을 적용합니다."
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr "저널 속도 제한 사용 안 함"
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr "다시 시작하면 변경 사항을 적용합니다."
+diff --git a/language/resource.language.lt_lt/strings.po b/language/resource.language.lt_lt/strings.po
+index 0cd5bb2..4f32acf 100644
+--- a/language/resource.language.lt_lt/strings.po
++++ b/language/resource.language.lt_lt/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Namai"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "Viešas"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr ""
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr ""
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr ""
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr ""
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr ""
+diff --git a/language/resource.language.lv_lv/strings.po b/language/resource.language.lv_lv/strings.po
+index 583e271..1c73b1b 100644
+--- a/language/resource.language.lv_lv/strings.po
++++ b/language/resource.language.lv_lv/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Mājas"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "Publisks"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr ""
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr ""
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr ""
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr ""
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr ""
+diff --git a/language/resource.language.nb_no/strings.po b/language/resource.language.nb_no/strings.po
+index 55d723d..5234d78 100644
+--- a/language/resource.language.nb_no/strings.po
++++ b/language/resource.language.nb_no/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Hjem"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "Allment"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr ""
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr ""
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr "Journal-størrelse"
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr ""
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr "Utfør omstart for å ta i bruk endringer."
+diff --git a/language/resource.language.nl_nl/strings.po b/language/resource.language.nl_nl/strings.po
+index d97f44d..8995e6c 100644
+--- a/language/resource.language.nl_nl/strings.po
++++ b/language/resource.language.nl_nl/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Thuis"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "Publiek"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr "Log aanmaken"
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr "Gebruik blijvende logbestanden"
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr "Gebruik blijvende journaal- en logbestanden in plaats van tijdelijke bestanden. Herstart de machine om de wijzigingen door te voeren."
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr "Journaalgrootte"
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr "Stel de maximum grootte van het journaal in. Herstart om wijzigingen door te voeren."
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr "Uitschakelen journald rate limit"
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr "Herstart om wijzigingen door te voeren."
+diff --git a/language/resource.language.pl_pl/strings.po b/language/resource.language.pl_pl/strings.po
+index 2de8b60..29a4868 100644
+--- a/language/resource.language.pl_pl/strings.po
++++ b/language/resource.language.pl_pl/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Dom"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "Publiczny"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr "Rejestrowanie"
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr "Użyj trwałych rejestrów"
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr "Używaj plików trwałych dzienników i rejestrów zamiast domyślnych plików nietrwałych. Uruchom ponownie, aby zastosować zmiany."
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr "Rozmiar dziennika"
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr "Ustaw maks. rozmiar trwałego dziennika. Uruchom ponownie, aby zastosować zmiany."
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr "Wyłącz limitu prędkości journald"
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr "Uruchom ponownie, aby zastosować zmiany."
+diff --git a/language/resource.language.pt_br/strings.po b/language/resource.language.pt_br/strings.po
+index d1d19e4..aca3e33 100644
+--- a/language/resource.language.pt_br/strings.po
++++ b/language/resource.language.pt_br/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Home"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "Público"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr "Registros"
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr "Usar Registros Persistentes"
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr "Usar arquivos persistentes ao invés dos voláteis (padrão) para Diário e Registros. Reinicialize para aplicar as alterações."
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr "Tamanho do Diário"
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr "Defina o tamanho máximo para o diário persistente. Reinicialize para aplicar as alterações."
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr "Desativa a taxa limite do journald"
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr "Reinicialize para aplicar as alterações."
+diff --git a/language/resource.language.pt_pt/strings.po b/language/resource.language.pt_pt/strings.po
+index 446f8d7..29a7d8c 100644
+--- a/language/resource.language.pt_pt/strings.po
++++ b/language/resource.language.pt_pt/strings.po
+@@ -1166,3 +1166,31 @@ msgstr ""
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr ""
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr ""
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr ""
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr ""
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr ""
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr ""
+diff --git a/language/resource.language.ro_ro/strings.po b/language/resource.language.ro_ro/strings.po
+index a549f3c..4b0f350 100644
+--- a/language/resource.language.ro_ro/strings.po
++++ b/language/resource.language.ro_ro/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Acasă"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "Public"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr ""
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr ""
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr ""
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr ""
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr ""
+diff --git a/language/resource.language.ru_ru/strings.po b/language/resource.language.ru_ru/strings.po
+index e5f852f..69502c1 100644
+--- a/language/resource.language.ru_ru/strings.po
++++ b/language/resource.language.ru_ru/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Главное меню"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "Общественные"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr "Логирование"
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr "Использовать постоянные журналы"
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr "Используйте файлы постоянного журнала и журнала вместо изменчивых файлов по умолчанию. Перезагрузитесь, чтобы применить изменения."
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr "Размер журнала"
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr "Установите макс. размер постоянного журнала. Перезагрузитесь, чтобы применить изменения."
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr "Отключить ограничение скорости журнала"
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr "Перезагрузите для применения изменений."
+diff --git a/language/resource.language.sk_sk/strings.po b/language/resource.language.sk_sk/strings.po
+index 5735d3d..b152980 100644
+--- a/language/resource.language.sk_sk/strings.po
++++ b/language/resource.language.sk_sk/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Domov"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "Verejné"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr ""
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr ""
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr ""
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr ""
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr ""
+diff --git a/language/resource.language.sv_se/strings.po b/language/resource.language.sv_se/strings.po
+index 414f662..87b9a00 100644
+--- a/language/resource.language.sv_se/strings.po
++++ b/language/resource.language.sv_se/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Home"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "Public"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr "Loggning"
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr "Använd bestående loggar"
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr "Använd beständiga journal- och loggfiler istället för de flyktiga standardfilerna. Starta om för att tillämpa ändringar."
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr "Journal storlek"
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr "Ställ in max. storleken på ihållande journal. Starta om för att tillämpa ändringar."
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr ""
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr "Starta om för att tillämpa ändringar."
+diff --git a/language/resource.language.tr_tr/strings.po b/language/resource.language.tr_tr/strings.po
+index 9de65b3..74b88d7 100644
+--- a/language/resource.language.tr_tr/strings.po
++++ b/language/resource.language.tr_tr/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Ana sayfa"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "Genel"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr "Günlük"
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr "Kalıcı Günlükleri Kullan"
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr "Varsayılan geçici olanlar yerine Kalıcı Günlük ve Günlük dosyalarını kullanın. Değişiklikleri uygulamak için yeniden başlatın."
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr "Günlük Boyutu"
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr "Kalıcı günlüğün üst sınır boyutunu ayarlayın. Değişiklikleri uygulamak için yeniden başlatın."
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr "Journald Hız Sınırını devre dışı bırak"
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr "Değişiklikleri uygulamak için yeniden başlatın."
+diff --git a/language/resource.language.uk_ua/strings.po b/language/resource.language.uk_ua/strings.po
+index 262f0bb..5fa22e9 100644
+--- a/language/resource.language.uk_ua/strings.po
++++ b/language/resource.language.uk_ua/strings.po
+@@ -1166,3 +1166,31 @@ msgstr ""
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr ""
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr ""
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr ""
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr ""
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr ""
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr ""
+diff --git a/language/resource.language.zh_cn/strings.po b/language/resource.language.zh_cn/strings.po
+index 8381958..3333857 100644
+--- a/language/resource.language.zh_cn/strings.po
++++ b/language/resource.language.zh_cn/strings.po
+@@ -1166,3 +1166,31 @@ msgstr "Home"
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr "公共"
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr "登录中"
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr "使用持久日志"
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr "使用持久日志和日志文件，而不是默认的易失性日志和日志文件。重新启动以应用更改。"
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr "日志大小"
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr "设置持久日志文件最大值。重新启动以应用更改。"
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr "禁用日志速率限制"
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr "重新启动以应用更改。"
+diff --git a/language/resource.language.zh_tw/strings.po b/language/resource.language.zh_tw/strings.po
+index a0583e2..f3043d4 100644
+--- a/language/resource.language.zh_tw/strings.po
++++ b/language/resource.language.zh_tw/strings.po
+@@ -1166,3 +1166,31 @@ msgstr ""
+ msgctxt "#32399"
+ msgid "Public"
+ msgstr ""
++
++msgctxt "#32410"
++msgid "Logging"
++msgstr ""
++
++msgctxt "#32411"
++msgid "Use Persistent Logs"
++msgstr ""
++
++msgctxt "#32412"
++msgid "Use Persistent Journal and Log files instead of default volatile ones. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32413"
++msgid "Journal Size"
++msgstr ""
++
++msgctxt "#32414"
++msgid "Set max. size of persistent journal. Reboot to apply changes."
++msgstr ""
++
++msgctxt "#32415"
++msgid "Disable journald Rate Limit"
++msgstr ""
++
++msgctxt "#32416"
++msgid "Reboot to apply changes."
++msgstr ""
+diff --git a/src/defaults.py b/src/defaults.py
+index f302540..8b8a1eb 100644
+--- a/src/defaults.py
++++ b/src/defaults.py
+@@ -75,6 +75,7 @@ system = {
+         ],
+     'BACKUP_DESTINATION': '/storage/backup/',
+     'RESTORE_DIR': '/storage/.restore/',
++    'JOURNALD_CONFIG_FILE': '/storage/.cache/journald.conf.d/00_settings.conf'
+     }
+ 
+ updates = {
+diff --git a/src/resources/lib/modules/system.py b/src/resources/lib/modules/system.py
+index 272d9cd..75bb5e8 100644
+--- a/src/resources/lib/modules/system.py
++++ b/src/resources/lib/modules/system.py
+@@ -31,6 +31,7 @@ class system:
+     BACKUP_DESTINATION = None
+     RESTORE_DIR = None
+     SET_CLOCK_CMD = None
++    JOURNALD_CONFIG_FILE = None
+     menu = {'1': {
+         'name': 32002,
+         'menuLoader': 'load_menu',
+@@ -200,7 +201,49 @@ class system:
+                             },
+                         },
+                     },
+-                }
++                'journal': {
++                    'order': 10,
++                    'name': 32410,
++                    'settings': {
++                        'journal_persistent': {
++                            'order': 1,
++                            'name': 32411,
++                            'value': '0',
++                            'action': 'do_journald',
++                            'type': 'bool',
++                            'InfoText': 32412,
++                        },
++                        'journal_size': {
++                            'order': 2,
++                            'name': 32413,
++                            'value': '30 MiB',
++                            'action': 'do_journald',
++                            'type': 'multivalue',
++                            'values': [
++                                '30 MiB', '60 MiB', '100 MiB',
++                                '150 MiB', '200 MiB', '300 MiB'
++                            ],
++                            'InfoText': 32414,
++                            'parent': {
++                                'entry': 'journal_persistent',
++                                'value': ['1'],
++                            },
++                        },
++                        'journal_rate_limit': {
++                            'order': 2,
++                            'name': 32415,
++                            'value': '1',
++                            'action': 'do_journald',
++                            'type': 'bool',
++                            'InfoText': 32416,
++                            'parent': {
++                                'entry': 'journal_persistent',
++                                'value': ['1'],
++                            },
++                        },
++                    },
++                },
++            }
+ 
+             self.keyboard_layouts = False
+             self.nox_keyboard_layouts = False
+@@ -296,6 +339,10 @@ class system:
+             if not value is None:
+                 self.struct['pinlock']['settings']['pinlock_enable']['value'] = value
+ 
++            # Journal
++            self.get_setting('journal', 'journal_persistent')
++            self.get_setting('journal', 'journal_size')
++            self.get_setting('journal', 'journal_rate_limit')
+ 
+         except Exception, e:
+             self.oe.dbg_log('system::load_values', 'ERROR: (' + repr(e) + ')')
+@@ -308,6 +355,11 @@ class system:
+         except Exception, e:
+             self.oe.dbg_log('system::load_menu', 'ERROR: (' + repr(e) + ')')
+ 
++    def get_setting(self, group, setting, allowEmpty=False):
++        value = oe.read_setting('system', setting)
++        if not value is None and not (allowEmpty == False and value is ''):
++            self.struct[group]['settings'][setting]['value'] = value
++
+     def set_value(self, listItem):
+         try:
+             self.oe.dbg_log('system::set_value', 'enter_function', 0)
+@@ -744,6 +796,29 @@ class system:
+         except Exception, e:
+             self.oe.dbg_log('ssystem::set_pinlock', 'ERROR: (%s)' % repr(e), 4)
+ 
++    def do_journald(self, listItem=None):
++        if not listItem == None:
++            self.set_value(listItem)
++            if self.struct['journal']['settings']['journal_persistent']['value'] == '0':
++                try:
++                    os.remove(self.JOURNALD_CONFIG_FILE)
++                except:
++                    pass
++            else:
++                config_file = open(self.JOURNALD_CONFIG_FILE, 'w')
++                config_file.write("# SPDX-License-Identifier: GPL-2.0-or-later\n" +
++                                  "# Copyright (C) 2021-present Team LibreELEC (https://libreelec.tv)\n\n" +
++                                  "# This file is generated automatically, don't modify.\n\n" +
++                                  "[Journal]\n")
++
++                size = self.struct['journal']['settings']['journal_size']['value'].replace(' MiB', 'M')
++                config_file.write("SystemMaxUse={0}\n".format(size) +
++                                  "MaxRetentionSec=0\n")
++                if self.struct['journal']['settings']['journal_rate_limit']['value'] == '1':
++                    config_file.write("RateLimitInterval=0\n" +
++                                      "RateLimitBurst=0\n")
++                config_file.close()
++
+     def do_wizard(self):
+         try:
+             self.oe.dbg_log('system::do_wizard', 'enter_function', 0)
