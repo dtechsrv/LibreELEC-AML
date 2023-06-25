@@ -69,7 +69,7 @@ fi
 
   cat_file "${LOG_FILE}"
 
-  journalctl -a | cat_data "journalctl -a"
+  journalctl -a -b -0 | cat_data "journalctl -a -b -0"
 
   if [ "${LIBREELEC_PROJECT}" = "RPi" ]; then
     bootloader_version="$(vcgencmd bootloader_version)"
