@@ -1079,7 +1079,7 @@ index a0583e2..f3043d4 100644
 +msgid "Reboot to apply changes."
 +msgstr ""
 diff --git a/src/defaults.py b/src/defaults.py
-index f302540..8b8a1eb 100644
+index 58df7d1..602e956 100644
 --- a/src/defaults.py
 +++ b/src/defaults.py
 @@ -75,6 +75,7 @@ system = {

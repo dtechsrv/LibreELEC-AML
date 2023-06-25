@@ -1,16 +1,3 @@
-diff --git a/Makefile b/Makefile
-index 60a6864..194ea50 100644
---- a/Makefile
-+++ b/Makefile
-@@ -3,7 +3,7 @@
- # Copyright (C) 2013 Lutz Fiebach (lufie@openelec.tv)
- 
- ADDON_NAME=service.libreelec.settings
--ADDON_VERSION=9.0.0
-+ADDON_VERSION=9.0.1
- DISTRONAME:=LibreELEC
- 
- SHELL=/bin/bash
 diff --git a/src/defaults.py b/src/defaults.py
 index f302540..58df7d1 100644
 --- a/src/defaults.py

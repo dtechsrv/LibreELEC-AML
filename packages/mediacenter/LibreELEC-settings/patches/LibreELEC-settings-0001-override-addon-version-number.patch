@@ -1,0 +1,28 @@
+diff --git a/Makefile b/Makefile
+index 60a6864..d63c8b2 100644
+--- a/Makefile
++++ b/Makefile
+@@ -3,7 +3,7 @@
+ # Copyright (C) 2013 Lutz Fiebach (lufie@openelec.tv)
+ 
+ ADDON_NAME=service.libreelec.settings
+-ADDON_VERSION=9.0.0
++ADDON_VERSION=9.2.0.102
+ DISTRONAME:=LibreELEC
+ 
+ SHELL=/bin/bash
+diff --git a/changelog.txt b/changelog.txt
+index 6b8744b..7d7ca7a 100644
+--- a/changelog.txt
++++ b/changelog.txt
+@@ -1 +1,9 @@
+-changelog: https://github.com/LibreELEC/service.libreelec.settings
++102
++- Change version numbering
++- Add persistent logs and journal-configuration
++
++101
++- Add alternative auto-update channel
++
++100
++- Initial Release
