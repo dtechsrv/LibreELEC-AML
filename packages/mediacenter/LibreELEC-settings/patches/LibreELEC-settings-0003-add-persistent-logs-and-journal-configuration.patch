@@ -1091,7 +1091,7 @@ index 58df7d1..602e956 100644
  
  updates = {
 diff --git a/src/resources/lib/modules/system.py b/src/resources/lib/modules/system.py
-index 272d9cd..75bb5e8 100644
+index 272d9cd..0182651 100644
 --- a/src/resources/lib/modules/system.py
 +++ b/src/resources/lib/modules/system.py
 @@ -31,6 +31,7 @@ class system:
@@ -1102,7 +1102,7 @@ index 272d9cd..75bb5e8 100644
      menu = {'1': {
          'name': 32002,
          'menuLoader': 'load_menu',
-@@ -200,7 +201,49 @@ class system:
+@@ -200,7 +201,53 @@ class system:
                              },
                          },
                      },
@@ -1112,36 +1112,40 @@ index 272d9cd..75bb5e8 100644
 +                    'name': 32410,
 +                    'settings': {
 +                        'journal_persistent': {
-+                            'order': 1,
 +                            'name': 32411,
 +                            'value': '0',
 +                            'action': 'do_journald',
 +                            'type': 'bool',
 +                            'InfoText': 32412,
++                            'order': 1,
 +                        },
 +                        'journal_size': {
-+                            'order': 2,
 +                            'name': 32413,
 +                            'value': '30 MiB',
 +                            'action': 'do_journald',
 +                            'type': 'multivalue',
 +                            'values': [
-+                                '30 MiB', '60 MiB', '100 MiB',
-+                                '150 MiB', '200 MiB', '300 MiB'
++                                '30 MiB',
++                                '60 MiB',
++                                '100 MiB',
++                                '150 MiB',
++                                '200 MiB',
++                                '300 MiB'
 +                            ],
 +                            'InfoText': 32414,
++                            'order': 2,
 +                            'parent': {
 +                                'entry': 'journal_persistent',
 +                                'value': ['1'],
 +                            },
 +                        },
 +                        'journal_rate_limit': {
-+                            'order': 2,
 +                            'name': 32415,
 +                            'value': '1',
 +                            'action': 'do_journald',
 +                            'type': 'bool',
 +                            'InfoText': 32416,
++                            'order': 3,
 +                            'parent': {
 +                                'entry': 'journal_persistent',
 +                                'value': ['1'],
@@ -1153,30 +1157,32 @@ index 272d9cd..75bb5e8 100644
  
              self.keyboard_layouts = False
              self.nox_keyboard_layouts = False
-@@ -296,6 +339,10 @@ class system:
+@@ -284,7 +331,6 @@ class system:
+                 self.nox_keyboard_layouts = True
+ 
+             # Hostname
+-
+             value = self.oe.read_setting('system', 'hostname')
+             if not value is None:
+                 self.struct['ident']['settings']['hostname']['value'] = value
+@@ -296,6 +342,16 @@ class system:
              if not value is None:
                  self.struct['pinlock']['settings']['pinlock_enable']['value'] = value
  
 +            # Journal
-+            self.get_setting('journal', 'journal_persistent')
-+            self.get_setting('journal', 'journal_size')
-+            self.get_setting('journal', 'journal_rate_limit')
++            value = self.oe.read_setting('system', 'journal_persistent')
++            if not value is None:
++                self.struct['journal']['settings']['journal_persistent']['value'] = value
++            value = self.oe.read_setting('system', 'journal_size')
++            if not value is None:
++                self.struct['journal']['settings']['journal_size']['value'] = value
++            value = self.oe.read_setting('system', 'journal_rate_limit')
++            if not value is None:
++                self.struct['journal']['settings']['journal_rate_limit']['value'] = value
  
          except Exception, e:
              self.oe.dbg_log('system::load_values', 'ERROR: (' + repr(e) + ')')
-@@ -308,6 +355,11 @@ class system:
-         except Exception, e:
-             self.oe.dbg_log('system::load_menu', 'ERROR: (' + repr(e) + ')')
- 
-+    def get_setting(self, group, setting, allowEmpty=False):
-+        value = oe.read_setting('system', setting)
-+        if not value is None and not (allowEmpty == False and value is ''):
-+            self.struct[group]['settings'][setting]['value'] = value
-+
-     def set_value(self, listItem):
-         try:
-             self.oe.dbg_log('system::set_value', 'enter_function', 0)
-@@ -744,6 +796,29 @@ class system:
+@@ -744,6 +800,29 @@ class system:
          except Exception, e:
              self.oe.dbg_log('ssystem::set_pinlock', 'ERROR: (%s)' % repr(e), 4)
  
@@ -1196,7 +1202,7 @@ index 272d9cd..75bb5e8 100644
 +                                  "[Journal]\n")
 +
 +                size = self.struct['journal']['settings']['journal_size']['value'].replace(' MiB', 'M')
-+                config_file.write("SystemMaxUse={0}\n".format(size) +
++                config_file.write("SystemMaxUse={size}\n".format(size=size) +
 +                                  "MaxRetentionSec=0\n")
 +                if self.struct['journal']['settings']['journal_rate_limit']['value'] == '1':
 +                    config_file.write("RateLimitInterval=0\n" +
