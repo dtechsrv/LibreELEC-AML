@@ -395,7 +395,7 @@ index c083068..be50eab 100644
 +msgid "Reboot to apply changes."
 +msgstr ""
 diff --git a/language/resource.language.hu_hu/strings.po b/language/resource.language.hu_hu/strings.po
-index b593748..b06e676 100644
+index b593748..9e1557f 100644
 --- a/language/resource.language.hu_hu/strings.po
 +++ b/language/resource.language.hu_hu/strings.po
 @@ -1166,3 +1166,31 @@ msgstr "Kezdőlap"
@@ -425,7 +425,7 @@ index b593748..b06e676 100644
 +
 +msgctxt "#32415"
 +msgid "Disable journald Rate Limit"
-+msgstr "A journald arányküszöbének letiltása"
++msgstr "A journald gyakorisági korlátjának letiltása"
 +
 +msgctxt "#32416"
 +msgid "Reboot to apply changes."
