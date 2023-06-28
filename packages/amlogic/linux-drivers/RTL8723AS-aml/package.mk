@@ -2,8 +2,8 @@
 # Copyright (C) 2023-present Gabor Dee (dee.gabor@gmail.com)
 
 PKG_NAME="RTL8723AS-aml"
-PKG_VERSION="46f20ab9b4f6c8b266ae5ac94b5ea5b7ab913bc9"
-PKG_SHA256="37ae808bed61195690fc75b3cf4ffd95146ca2deb04e3896df3e26a632aae1e1"
+PKG_VERSION="d60a8f0a7ccba32edd26148ab4531b8bb9771e3f" # v4.1.11_12622.20141215_BTCOEX20140409_ver3.5
+PKG_SHA256="a69a652ff7f34ac0cc1f0d53730a90b4b43e549b78dd3c8a40b8666380d11491"
 PKG_ARCH="arm aarch64"
 PKG_LICENSE="GPL"
 PKG_SITE="https://github.com/khadas/android_hardware_wifi_realtek_drivers_8723au"
