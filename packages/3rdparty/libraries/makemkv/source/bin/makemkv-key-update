@@ -5,7 +5,7 @@
 
 . /etc/profile
 
-MAKEMKV_KEY=$(wget -qO- "https://www.makemkv.com/forum/viewtopic.php?f=5&t=1053" | awk 'FNR == 269 {print $13}'| cut -c 23-90)
+MAKEMKV_KEY=$(wget -qO- "https://forum.makemkv.com/forum/viewtopic.php?f=5&t=1053" | awk 'FNR == 269 {print $13}'| cut -c 23-90)
 MAKEMKV_CONF_DIR=$HOME/.config/MakeMKV
 MAKEMKV_LINK_DIR=$HOME/.MakeMKV
 MAKEMKV_SETTINGS_FILE=$MAKEMKV_CONF_DIR/settings.conf
