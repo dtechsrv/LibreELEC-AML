@@ -1,16 +1,22 @@
 diff --git a/arch/arm/boot/dts/amlogic/meson8m2_wetek_core.dtd b/arch/arm/boot/dts/amlogic/meson8m2_wetek_core.dtd
-index b4278c2..78a6e01 100644
+index b4278c2..9265d1f 100644
 --- a/arch/arm/boot/dts/amlogic/meson8m2_wetek_core.dtd
 +++ b/arch/arm/boot/dts/amlogic/meson8m2_wetek_core.dtd
-@@ -88,7 +88,7 @@ void root_func(){
- 
-         cma_0:region@0 {
-            region_name = "cma_0";
--           reg = <0 0x02400000>;
-+           reg = <0 0x01200000>;
-            linux,contiguous-region;
-         };
+@@ -133,12 +133,12 @@ void root_func(){
+ 		compatible = "amlogic,mesonfb";
+ 		dev_name = "mesonfb";
+ 		status = "okay";
+-		reserve-memory = <0x04800000  0x00100000>;
++		reserve-memory = <0x06000000  0x00100000>; /* fb0 size: 3840*2160*4*3 = 0x5EEC000 -> 96M (0x6000000) */
+ 		reserve-iomap = "true";
+                 vmode = <3>; /**0:VMODE_720P 1:VMODE_LCD  2:VMODE_LVDS_1080P 3:VMODE_1080P*/
+ 		scale_mode = <1>; /*0:default 1:new*/
+ 		4k2k_fb = <1>;
+-		display_size_default = <1920 1080 1920 3240 32>; //1920*1080*4*3 = 0x17BB000
++		display_size_default = <1920 1080 1920 3240 32>;
  	};
+ 
+ //$$ DEVICE="deinterlace"
 @@ -148,7 +148,7 @@ void root_func(){
  		compatible = "amlogic,deinterlace";
  		dev_name = "deinterlace";
@@ -20,8 +26,12 @@ index b4278c2..78a6e01 100644
  	};
  
  /// ***************************************************************************************
-@@ -178,6 +178,19 @@ void root_func(){
-                 reserve-memory = <0x10000000>;
+@@ -175,9 +175,22 @@ void root_func(){
+                 compatible = "amlogic,vdec";
+                 dev_name = "vdec.0";
+                 status = "okay";
+-                reserve-memory = <0x10000000>;
++                reserve-memory = <0x10000000>; // 256M
                  reserve-iomap = "true";
          };
 +///	-	picture decoder
@@ -58,3 +68,12 @@ index b4278c2..78a6e01 100644
  /// ***************************************************************************************
  ///	-	RTC
  //$$ MODULE="RTC"
+@@ -888,7 +901,7 @@ sdio{
+ 			lm-periph-id = <0>; /** lm name */
+ 			clock-src = "usb0"; /** clock src */
+ 			port-id = <0>;  /** ref to mach/usb.h */
+-			port-type = <0>;	/** 0: otg, 1: host, 2: slave */
++			port-type = <1>;	/** 0: otg, 1: host, 2: slave */
+ 			port-speed = <0>; /** 0: default, high, 1: full */
+ 			port-config = <0>; /** 0: default */
+ 			port-dma = <0>; /** 0: default, 1: single, 2: incr, 3: incr4, 4: incr8, 5: incr16, 6: disable*/

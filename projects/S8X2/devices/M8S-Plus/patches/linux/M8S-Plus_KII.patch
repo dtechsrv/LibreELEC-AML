@@ -1,6 +1,9 @@
+diff --git a/arch/arm/boot/dts/amlogic/meson8m2_KII.dtd b/arch/arm/boot/dts/amlogic/meson8m2_KII.dtd
+new file mode 100644
+index 0000000..8d60d49
 --- /dev/null
 +++ b/arch/arm/boot/dts/amlogic/meson8m2_KII.dtd
-@@ -0,0 +1,1996 @@
+@@ -0,0 +1,2011 @@
 +/dts-v1/;
 +/// ***************************************************************************************\n
 +//$$ PROJECT="meson8m2"
@@ -91,7 +94,7 @@
 +
 +        cma_0:region@0 {
 +           region_name = "cma_0";
-+           reg = <0 0x01200000>;
++           reg = <0 0x02400000>;
 +           linux,contiguous-region;
 +        };
 +	};
@@ -136,12 +139,12 @@
 +		compatible = "amlogic,mesonfb";
 +		dev_name = "mesonfb";
 +		status = "okay";
-+	   	reserve-memory = <0x04800000  0x00100000>;
++	   	reserve-memory = <0x06000000  0x00100000>; /* fb0 size: 3840*2160*4*3 = 0x5EEC000 -> 96M (0x6000000) */
 +	   	reserve-iomap = "true";
 +                vmode = <3>; /**0:VMODE_720P 1:VMODE_LCD  2:VMODE_LVDS_1080P 3:VMODE_1080P*/
 +		scale_mode = <1>; /*0:default 1:new*/
 +		4k2k_fb = <1>;
-+ 		display_size_default = <1920 1080 1920 3240 32>; //1920*1080*4*3 = 0x17BB000
++ 		display_size_default = <1920 1080 1920 3240 32>;
 +	};
 +
 +//$$ DEVICE="deinterlace"
@@ -178,7 +181,7 @@
 +                compatible = "amlogic,vdec";
 +                dev_name = "vdec.0";
 +                status = "okay";
-+                reserve-memory = <0x10000000>;
++                reserve-memory = <0x10000000>; // 256M
 +		reserve-iomap = "true";
 +        };
 +///	-	picture decoder
@@ -494,7 +497,7 @@
 +            gpio_dat3 = "CARD_4";
 +            jtag_pin = "CARD_0";
 +            gpio_cd = "CARD_6";
-+//            gpio_ro = "GPIOZ_0";
++            //gpio_ro = "GPIOZ_0";
 +            irq_in = <3>;
 +            irq_out = <5>;
 +            card_type = <5>; /* 0:unknown, 1:mmc card(include eMMC), 2:sd card(include tSD), 3:sdio device(ie:sdio-wifi), 4:SD combo (IO+mem) card, 5:NON sdio device(means sd/mmc card), other:reserved */
@@ -672,74 +675,74 @@
 +//$$ L3 PROP_U32 2 ="reg"
 +//$$ L3 PROP_STR = "pinctrl-names"
 +//$$ L2 PROP_CHOICE "I2C_AO_pin_match" = "pinctrl-0"
-+	i2c@c8100500{ /*I2C-AO*/
-+		compatible = "amlogic,aml_i2c";
-+		dev_name = "i2c-AO";
-+		status = "ok";
-+		reg = <0xc8100500 0x1d>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		device_id = <0>;
-+		pinctrl-names="default";
-+		pinctrl-0=<&ao_i2c_master>;
-+		use_pio = <0>;
-+		master_i2c_speed = <100000>;
-+	};
++//	i2c@c8100500{ /*I2C-AO*/
++//		compatible = "amlogic,aml_i2c";
++//		dev_name = "i2c-AO";
++//		status = "ok";
++//		reg = <0xc8100500 0x1d>;
++//		#address-cells = <1>;
++//		#size-cells = <0>;
++//		device_id = <0>;
++//		pinctrl-names="default";
++//		pinctrl-0=<&ao_i2c_master>;
++//		use_pio = <0>;
++//		master_i2c_speed = <100000>;
++//	};
 +
 +//$$ DEVICE = "I2C_A"
 +//$$ L2 PROP_STR = "status"
 +//$$ L3 PROP_U32 2 ="reg"
 +//$$ L3 PROP_STR = "pinctrl-names"
-+//    i2c@c1108500{ /*I2C-A*/
-+//		compatible = "amlogic,aml_i2c";
-+//		dev_name = "i2c-A";
-+//		status = "ok";
-+//		reg = <0xc1108500 0x20>;
-+//		device_id = <1>;
-+//		pinctrl-names="default";
++    i2c@c1108500{ /*I2C-A*/
++		compatible = "amlogic,aml_i2c";
++		dev_name = "i2c-A";
++		status = "ok";
++		reg = <0xc1108500 0x20>;
++		device_id = <1>;
++		pinctrl-names="default";
 +//		pinctrl-0=<&a_i2c_master>;
-+//		#address-cells = <1>;
-+//		#size-cells = <0>;
-+//		use_pio = <0>;
-+//		master_i2c_speed = <300000>;
-+//	};
++		#address-cells = <1>;
++		#size-cells = <0>;
++		use_pio = <0>;
++		master_i2c_speed = <300000>;
++	};
 +
 +//$$ DEVICE="I2C_B"
 +//$$ L2 PROP_STR = "status"
 +//$$ L3 PROP_U32 2="reg"
 +//$$ L3 PROP_STR = "pinctrl-names"
 +//$$ L2 PROP_CHOICE "I2C_B_pin_match" = "pinctrl-0"
-+//	i2c@c11087c0{ /*I2C-B*/
-+//		compatible = "amlogic,aml_i2c";
-+//		dev_name = "i2c-B";
-+//		status = "ok";
-+//		reg = <0xc11087c0 0x20>;
-+//		device_id = <2>;
-+//		pinctrl-names="default";
-+//		pinctrl-0=<&b_i2c_master>;
-+//		#address-cells = <1>;
-+//		#size-cells = <0>;
-+//		use_pio = <0>;
-+//		master_i2c_speed = <300000>;
-+//	};
++	i2c@c11087c0{ /*I2C-B*/
++		compatible = "amlogic,aml_i2c";
++		dev_name = "i2c-B";
++		status = "ok";
++		reg = <0xc11087c0 0x20>;
++		device_id = <2>;
++		pinctrl-names="default";
++		pinctrl-0=<&b_i2c_master>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		use_pio = <0>;
++		master_i2c_speed = <300000>;
++	};
 +
 +//$$ DEVICE="I2C_C"
 +//$$ L2 PROP_STR = "status"
 +//$$ L3 PROP_U32 2="reg"
 +//$$ L3 PROP_STR = "pinctrl-names"
-+//    i2c@c11087e0{ /*I2C-C*/
-+//		compatible = "amlogic,aml_i2c";
-+//		dev_name = "i2c-C";
-+//		status = "ok";
-+//		reg = <0xc11087e0 0x20>;
-+//		device_id = <3>;
-+//		pinctrl-names="default";
++    i2c@c11087e0{ /*I2C-C*/
++		compatible = "amlogic,aml_i2c";
++		dev_name = "i2c-C";
++		status = "ok";
++		reg = <0xc11087e0 0x20>;
++		device_id = <3>;
++		pinctrl-names="default";
 +//		pinctrl-0=<&c_i2c_master>;
-+//		#address-cells = <1>;
-+//		#size-cells = <0>;
-+//		use_pio = <0>;
-+//		master_i2c_speed = <300000>;
-+//	};
++		#address-cells = <1>;
++		#size-cells = <0>;
++		use_pio = <0>;
++		master_i2c_speed = <300000>;
++	};
 +
 +//$$ DEVICE="I2C_D"
 +//$$ L2 PROP_STR = "status"
@@ -904,12 +907,12 @@
 +			lm-periph-id = <0>; /** lm name */
 +			clock-src = "usb0"; /** clock src */
 +			port-id = <0>;  /** ref to mach/usb.h */
-+			port-type = <0>;	/** 0: otg, 1: host, 2: slave */
++			port-type = <1>;	/** 0: otg, 1: host, 2: slave */
 +			port-speed = <0>; /** 0: default, high, 1: full */
 +			port-config = <0>; /** 0: default */
 +			port-dma = <0>; /** 0: default, 1: single, 2: incr, 3: incr4, 4: incr8, 5: incr16, 6: disable*/
 +			port-id-mode = <0>; /** 0: hardware, 1: sw_host, 2: sw_slave*/
-+			gpio-vbus-power = "GPIODV_23";
++			gpio-vbus-power = "GPIOZ_1";
 +			gpio-work-mask	= <1>; /**0: work on pulldown,1:work on pullup*/
 +			status = "okay";
 +		};
@@ -1238,7 +1241,7 @@
 +		key_num = <1>;
 +        key_name = "power";
 +		key_code = <116>;
-+		key_pin = "GPIODV_24";
++		key_pin = "GPIOAO_4";
 +                gpio_high_z;
 +        irq_keyup = <6>;
 +        irq_keydown = <7>;
@@ -1783,11 +1786,11 @@
 +//$$ L2 PROP_U32 2 = "amlogic,setmask"
 +//$$ L2 PROP_U32 2 = "amlogic,clrmask"
 +//$$ L2 PROP_STR 2 = "amlogic,pins"
-+		ao_i2c_master:ao_i2c{
-+			amlogic,setmask=<10 0x60>;
-+			amlogic,clrmask=<10 0x1800006>;
-+			amlogic,pins="GPIOAO_4","GPIOAO_5";
-+		};
++//		ao_i2c_master:ao_i2c{
++//			amlogic,setmask=<10 0x60>;
++//			amlogic,clrmask=<10 0x1800006>;
++//			amlogic,pins="GPIOAO_3","GPIOAO_5";
++//		};
 +
 +// MATCH "I2C_A_pin_match" = "&a_i2c_master"
 +// L2 PROP_U32 2 = "amlogic,setmask"
@@ -1810,10 +1813,10 @@
 +//$$ MATCH "I2C_B_pin_match" = "&b_i2c_master"
 +//$$ L2 PROP_U32 2 = "amlogic,setmask"
 +//$$ L2 PROP_STR 2 = "amlogic,pins"
-+//		b_i2c_master:b_i2c{
-+//			amlogic,setmask=<5 0xc000000>;
-+//			amlogic,pins="GPIOZ_2","GPIOZ_3";
-+//		};
++		b_i2c_master:b_i2c{
++			amlogic,setmask=<5 0xc000000>;
++			amlogic,pins="GPIOZ_2","GPIOZ_3";
++		};
 +
 +// MATCH "I2C_C_pin_match" = "&c_i2c_master"
 +// L2 PROP_U32 2 = "amlogic,setmask"
@@ -1929,6 +1932,21 @@
 +		
 +/// ***************************************************************************************
 +///	-	Ethernet
++//$$ MODULE="Ethernet"
++//$$ DEVICE="meson-eth"
++//$$ L2 PROP_STR = "status"
++    meson-eth{
++		compatible = "amlogic,meson-eth";
++		dev_name = "meson-eth";
++		status = "okay";
++		interruptnum = <40>;
++                phy_interface = <0>;
++                new_maclogic = <1>;
++                reset_pin_enable = <0>;
++                reset_pin = "GPI0DV_28";
++                reset_delay = <100>;
++	};
++
 +        ethmac: ethernet@0xc9410000{
 +		compatible = "amlogic,meson8m2-rgmii-dwmac", "snps,dwmac";
 +                reg = <0xc9410000 0x10000
@@ -1997,4 +2015,3 @@
 +	};
 +
 +}; /* end of / */
---
