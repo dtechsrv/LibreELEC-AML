@@ -244,7 +244,7 @@ rm -rf ${FAKEROOT_SCRIPT}
 # Set permissions
 chmod 0644 ${TARGET_IMG}/${IMAGE_NAME}.system
 
-if [ "${1}" = "release" -o "${1}" = "mkimage" -o "${1}" = "amlpkg" -o "${1}" = "noobs" ]; then
+if [ "${1}" = "release" -o "${1}" = "mkimage" -o "${1}" = "amlota" -o "${1}" = "amlpkg" -o "${1}" = "noobs" ]; then
 
   RELEASE_DIR="target/${IMAGE_NAME}"
 
@@ -307,7 +307,7 @@ if [ "${1}" = "release" -o "${1}" = "mkimage" -o "${1}" = "amlpkg" -o "${1}" = "
   )
 
   # Create image files if requested
-  if [[ ( "${1}" = "amlpkg" || "${1}" = "noobs" || "${1}" = "mkimage" ) && -n "${BOOTLOADER}" ]]; then
+  if [[ ( "${1}" = "amlota" || "${1}" = "amlpkg" || "${1}" = "noobs" || "${1}" = "mkimage" ) && -n "${BOOTLOADER}" ]]; then
     # INSTALL_SRC_DIR can be board specific
     if [ -n "${DEVICE}" -a -d "${PROJECT_DIR}/${PROJECT}/devices/${DEVICE}/install" ]; then
       INSTALL_SRC_DIR="${PROJECT_DIR}/${PROJECT}/devices/${DEVICE}/install"
@@ -344,7 +344,7 @@ if [ "${1}" = "release" -o "${1}" = "mkimage" -o "${1}" = "amlpkg" -o "${1}" = "
   rm -rf ${RELEASE_DIR}
 
   # Create WeTek Play (Amlogic) ZIP update and auto-install packages if requested
-  if [ "${1}" = "amlpkg" ]; then
+  if [[ "${1}" = "amlota" || "${1}" = "amlpkg" ]]; then
     echo "Creating Amlogic ZIP update package"
 
     AML_PKG_DIR="${RELEASE_DIR}/ampl-pkg"
@@ -383,33 +383,43 @@ if [ "${1}" = "release" -o "${1}" = "mkimage" -o "${1}" = "amlpkg" -o "${1}" = "
     SIGNAPK_DIR="${ROOT}/tools/signapk"
     java -Xmx1024m -jar ${SIGNAPK_DIR}/signapk.jar -w ${SIGNAPK_DIR}/testkey.x509.pem ${SIGNAPK_DIR}/testkey.pk8 update.zip sign/${IMAGE_NAME}-update.zip
 
-    # Create the auto-install package
-    echo "Creating Amlogic ZIP auto-install package"
-    pushd sign > /dev/null
-    echo --wipe_data > factory_update_param.aml
-    echo --wipe_cache >> factory_update_param.aml
-    echo --update_package=/sdcard/${IMAGE_NAME}-update.zip >> factory_update_param.aml
-    if [ -f "${INSTALL_SRC_DIR}/files/recovery.img" ]; then
-      cp ${INSTALL_SRC_DIR}/files/recovery.img .
-    fi
+    cp sign/${IMAGE_NAME}-update.zip ${TARGET_IMG}/${IMAGE_NAME}-update.zip
 
-    if [ -f ${INSTALL_SRC_DIR}/files/aml_autoscript ]; then
-      cp ${INSTALL_SRC_DIR}/files/aml_autoscript .
-    fi
-
-    # Copy device tree image if any
-    if [ -f "${INSTALL}/usr/share/bootloader/dtb.img" ]; then
-      cp "${INSTALL}/usr/share/bootloader/dtb.img" .
-    fi
-
-    zip -q ${TARGET_IMG}/${IMAGE_NAME}.zip *
-
-    # Create sha256 checksum of zip
+    # Create sha256 checksum of update zip
     ( cd ${TARGET_IMG}
-      sha256sum ${IMAGE_NAME}.zip > ${IMAGE_NAME}.zip.sha256
+      sha256sum ${IMAGE_NAME}-update.zip > ${IMAGE_NAME}-update.zip.sha256
     )
 
-    popd > /dev/null
+    # Create the auto-install package
+    if [ "${1}" = "amlpkg" ]; then
+      echo "Creating Amlogic ZIP sdcard auto-install package"
+      pushd sign > /dev/null
+      echo --wipe_data > factory_update_param.aml
+      echo --wipe_cache >> factory_update_param.aml
+      echo --update_package=/sdcard/${IMAGE_NAME}-update.zip >> factory_update_param.aml
+      if [ -f "${INSTALL_SRC_DIR}/files/recovery.img" ]; then
+        cp ${INSTALL_SRC_DIR}/files/recovery.img .
+      fi
+
+      if [ -f ${INSTALL_SRC_DIR}/files/aml_autoscript ]; then
+        cp ${INSTALL_SRC_DIR}/files/aml_autoscript .
+      fi
+
+      # Copy device tree image if any
+      if [ -f "${INSTALL}/usr/share/bootloader/dtb.img" ]; then
+        cp "${INSTALL}/usr/share/bootloader/dtb.img" .
+      fi
+
+      zip -q ${TARGET_IMG}/${IMAGE_NAME}-sdcard.zip *
+
+      # Create sha256 checksum of sdcard install zip
+      ( cd ${TARGET_IMG}
+        sha256sum ${IMAGE_NAME}-sdcard.zip > ${IMAGE_NAME}-sdcard.zip.sha256
+      )
+
+      popd > /dev/null
+    fi
+
     popd > /dev/null
 
   elif [ "${1}" = "noobs" ]; then

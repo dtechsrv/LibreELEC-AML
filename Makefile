@@ -14,6 +14,9 @@ image:
 noobs:
 	./scripts/image noobs
 
+amlota:
+	./scripts/image amlota
+
 amlpkg:
 	./scripts/image amlpkg
 
