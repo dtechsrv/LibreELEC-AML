@@ -1,0 +1,30 @@
+show_progress(0, 0);
+set_bootloader_env("upgrade_step", "3");
+
+show_progress(0.200000, 12);
+# Format data partition if previous installation is Android
+mount("ext4", "EMMC", "/dev/block/system", "/system");
+if
+  is_file_exist("/system/build.prop") == "/system/build.prop"
+then
+  ui_print("Wiping data");
+  format("ext4", "EMMC", "/dev/block/data", "0", "/data");
+endif;
+unmount("/system");
+
+ui_print("Wiping system");
+format("ext4", "EMMC", "/dev/block/system", "0", "/system");
+
+show_progress(0.700000, 160);
+ui_print("Writing kernel");
+write_raw_image(package_extract_file("KERNEL"), "boot");
+
+ui_print("Writing system");
+mount("ext4", "EMMC", "/dev/block/system", "/system");
+package_extract_dir("system", "/system");
+unmount("/system");
+
+show_progress(0.100000, 0);
+set_bootloader_env("upgrade_step", "2");
+set_progress(1);
+ui_print("LibreELEC Installed Successfully");

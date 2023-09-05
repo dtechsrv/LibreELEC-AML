@@ -22,11 +22,11 @@ PROJECT=S8X2 DEVICE=WeTek_Core ARCH=arm make amlpkg -j$(nproc)
 
 # MXQ HD18Q "all black" boxes (m8b_m201_v1)
 # Specs: Amlogic S805 SoC, 1 GB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet (IC+ IP101GR), Realtek WiFi.
-PROJECT=S805 DEVICE=HD18Q ARCH=arm make image -j$(nproc)
+PROJECT=S805 DEVICE=HD18Q ARCH=arm make amlpkg -j$(nproc)
 
 # MXQ m201d with 512 MB RAM only (m8b_m201C_512M)
 # Specs: Amlogic S805 SoC, 1 GB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet (IC+ IP101GR), Realtek WiFi.
-PROJECT=S805 DEVICE=m201d ARCH=arm make image -j$(nproc)
+PROJECT=S805 DEVICE=m201d ARCH=arm make amlpkg -j$(nproc)
 
 # WeTek Play (AML8726-MX, meson6 without dt-id)
 # Specs: Amlogic M6 SoC, 1 GB RAM, 4 GB NAND Flash, 10/100 Mbps Ethernet (SMSC LAN8720A), AP6210 WiFi.
