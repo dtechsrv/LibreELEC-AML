@@ -1,0 +1,11 @@
+[Unit]
+Description=Broadcom WiFi module loader
+ConditionPathExists=/proc/device-tree/wifi/dev_name
+After=kernel-overlays.service
+
+[Service]
+Type=simple
+ExecStart=/bin/sh -c '[ `cat /proc/device-tree/wifi/dev_name` = "aml_broadcm_wifi" ] && /sbin/modprobe dhd'
+
+[Install]
+WantedBy=basic.target
