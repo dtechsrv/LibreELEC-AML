@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # SPDX-License-Identifier: GPL-2.0-or-later
-# Copyright (C) 2018-present Team LibreELEC (https://libreelec.tv)
+# Copyright (C) 2018-2023 Team LibreELEC (https://libreelec.tv)
+# Copyright (C) 2023-present Gabor Dee (dee.gabor@gmail.com)
 
 if [ ! -e /proc/device-tree/openvfd/compatible -a -e /flash/dtb.img ]; then
   mount -o remount,rw /flash
@@ -15,6 +16,8 @@ if [ -f /storage/.config/vfd.conf ]; then
   cp /storage/.config/vfd.conf /run/libreelec/openvfd.conf
 elif [ -f /storage/.config/openvfd.conf ]; then
   cp /storage/.config/openvfd.conf /run/libreelec/openvfd.conf
+elif [ -f /flash/openvfd.conf ]; then
+  cp /flash/openvfd.conf /run/libreelec/openvfd.conf
 elif [ -f /storage/.cache/openvfd/openvfd.conf ]; then
   cp /storage/.cache/openvfd/openvfd.conf /run/libreelec/openvfd.conf
 elif [ -f /etc/openvfd.conf ]; then

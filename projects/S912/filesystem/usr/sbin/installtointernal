@@ -45,9 +45,17 @@ install_to_nand() {
     cp $IMAGE_SYSTEM /tmp/system && sync
     echo "done."
 
-    echo -n "Copying remote.conf..."
-    cp -PR /flash/remote*.conf /tmp/system
-    echo "done."
+    if [ -f /flash/remote.conf ]; then
+      echo -n "Copying remote.conf..."
+      cp -PR /flash/remote.conf /tmp/system
+      echo "done."
+    fi
+
+    if [ -f /flash/openvfd.conf ]; then
+      echo -n "Copying openvfd.conf..."
+      cp -PR /flash/openvfd.conf /tmp/system
+      echo "done."
+    fi
 
     umount /tmp/system
 
