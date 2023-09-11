@@ -1,7 +1,8 @@
 #!/bin/sh
 
 # SPDX-License-Identifier: GPL-2.0
-# Copyright (C) 2017-present Team LibreELEC (https://libreelec.tv)
+# Copyright (C) 2017-2023 Team LibreELEC (https://libreelec.tv)
+# Copyright (C) 2023-present Gabor Dee (dee.gabor@gmail.com)
 
 [ -z "$SYSTEM_ROOT" ] && SYSTEM_ROOT=""
 [ -z "$BOOT_ROOT" ] && BOOT_ROOT="/flash"
@@ -92,6 +93,11 @@ if [ -d $BOOT_ROOT/device_trees ]; then
   cp -p $SYSTEM_ROOT/usr/share/bootloader/device_trees/*.dtb $BOOT_ROOT/device_trees/
 fi
 
+if [ -d $BOOT_ROOT/openvfd_confs ]; then
+  rm $BOOT_ROOT/openvfd_confs/*.conf
+  cp -p $SYSTEM_ROOT/usr/share/bootloader/openvfd_confs/*.conf $BOOT_ROOT/openvfd_confs/
+fi
+
 if [ -f $SYSTEM_ROOT/usr/share/bootloader/boot.ini ]; then
   echo "Updating boot.ini..."
   cp -p $SYSTEM_ROOT/usr/share/bootloader/boot.ini $BOOT_ROOT/boot.ini
@@ -116,6 +122,16 @@ if [ -f $SYSTEM_ROOT/usr/share/bootloader/u-boot -a ! -e /dev/system -a ! -e /de
   echo "Updating u-boot on: $BOOT_DISK..."
   dd if=$SYSTEM_ROOT/usr/share/bootloader/u-boot of=$BOOT_DISK conv=fsync bs=1 count=112 status=none
   dd if=$SYSTEM_ROOT/usr/share/bootloader/u-boot of=$BOOT_DISK conv=fsync bs=512 skip=1 seek=1 status=none
+fi
+
+if [ -e /storage/.kodi/addons/repository.libreelec.tv ]; then
+  echo "Remove outdated LibreELEC Add-ons update..."
+  rm -rf /storage/.kodi/addons/repository.libreelec.tv
+fi
+
+if [ -e /storage/.kodi/addons/service.libreelec.settings ]; then
+  echo "Remove outdated LibreELEC Configuration update..."
+  rm -rf /storage/.kodi/addons/service.libreelec.settings
 fi
 
 mount -o ro,remount $BOOT_ROOT

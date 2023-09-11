@@ -1,7 +1,8 @@
 #!/bin/sh
 
 # SPDX-License-Identifier: GPL-2.0-or-later
-# Copyright (C) 2017-present Team LibreELEC (https://libreelec.tv)
+# Copyright (C) 2017-2023 Team LibreELEC (https://libreelec.tv)
+# Copyright (C) 2023-present Gabor Dee (dee.gabor@gmail.com)
 
 [ -z "$SYSTEM_ROOT" ] && SYSTEM_ROOT=""
 [ -z "$BOOT_ROOT" ] && BOOT_ROOT="/flash"
@@ -121,6 +122,16 @@ if [ -f $SYSTEM_ROOT/usr/share/bootloader/u-boot -a -f $SYSTEM_ROOT/usr/share/bo
   dd if=$SYSTEM_ROOT/usr/share/bootloader/bl1 of=$BOOT_DISK conv=fsync bs=1 count=442
   dd if=$SYSTEM_ROOT/usr/share/bootloader/bl1 of=$BOOT_DISK conv=fsync bs=512 seek=1 skip=1
   dd if=$SYSTEM_ROOT/usr/share/bootloader/u-boot of=$BOOT_DISK conv=fsync bs=512 seek=64
+fi
+
+if [ -e /storage/.kodi/addons/repository.libreelec.tv ]; then
+  echo "Remove outdated LibreELEC Add-ons update..."
+  rm -rf /storage/.kodi/addons/repository.libreelec.tv
+fi
+
+if [ -e /storage/.kodi/addons/service.libreelec.settings ]; then
+  echo "Remove outdated LibreELEC Configuration update..."
+  rm -rf /storage/.kodi/addons/service.libreelec.settings
 fi
 
 mount -o ro,remount $BOOT_ROOT
