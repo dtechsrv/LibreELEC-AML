@@ -5,11 +5,11 @@
 # Copyright (C) 2023-present Gabor Dee (dee.gabor@gmail.com)
 
 if [ -e /storage/.kodi/addons/repository.libreelec.tv ]; then
-  echo "Remove outdated LibreELEC Add-ons update..."
+  echo "Removing outdated LibreELEC Add-ons update..."
   rm -rf /storage/.kodi/addons/repository.libreelec.tv
 fi
 
 if [ -e /storage/.kodi/addons/service.libreelec.settings ]; then
-  echo "Remove outdated LibreELEC Configuration update..."
+  echo "Removing outdated LibreELEC Configuration update..."
   rm -rf /storage/.kodi/addons/service.libreelec.settings
 fi
