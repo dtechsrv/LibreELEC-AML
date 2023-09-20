@@ -1,5 +1,6 @@
 # Kernel extra targets to build
-  KERNEL_UBOOT_EXTRA_TARGET="meson8b_mxq.dtd meson8b_mxq.dtb"
+  KERNEL_UBOOT_EXTRA_TARGET="meson8b_hd18q.dtd meson8b_hd18q.dtb meson8b_m201d.dtd meson8b_m201d.dtb"
+#  KERNEL_UBOOT_EXTRA_TARGET="meson8b_hd18q.dtd meson8b_m201d.dtd meson8b_dual.dtb"
 
 # additional packages to install:
 # Space separated list is supported,

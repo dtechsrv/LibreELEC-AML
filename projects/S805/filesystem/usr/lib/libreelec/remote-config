@@ -8,11 +8,17 @@
   LSUSB_RET=$?
 
 if [ -f /storage/.config/remote.conf ]; then
-  /usr/bin/remotecfg /storage/.config/remote.conf
+  for f in /storage/.config/remote*.conf; do
+    /usr/bin/remotecfg $f
+  done
 elif [ -f /flash/remote.conf ]; then
-  /usr/bin/remotecfg /flash/remote.conf
+  for f in /flash/remote*.conf; do
+    /usr/bin/remotecfg $f
+  done
 elif [ -f /etc/amremote/remote.conf ]; then
-  /usr/bin/remotecfg /etc/amremote/remote.conf
+  for f in /etc/amremote/remote*.conf; do
+    /usr/bin/remotecfg $f
+  done
 elif [ "$LSUSB_RET" = 0 ]; then
   /usr/bin/remotecfg /etc/amremote/wetek.conf
 elif [ "$LSUSB_RET" = 1 ]; then

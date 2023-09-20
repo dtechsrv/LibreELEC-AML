@@ -35,10 +35,6 @@ PROJECT=Minix-S8X2 DEVICE=X8H-Plus ARCH=arm make image -j$(nproc)
 # Specs: Amlogic S805 SoC, 1 GB RAM, Gigabit LAN, without WiFi
 PROJECT=Odroid_C1 ARCH=arm make image -j$(nproc)
 
-# MXQ S85
-# Specs: Amlogic S805 SoC, 1 GB RAM, 10/100 LAN, AP6210/AP6212 WiFi
-#PROJECT=S805 DEVICE=MXQ ARCH=arm make image -j$(nproc)
-
 # Remove unnecessary files after the build process
 rm -rf target/*.kernel
 rm -rf target/*.system
