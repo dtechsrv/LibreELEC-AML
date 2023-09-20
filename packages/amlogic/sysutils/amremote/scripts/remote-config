@@ -1,16 +1,25 @@
 #!/bin/sh
 
 # SPDX-License-Identifier: GPL-2.0-or-later
-# Copyright (C) 2014 Stephan Raue (stephan@openelec.tv)
+# Copyright (C) 2014-2023 Stephan Raue (stephan@openelec.tv)
+# Copyright (C) 2023-present Gabor Dee (dee.gabor@gmail.com)
 
 # check the Security chip if we run on a WeTek device
   lsusb -d 096e:0006 &> /dev/null
   LSUSB_RET=$?
 
 if [ -f /storage/.config/remote.conf ]; then
-  /usr/bin/remotecfg /storage/.config/remote.conf
+  for f in /storage/.config/remote*.conf; do
+    /usr/bin/remotecfg $f
+  done
+elif [ -f /flash/remote.conf ]; then
+  for f in /flash/remote*.conf; do
+    /usr/bin/remotecfg $f
+  done
 elif [ -f /etc/amremote/remote.conf ]; then
-  /usr/bin/remotecfg /etc/amremote/remote.conf
+  for f in /etc/amremote/remote*.conf; do
+    /usr/bin/remotecfg $f
+  done
 elif [ "$LSUSB_RET" = 0 ]; then
   /usr/bin/remotecfg /etc/amremote/wetek.conf
 elif [ "$LSUSB_RET" = 1 ]; then
