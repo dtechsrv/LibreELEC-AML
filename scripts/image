@@ -383,12 +383,15 @@ if [ "${1}" = "release" -o "${1}" = "mkimage" -o "${1}" = "amlota" -o "${1}" = "
     SIGNAPK_DIR="${ROOT}/tools/signapk"
     java -Xmx1024m -jar ${SIGNAPK_DIR}/signapk.jar -w ${SIGNAPK_DIR}/testkey.x509.pem ${SIGNAPK_DIR}/testkey.pk8 update.zip sign/${IMAGE_NAME}-update.zip
 
-    cp sign/${IMAGE_NAME}-update.zip ${TARGET_IMG}/${IMAGE_NAME}-update.zip
+    # Copy OTA-format update package
+    if [ "${1}" = "amlota" ]; then
+      cp sign/${IMAGE_NAME}-update.zip ${TARGET_IMG}/${IMAGE_NAME}-update.zip
 
-    # Create sha256 checksum of update zip
-    ( cd ${TARGET_IMG}
-      sha256sum ${IMAGE_NAME}-update.zip > ${IMAGE_NAME}-update.zip.sha256
-    )
+      # Create sha256 checksum of update zip
+      ( cd ${TARGET_IMG}
+        sha256sum ${IMAGE_NAME}-update.zip > ${IMAGE_NAME}-update.zip.sha256
+      )
+    fi
 
     # Create the auto-install package
     if [ "${1}" = "amlpkg" ]; then
