@@ -1,7 +1,8 @@
-diff -Nur a/configure b/configure
---- a/configure	2018-11-23 12:03:27.041287929 -0500
-+++ b/configure	2018-11-23 12:08:52.945786916 -0500
-@@ -226,6 +226,7 @@
+diff --git a/configure b/configure
+index 15e6c32..d8a14e9 100755
+--- a/configure
++++ b/configure
+@@ -226,6 +226,7 @@ External library support:
    --enable-libcelt         enable CELT decoding via libcelt [no]
    --enable-libcdio         enable audio CD grabbing with libcdio [no]
    --enable-libcodec2       enable codec2 en/decoding using libcodec2 [no]
@@ -9,7 +10,7 @@ diff -Nur a/configure b/configure
    --enable-libdc1394       enable IIDC-1394 grabbing using libdc1394
                             and libraw1394 [no]
    --enable-libfdk-aac      enable AAC de/encoding via libfdk-aac [no]
-@@ -1700,6 +1701,7 @@
+@@ -1699,6 +1700,7 @@ EXTERNAL_LIBRARY_LIST="
      libcaca
      libcelt
      libcodec2
@@ -17,7 +18,7 @@ diff -Nur a/configure b/configure
      libdc1394
      libdrm
      libflite
-@@ -3062,6 +3064,7 @@
+@@ -3056,6 +3058,7 @@ libaom_av1_encoder_deps="libaom"
  libcelt_decoder_deps="libcelt"
  libcodec2_decoder_deps="libcodec2"
  libcodec2_encoder_deps="libcodec2"
@@ -25,18 +26,31 @@ diff -Nur a/configure b/configure
  libfdk_aac_decoder_deps="libfdk_aac"
  libfdk_aac_encoder_deps="libfdk_aac"
  libfdk_aac_encoder_select="audio_frame_queue"
-@@ -6003,6 +6006,7 @@
+@@ -5995,6 +5998,7 @@ enabled libcelt           && require libcelt celt/celt.h celt_decode -lcelt0 &&
                                 die "ERROR: libcelt must be installed and version must be >= 0.11.0."; }
  enabled libcaca           && require_pkg_config libcaca caca caca.h caca_create_canvas
  enabled libcodec2         && require libcodec2 codec2/codec2.h codec2_create -lcodec2
-+enabled libdav1d          && require_pkg_config libdav1d "dav1d >= 0.0.1" "dav1d/dav1d.h" dav1d_version
++enabled libdav1d          && require_pkg_config libdav1d "dav1d >= 0.4.0" "dav1d/dav1d.h" dav1d_version
  enabled libdc1394         && require_pkg_config libdc1394 libdc1394-2 dc1394/dc1394.h dc1394_new
  enabled libdrm            && require_pkg_config libdrm libdrm xf86drm.h drmGetVersion
  enabled libfdk_aac        && { check_pkg_config libfdk_aac fdk-aac "fdk-aac/aacenc_lib.h" aacEncOpen ||
-diff -Nur a/libavcodec/allcodecs.c b/libavcodec/allcodecs.c
---- a/libavcodec/allcodecs.c	2018-11-23 12:03:27.041287929 -0500
-+++ b/libavcodec/allcodecs.c	2018-11-23 12:11:08.584268221 -0500
-@@ -670,6 +670,7 @@
+diff --git a/libavcodec/Makefile b/libavcodec/Makefile
+index 4b8ad12..de19507 100644
+--- a/libavcodec/Makefile
++++ b/libavcodec/Makefile
+@@ -944,6 +944,7 @@ OBJS-$(CONFIG_LIBAOM_AV1_ENCODER)         += libaomenc.o
+ OBJS-$(CONFIG_LIBCELT_DECODER)            += libcelt_dec.o
+ OBJS-$(CONFIG_LIBCODEC2_DECODER)          += libcodec2.o codec2utils.o
+ OBJS-$(CONFIG_LIBCODEC2_ENCODER)          += libcodec2.o codec2utils.o
++OBJS-$(CONFIG_LIBDAV1D_DECODER)           += libdav1d.o
+ OBJS-$(CONFIG_LIBFDK_AAC_DECODER)         += libfdk-aacdec.o
+ OBJS-$(CONFIG_LIBFDK_AAC_ENCODER)         += libfdk-aacenc.o
+ OBJS-$(CONFIG_LIBGSM_DECODER)             += libgsmdec.o
+diff --git a/libavcodec/allcodecs.c b/libavcodec/allcodecs.c
+index 4d4ef53..c8dc596 100644
+--- a/libavcodec/allcodecs.c
++++ b/libavcodec/allcodecs.c
+@@ -668,6 +668,7 @@ extern AVCodec ff_libaom_av1_encoder;
  extern AVCodec ff_libcelt_decoder;
  extern AVCodec ff_libcodec2_encoder;
  extern AVCodec ff_libcodec2_decoder;
@@ -44,10 +58,12 @@ diff -Nur a/libavcodec/allcodecs.c b/libavcodec/allcodecs.c
  extern AVCodec ff_libfdk_aac_encoder;
  extern AVCodec ff_libfdk_aac_decoder;
  extern AVCodec ff_libgsm_encoder;
-diff -Nur a/libavcodec/libdav1d.c b/libavcodec/libdav1d.c
---- a/libavcodec/libdav1d.c	1969-12-31 19:00:00.000000000 -0500
-+++ b/libavcodec/libdav1d.c	2018-11-23 12:33:35.820468086 -0500
-@@ -0,0 +1,346 @@
+diff --git a/libavcodec/libdav1d.c b/libavcodec/libdav1d.c
+new file mode 100644
+index 0000000..06d41fb
+--- /dev/null
++++ b/libavcodec/libdav1d.c
+@@ -0,0 +1,440 @@
 +/*
 + * Copyright (c) 2018 Ronald S. Bultje <rsbultje gmail com>
 + * Copyright (c) 2018 James Almer <jamrial gmail com>
@@ -80,6 +96,9 @@ diff -Nur a/libavcodec/libdav1d.c b/libavcodec/libdav1d.c
 +#include "decode.h"
 +#include "internal.h"
 +
++#define FF_DAV1D_VERSION_AT_LEAST(x,y) \
++    (DAV1D_API_VERSION_MAJOR > (x) || DAV1D_API_VERSION_MAJOR == (x) && DAV1D_API_VERSION_MINOR >= (y))
++
 +typedef struct Libdav1dContext {
 +    AVClass *class;
 +    Dav1dContext *c;
@@ -88,7 +107,10 @@ diff -Nur a/libavcodec/libdav1d.c b/libavcodec/libdav1d.c
 +
 +    Dav1dData data;
 +    int tile_threads;
++    int frame_threads;
 +    int apply_grain;
++    int operating_point;
++    int all_layers;
 +} Libdav1dContext;
 +
 +static const enum AVPixelFormat pix_fmt[][3] = {
@@ -96,6 +118,10 @@ diff -Nur a/libavcodec/libdav1d.c b/libavcodec/libdav1d.c
 +    [DAV1D_PIXEL_LAYOUT_I420] = { AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV420P10, AV_PIX_FMT_YUV420P12 },
 +    [DAV1D_PIXEL_LAYOUT_I422] = { AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUV422P10, AV_PIX_FMT_YUV422P12 },
 +    [DAV1D_PIXEL_LAYOUT_I444] = { AV_PIX_FMT_YUV444P, AV_PIX_FMT_YUV444P10, AV_PIX_FMT_YUV444P12 },
++};
++
++static const enum AVPixelFormat pix_fmt_rgb[3] = {
++    AV_PIX_FMT_GBRP, AV_PIX_FMT_GBRP10, AV_PIX_FMT_GBRP12,
 +};
 +
 +static void libdav1d_log_callback(void *opaque, const char *fmt, va_list vl)
@@ -109,12 +135,11 @@ diff -Nur a/libavcodec/libdav1d.c b/libavcodec/libdav1d.c
 +{
 +    Libdav1dContext *dav1d = cookie;
 +    enum AVPixelFormat format = pix_fmt[p->p.layout][p->seq_hdr->hbd];
-+    int ret, linesize[4], h = FFALIGN(p->p.h, 128);
++    int ret, linesize[4], h = FFALIGN(p->p.h, 128), w = FFALIGN(p->p.w, 128);
 +    uint8_t *aligned_ptr, *data[4];
 +    AVBufferRef *buf;
 +
-+    ret = av_image_fill_arrays(data, linesize, NULL, format, FFALIGN(p->p.w, 128),
-+                               h, DAV1D_PICTURE_ALIGNMENT);
++    ret = av_image_get_buffer_size(format, w, h, DAV1D_PICTURE_ALIGNMENT);
 +    if (ret < 0)
 +        return ret;
 +
@@ -137,7 +162,8 @@ diff -Nur a/libavcodec/libdav1d.c b/libavcodec/libdav1d.c
 +    // Use the extra DAV1D_PICTURE_ALIGNMENT padding bytes in the buffer to align it
 +    // if required.
 +    aligned_ptr = (uint8_t *)FFALIGN((uintptr_t)buf->data, DAV1D_PICTURE_ALIGNMENT);
-+    ret = av_image_fill_pointers(data, format, h, aligned_ptr, linesize);
++    ret = av_image_fill_arrays(data, linesize, aligned_ptr, format, w, h,
++                               DAV1D_PICTURE_ALIGNMENT);
 +    if (ret < 0) {
 +        av_buffer_unref(&buf);
 +        return ret;
@@ -164,6 +190,7 @@ diff -Nur a/libavcodec/libdav1d.c b/libavcodec/libdav1d.c
 +{
 +    Libdav1dContext *dav1d = c->priv_data;
 +    Dav1dSettings s;
++    int threads = (c->thread_count ? c->thread_count : av_cpu_count()) * 3 / 2;
 +    int res;
 +
 +    av_log(c, AV_LOG_INFO, "libdav1d %s\n", dav1d_version());
@@ -174,9 +201,32 @@ diff -Nur a/libavcodec/libdav1d.c b/libavcodec/libdav1d.c
 +    s.allocator.cookie = dav1d;
 +    s.allocator.alloc_picture_callback = libdav1d_picture_allocator;
 +    s.allocator.release_picture_callback = libdav1d_picture_release;
-+    s.n_tile_threads = dav1d->tile_threads;
-+    s.apply_grain = dav1d->apply_grain;
-+    s.n_frame_threads = FFMIN(c->thread_count ? c->thread_count : av_cpu_count(), DAV1D_MAX_FRAME_THREADS);
++    s.frame_size_limit = c->max_pixels;
++    if (dav1d->apply_grain >= 0)
++        s.apply_grain = dav1d->apply_grain;
++
++    s.all_layers = dav1d->all_layers;
++    if (dav1d->operating_point >= 0)
++        s.operating_point = dav1d->operating_point;
++
++#if FF_DAV1D_VERSION_AT_LEAST(6,0)
++    if (dav1d->frame_threads || dav1d->tile_threads)
++        s.n_threads = FFMAX(dav1d->frame_threads, dav1d->tile_threads);
++    else
++        s.n_threads = FFMIN(threads, DAV1D_MAX_THREADS);
++    s.max_frame_delay = (c->flags & AV_CODEC_FLAG_LOW_DELAY) ? 1 : s.n_threads;
++    av_log(c, AV_LOG_DEBUG, "Using %d threads, %d max_frame_delay\n",
++           s.n_threads, s.max_frame_delay);
++#else
++    s.n_tile_threads = dav1d->tile_threads
++                     ? dav1d->tile_threads
++                     : FFMIN(floor(sqrt(threads)), DAV1D_MAX_TILE_THREADS);
++    s.n_frame_threads = dav1d->frame_threads
++                      ? dav1d->frame_threads
++                      : FFMIN(ceil(threads / s.n_tile_threads), DAV1D_MAX_FRAME_THREADS);
++    av_log(c, AV_LOG_DEBUG, "Using %d frame threads, %d tile threads\n",
++           s.n_frame_threads, s.n_tile_threads);
++#endif
 +
 +    res = dav1d_open(&dav1d->c, &s);
 +    if (res < 0)
@@ -197,6 +247,11 @@ diff -Nur a/libavcodec/libdav1d.c b/libavcodec/libdav1d.c
 +    AVBufferRef *buf = opaque;
 +
 +    av_buffer_unref(&buf);
++}
++
++static void libdav1d_user_data_free(const uint8_t *data, void *opaque) {
++    av_assert0(data == opaque);
++    av_free(opaque);
 +}
 +
 +static int libdav1d_receive_frame(AVCodecContext *c, AVFrame *frame)
@@ -226,6 +281,23 @@ diff -Nur a/libavcodec/libdav1d.c b/libavcodec/libdav1d.c
 +
 +            pkt.buf = NULL;
 +            av_packet_unref(&pkt);
++
++            if (c->reordered_opaque != AV_NOPTS_VALUE) {
++                uint8_t *reordered_opaque = av_malloc(sizeof(c->reordered_opaque));
++                if (!reordered_opaque) {
++                    dav1d_data_unref(data);
++                    return AVERROR(ENOMEM);
++                }
++
++                memcpy(reordered_opaque, &c->reordered_opaque, sizeof(c->reordered_opaque));
++                res = dav1d_data_wrap_user_data(data, reordered_opaque,
++                                                libdav1d_user_data_free, reordered_opaque);
++                if (res < 0) {
++                    av_free(reordered_opaque);
++                    dav1d_data_unref(data);
++                    return res;
++                }
++            }
 +        }
 +    }
 +
@@ -247,7 +319,7 @@ diff -Nur a/libavcodec/libdav1d.c b/libavcodec/libdav1d.c
 +        return res;
 +    }
 +
-+    av_assert0(p->data[0] != NULL);
++    av_assert0(p->data[0] && p->allocator_data);
 +
 +    // This requires the custom allocator above
 +    frame->buf[0] = av_buffer_ref(p->allocator_data);
@@ -264,7 +336,8 @@ diff -Nur a/libavcodec/libdav1d.c b/libavcodec/libdav1d.c
 +    frame->linesize[2] = p->stride[1];
 +
 +    c->profile = p->seq_hdr->profile;
-+    frame->format = c->pix_fmt = pix_fmt[p->p.layout][p->seq_hdr->hbd];
++    c->level = ((p->seq_hdr->operating_points[0].major_level - 2) << 2)
++               | p->seq_hdr->operating_points[0].minor_level;
 +    frame->width = p->p.w;
 +    frame->height = p->p.h;
 +    if (c->width != p->p.w || c->height != p->p.h) {
@@ -272,6 +345,13 @@ diff -Nur a/libavcodec/libdav1d.c b/libavcodec/libdav1d.c
 +        if (res < 0)
 +            goto fail;
 +    }
++
++    av_reduce(&frame->sample_aspect_ratio.num,
++              &frame->sample_aspect_ratio.den,
++              frame->height * (int64_t)p->frame_hdr->render_width,
++              frame->width  * (int64_t)p->frame_hdr->render_height,
++              INT_MAX);
++    ff_set_sar(c, frame->sample_aspect_ratio);
 +
 +    switch (p->seq_hdr->chr) {
 +    case DAV1D_CHR_VERTICAL:
@@ -286,8 +366,28 @@ diff -Nur a/libavcodec/libdav1d.c b/libavcodec/libdav1d.c
 +    frame->color_trc = c->color_trc = (enum AVColorTransferCharacteristic) p->seq_hdr->trc;
 +    frame->color_range = c->color_range = p->seq_hdr->color_range ? AVCOL_RANGE_JPEG : AVCOL_RANGE_MPEG;
 +
++    if (p->p.layout == DAV1D_PIXEL_LAYOUT_I444 &&
++        p->seq_hdr->mtrx == DAV1D_MC_IDENTITY &&
++        p->seq_hdr->pri  == DAV1D_COLOR_PRI_BT709 &&
++        p->seq_hdr->trc  == DAV1D_TRC_SRGB)
++        frame->format = c->pix_fmt = pix_fmt_rgb[p->seq_hdr->hbd];
++    else
++        frame->format = c->pix_fmt = pix_fmt[p->p.layout][p->seq_hdr->hbd];
++
++    if (p->m.user_data.data)
++        memcpy(&frame->reordered_opaque, p->m.user_data.data, sizeof(frame->reordered_opaque));
++    else
++        frame->reordered_opaque = AV_NOPTS_VALUE;
++
++    if (p->seq_hdr->num_units_in_tick && p->seq_hdr->time_scale) {
++        av_reduce(&c->framerate.den, &c->framerate.num,
++                  p->seq_hdr->num_units_in_tick, p->seq_hdr->time_scale, INT_MAX);
++        if (p->seq_hdr->equal_picture_interval)
++            c->ticks_per_frame = p->seq_hdr->num_ticks_per_picture;
++    }
++
 +    // match timestamps and packet size
-+    frame->pts = frame->best_effort_timestamp = p->m.timestamp;
++    frame->pts = p->m.timestamp;
 +#if FF_API_PKT_PTS
 +FF_DISABLE_DEPRECATION_WARNINGS
 +    frame->pkt_pts = p->m.timestamp;
@@ -364,11 +464,21 @@ diff -Nur a/libavcodec/libdav1d.c b/libavcodec/libdav1d.c
 +    return 0;
 +}
 +
++#ifndef DAV1D_MAX_FRAME_THREADS
++#define DAV1D_MAX_FRAME_THREADS DAV1D_MAX_THREADS
++#endif
++#ifndef DAV1D_MAX_TILE_THREADS
++#define DAV1D_MAX_TILE_THREADS DAV1D_MAX_THREADS
++#endif
++
 +#define OFFSET(x) offsetof(Libdav1dContext, x)
 +#define VD AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_DECODING_PARAM
 +static const AVOption libdav1d_options[] = {
-+    { "tilethreads", "Tile threads", OFFSET(tile_threads), AV_OPT_TYPE_INT, { .i64 = 1 }, 1, DAV1D_MAX_TILE_THREADS, VD },
-+    { "filmgrain", "Apply Film Grain", OFFSET(apply_grain), AV_OPT_TYPE_BOOL, { .i64 = 1 }, 0, 1, VD },
++    { "tilethreads", "Tile threads", OFFSET(tile_threads), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, DAV1D_MAX_TILE_THREADS, VD },
++    { "framethreads", "Frame threads", OFFSET(frame_threads), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, DAV1D_MAX_FRAME_THREADS, VD },
++    { "filmgrain", "Apply Film Grain", OFFSET(apply_grain), AV_OPT_TYPE_BOOL, { .i64 = -1 }, -1, 1, VD },
++    { "oppoint",  "Select an operating point of the scalable bitstream", OFFSET(operating_point), AV_OPT_TYPE_INT, { .i64 = -1 }, -1, 31, VD },
++    { "alllayers", "Output all spatial layers", OFFSET(all_layers), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, VD },
 +    { NULL }
 +};
 +
@@ -394,14 +504,3 @@ diff -Nur a/libavcodec/libdav1d.c b/libavcodec/libdav1d.c
 +    .priv_class     = &libdav1d_class,
 +    .wrapper_name   = "libdav1d",
 +};
-diff -Nur a/libavcodec/Makefile b/libavcodec/Makefile
---- a/libavcodec/Makefile	2018-11-23 12:03:27.041287929 -0500
-+++ b/libavcodec/Makefile	2018-11-23 12:10:28.676717867 -0500
-@@ -954,6 +954,7 @@
- OBJS-$(CONFIG_LIBCELT_DECODER)            += libcelt_dec.o
- OBJS-$(CONFIG_LIBCODEC2_DECODER)          += libcodec2.o codec2utils.o
- OBJS-$(CONFIG_LIBCODEC2_ENCODER)          += libcodec2.o codec2utils.o
-+OBJS-$(CONFIG_LIBDAV1D_DECODER)           += libdav1d.o
- OBJS-$(CONFIG_LIBFDK_AAC_DECODER)         += libfdk-aacdec.o
- OBJS-$(CONFIG_LIBFDK_AAC_ENCODER)         += libfdk-aacenc.o
- OBJS-$(CONFIG_LIBGSM_DECODER)             += libgsmdec.o
