@@ -1,10 +1,6 @@
 #!/bin/sh
 # Create image for supported devices
 
-# Mecool/Videostrong KI/KII-Pro/Plus series (gxbb, gxl)
-# Specs: Amlogic S905x SoC, 1 or 2 GB RAM, 8 GB or more eMMC, multiple Ethernet and WiFi chips.
-PROJECT=S905 DEVICE=K_Series ARCH=arm make image -j$(nproc)
-
 # WeTek Play 2 (gxbb_p200_2G_wetek_play_2)
 # Specs: Amlogic S905-H SoC, 2 GB RAM, 8 GB eMMC, 1 Gbps Ethernet (RTL8211F), AP6330 WiFi.
 PROJECT=S905 DEVICE=WeTek_Play_2 ARCH=arm make amlpkg -j$(nproc)
