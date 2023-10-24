@@ -5,5 +5,6 @@
     <setting id="AML_VNC_PORT" type="number" label="30001" default="5900" />
     <setting id="AML_VNC_AUTH" type="bool" label="30002" default="true" />
     <setting id="AML_VNC_PWD" type="text" label="30003" default="libreelec" enable="eq(-1,true)" />
+    <setting id="AML_VNC_DELAY" type="bool" label="30004" default="false" />
   </category>
 </settings>
