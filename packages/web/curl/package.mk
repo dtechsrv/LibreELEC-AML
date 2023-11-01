@@ -3,12 +3,12 @@
 # Copyright (C) 2018-present Team LibreELEC (https://libreelec.tv)
 
 PKG_NAME="curl"
-PKG_VERSION="7.66.0"
-PKG_SHA256="dbb48088193016d079b97c5c3efde8efa56ada2ebf336e8a97d04eb8e2ed98c1"
+PKG_VERSION="8.4.0"
+PKG_SHA256="16c62a9c4af0f703d28bda6d7bbf37ba47055ad3414d70dec63e2e6336f2a82d"
 PKG_LICENSE="MIT"
-PKG_SITE="http://curl.haxx.se"
-PKG_URL="http://curl.haxx.se/download/$PKG_NAME-$PKG_VERSION.tar.xz"
-PKG_DEPENDS_TARGET="toolchain zlib openssl rtmpdump nghttp2"
+PKG_SITE="https://curl.haxx.se"
+PKG_URL="https://curl.haxx.se/download/${PKG_NAME}-${PKG_VERSION}.tar.xz"
+PKG_DEPENDS_TARGET="toolchain zlib openssl rtmpdump libidn2 nghttp2"
 PKG_LONGDESC="Client and library for (HTTP, HTTPS, FTP, ...) transfers."
 PKG_TOOLCHAIN="configure"
 
@@ -35,6 +35,7 @@ PKG_CONFIGURE_OPTS_TARGET="ac_cv_lib_rtmp_RTMP_Init=yes \
                            --disable-smb \
                            --disable-smtp \
                            --disable-gopher \
+                           --disable-mqtt \
                            --disable-manual \
                            --enable-libgcc \
                            --enable-ipv6 \
@@ -52,17 +53,18 @@ PKG_CONFIGURE_OPTS_TARGET="ac_cv_lib_rtmp_RTMP_Init=yes \
                            --without-spnego \
                            --without-gssapi \
                            --with-zlib \
+                           --without-brotli \
+                           --without-zstd \
                            --without-egd-socket \
                            --enable-thread \
                            --with-random=/dev/urandom \
                            --without-gnutls \
                            --with-ssl \
-                           --without-polarssl \
+                           --without-mbedtls \
                            --without-nss \
                            --with-ca-bundle=/run/libreelec/cacert.pem \
                            --without-ca-path \
                            --without-libpsl \
-                           --without-libmetalink \
                            --without-libssh2 \
                            --with-librtmp=$SYSROOT_PREFIX/usr \
                            --without-libidn \
@@ -75,8 +77,10 @@ pre_configure_target() {
 }
 
 post_makeinstall_target() {
-  rm -rf $INSTALL/usr/share/zsh
-  rm -rf $INSTALL/usr/bin/curl-config
+  rm -rf ${INSTALL}/usr/share/zsh
 
-  sed -e "s:\(['= ]\)/usr:\\1$SYSROOT_PREFIX/usr:g" -i $SYSROOT_PREFIX/usr/bin/curl-config
+  rm -rf ${INSTALL}/usr/bin/${PKG_NAME}-config
+  cp ${PKG_NAME}-config ${TOOLCHAIN}/bin
+  sed -e "s:\(['= ]\)/usr:\\1${PKG_ORIG_SYSROOT_PREFIX}/usr:g" -i ${TOOLCHAIN}/bin/${PKG_NAME}-config
+  chmod +x ${TOOLCHAIN}/bin/${PKG_NAME}-config
 }
