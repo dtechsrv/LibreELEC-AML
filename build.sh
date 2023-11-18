@@ -25,8 +25,16 @@ PROJECT=S8X2 DEVICE=M8S-Plus ARCH=arm make amlpkg -j$(nproc)
 # Specs: Amlogic S812-H SoC, 2 GB RAM, 8 GB eMMC, 1 Gbps Ethernet, AP6330 WiFi.
 PROJECT=S8X2 DEVICE=WeTek_Core ARCH=arm make amlpkg -j$(nproc)
 
-# Generic image for S805 boxes, especially MXQ "all black" boxes: HD18Q (m8b_m201_1G), m201d (m8b_m201C_512M)
-# Specs: Amlogic S805 SoC, 1 GB or 512 MB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet, Realtek WiFi.
+# MXQ HD18Q "all black" boxes (m8b_m201_v1)
+# Specs: Amlogic S805 SoC, 1 GB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet, Broadcom or Realtek WiFi.
+PROJECT=S805 DEVICE=HD18Q ARCH=arm make amlota -j$(nproc)
+
+# MXQ m201d with 512 MB RAM only (m8b_m201C_512M)
+# Specs: Amlogic S805 SoC, 1 GB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet, Broadcom or Realtek WiFi.
+PROJECT=S805 DEVICE=m201d ARCH=arm make amlota -j$(nproc)
+
+# Generic image for S805 boxes, with multi-dtb (m8b_m201_1G, m8b_m201C_512M)
+# Specs: Amlogic S805 SoC, 1 GB or 512 MB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet, Broadcom or Realtek WiFi.
 PROJECT=S805 DEVICE=Generic_S805 ARCH=arm make amlota -j$(nproc)
 
 # WeTek Play (AML8726-MX, meson6 without dt-id)
