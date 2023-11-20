@@ -2,15 +2,15 @@
 # Create image for 3rdParty devices
 
 # Universal build for multiple k200-based S802 TV boxes
-# Specs: Amlogic S802 SoC, 2 GB RAM, 10/100 Mbps LAN, AP6330 or Realtek WiFi
-PROJECT=S8X2 DEVICE=k200-AP6330_2G ARCH=arm make image -j$(nproc)
+# Specs: Amlogic S802 SoC, 2 GB RAM, 10/100 Mbps LAN, Broadcom or Realtek WiFi
+PROJECT=S8X2 DEVICE=Universal_k200_2G ARCH=arm make image -j$(nproc)
 
 # Universal build for multiple n200-based S812 TV boxes
-# Specs: Amlogic S812 SoC, 2 GB RAM, 10/100 Mbps LAN, AP6330 or Realtek WiFi
-PROJECT=S8X2 DEVICE=n200-AP6330_2G ARCH=arm make image -j$(nproc)
+# Specs: Amlogic S812 SoC, 2 GB RAM, 10/100 Mbps LAN, Broadcom or Realtek WiFi
+PROJECT=S8X2 DEVICE=Universal_n200_2G ARCH=arm make image -j$(nproc)
 
 # MXIII
-# Specs: Amlogic S802 SoC, 1 GB RAM, 10/100 Mbps LAN, AP6330 WiFi
+# Specs: Amlogic S802 SoC, 1 GB RAM, 10/100 Mbps LAN, AP6330/AP6181 WiFi
 PROJECT=S8X2 DEVICE=MXIII-1G ARCH=arm make image -j$(nproc)
 
 # MXIII Plus / G
