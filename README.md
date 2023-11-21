@@ -22,22 +22,24 @@ The same copyright applies to the modifications I made as to the original projec
 
 # Currently supported devices
 
-- **Mecool/Videostrong KI/KII-Pro/Plus series *(gxbb\*, gxl\*)*:**<br />
-Amlogic S905(-H) or S905D SoC, 1 or 2 GB RAM, 8 GB or more eMMC, multiple Ethernet and WiFi chips,
 - **WeTek Play 2 *(gxbb_p200_2G_wetek_play_2)*:**<br />
 Amlogic S905-H SoC, 2 GB RAM, 8 GB eMMC, 1 Gbps Ethernet (RTL8211F), AP6330 WiFi,
 - **WeTek Hub *(gxbb_p200_1G_wetek_hub)*:**<br />
-Amlogic S905-H SoC, 1 GB RAM, 8 GB eMMC, 1 Gbps Ethernet (RTL8211F), AP6330 WiFi,
+Amlogic S905-H SoC, 1 GB RAM, 8 GB eMMC, 1 Gbps Ethernet (RTL8211F), AP6255 WiFi,
 - **Generic image for S905 *(gxbb\*)* and S905X/W/D boxes *(gxl\*)*:**<br />
 Amlogic S905x SoC, 1 or 2 GB RAM, 8 GB or more eMMC, multiple Ethernet and WiFi chips,
 - **Generic image for S912 boxes *(gxm\*)*:**<br />
 Amlogic S912 SoC, 2 or 3 GB RAM, 8 GB or more eMMC, multiple Ethernet and WiFi chips,
 - **OTT M8S+ and Videostrong KII *(m8m2_KII)*:**<br />
-Amlogic S812 SoC, 2 GB RAM, 8 GB eMMC, 1 Gbps Ethernet (RTL8211F), AP6330/BCM4335B0 WiFi.
+Amlogic S812 SoC, 2 GB RAM, 8 GB eMMC, 1 Gbps Ethernet (RTL8211F), AP6330/BCM4335B0 WiFi,
 - **WeTek Core *(m8m2_n200C_2G)*:**<br />
 Amlogic S812-H SoC, 2 GB RAM, 8 GB eMMC, 1 Gbps Ethernet (RTL8211F), AP6330 WiFi,
-- **Generic image for S805 boxes, MXQ "all black" boxes: HD18Q *(m8b_m201_1G)*, m201d *(m8b_m201C_512M)*:**<br />
-Amlogic S805 SoC, 1 GB or 512 MB RAM, 8 GB NAND, 10/100 Mbps Ethernet, Realtek WiFi,
+- **HD18Q, MXQ "all black" versions with 1 GB RAM *(m8b_m201_v1)*:**<br />
+Amlogic S805 SoC, 1 GB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet, Broadcom or Realtek WiFi,
+- **m201d, MXQ "all black" versions with 512 MB RAM only *(m8b_m201C_512M)*:**<br />
+Amlogic S805 SoC, 512 MB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet, Broadcom or Realtek WiFi,
+- **Generic image for S805 boxes, with multi-dtb *(m8b_m201_1G, m8b_m201C_512M)*:**<br />
+Amlogic S805 SoC, 1 GB or 512 MB RAM, 8 GB NAND, 10/100 Mbps Ethernet, Broadcom or Realtek WiFi,
 - **WeTek Play *(AML8726-MX, meson6 without dt-id)*:**<br />
 Amlogic M6 SoC, 1 GB RAM, 4 GB NAND, 10/100 Mbps Ethernet (SMSC LAN8720A), AP6212 WiFi.
 
