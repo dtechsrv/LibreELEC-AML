@@ -3,8 +3,8 @@
 # Copyright (C) 2021-present Gabor Dee (dee.gabor@gmail.com)
 
 PKG_NAME="aml-vnc"
-PKG_VERSION="f87a8f41aa6c6463a99ec3be9aebaff3cf31c5ee"
-PKG_SHA256="dbec8fbedc956b8730414654da4f90b035c1cb67e2320e5c572b1343fb029e36"
+PKG_VERSION="7466579c622dd1666b716ef682323c0c3b3bca62"
+PKG_SHA256="c67a8d7c51f588b5cd903e2ba3a53ca8e5d5642186c00ac8062cb002b946c42d"
 PKG_REV="107"
 PKG_ARCH="arm aarch64"
 PKG_LICENSE="GPL"
