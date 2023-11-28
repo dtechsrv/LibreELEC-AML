@@ -1,3 +1,7 @@
+108
+- Reformat help message and add missing arguments
+- Make IPv6 listen port consistent with IPv4
+
 107
 - Fix resolution issue when used other than native
 - Display hostname instead of static distroname
