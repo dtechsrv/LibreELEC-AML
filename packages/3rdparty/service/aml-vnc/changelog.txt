@@ -1,3 +1,8 @@
+109
+- Replace package source git repository and update to 1.0.1
+- Remove service startup delay option and fix it to 5 seconds
+- Rework start and service scripts
+
 108
 - Reformat help message and add missing arguments
 - Make IPv6 listen port consistent with IPv4

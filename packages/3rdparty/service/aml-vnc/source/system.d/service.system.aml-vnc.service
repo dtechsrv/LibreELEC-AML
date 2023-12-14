@@ -1,14 +1,15 @@
 [Unit]
-Description=Amlogic VNC server
-After=kodi.service network-online.target
-Requires=kodi.service network-online.target
+Description = Amlogic VNC server
+After = network-online.target
+Requires = kodi.service
 
 [Service]
-ExecStart=/bin/sh -c "exec sh /storage/.kodi/addons/service.system.aml-vnc/bin/aml-vnc.start"
-TimeoutStopSec=1
-Restart=always
-RestartSec=2
-StartLimitInterval=0
+Type = simple
+ExecStartPre = /bin/sleep 5
+ExecStart = /bin/sh -c "exec sh /storage/.kodi/addons/service.system.aml-vnc/bin/aml-vnc.start"
+TimeoutStopSec = 20
+Restart = always
+RestartSec = 0
 
 [Install]
-WantedBy=kodi.target
+WantedBy = kodi.target

@@ -2,5 +2,4 @@
     <setting id="AML_VNC_PORT" value="5900" />
     <setting id="AML_VNC_AUTH" value="true" />
     <setting id="AML_VNC_PWD" value="libreelec" />
-    <setting id="AML_VNC_DELAY" value="false" />
 </settings>

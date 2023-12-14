@@ -20,7 +20,3 @@ msgstr ""
 msgctxt "#30003"
 msgid "Password"
 msgstr ""
-
-msgctxt "#30004"
-msgid "Delayed start (10 seconds)"
-msgstr ""
