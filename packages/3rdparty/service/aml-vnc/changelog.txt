@@ -1,3 +1,8 @@
+110
+- Update aml-vnc-server to 1.1.0
+- Modify the service start script to be compatible with the new binary
+- Add Hungarian translation of the add-on
+
 109
 - Replace package source git repository and update to 1.0.1
 - Remove service startup delay option and fix it to 5 seconds

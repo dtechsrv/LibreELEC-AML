@@ -8,8 +8,16 @@
 
 oe_setup_addon service.system.aml-vnc
 
-if [ ${AML_VNC_AUTH} == "true" ] ; then
-  exec aml-vnc -P "${AML_VNC_PORT}" -p "${AML_VNC_PWD}" &> ${ADDON_HOME}/service.log
-else
-  exec aml-vnc -P "${AML_VNC_PORT}" &> ${ADDON_HOME}/service.log
+if [ ${AML_VNC_PORT} != "5900" ] ; then
+  export VNC_PORT="${AML_VNC_PORT}"
 fi
+
+if [ ${AML_VNC_AUTH} == "true" ] ; then
+  export VNC_PASSWORD="${AML_VNC_PWD}"
+fi
+
+if [ ${AML_VNC_STAT} == "true" ] ; then
+  export VNC_SERVERNAME="${AML_VNC_NAME}"
+fi
+
+exec aml-vnc &> ${ADDON_HOME}/service.log
