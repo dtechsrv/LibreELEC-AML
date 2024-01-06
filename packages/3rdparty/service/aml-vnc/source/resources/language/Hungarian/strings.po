@@ -16,7 +16,7 @@ msgstr "Szerver beállítások"
 
 msgctxt "#30001"
 msgid "Port"
-msgstr "Port"
+msgstr ""
 
 msgctxt "#30002"
 msgid "Use authentication"
