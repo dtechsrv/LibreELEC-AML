@@ -1,0 +1,114 @@
+diff --git a/xbmc/utils/EGLUtils.cpp b/xbmc/utils/EGLUtils.cpp
+index 25d9398..06f5a97 100644
+--- a/xbmc/utils/EGLUtils.cpp
++++ b/xbmc/utils/EGLUtils.cpp
+@@ -97,41 +97,11 @@ std::map<EGLenum, const char*> eglErrors =
+ 
+ std::map<EGLint, const char*> eglErrorType =
+ {
+-//! @todo remove when Raspberry Pi updates their EGL headers
+-#if !defined(TARGET_RASPBERRY_PI)
+-  X(EGL_DEBUG_MSG_CRITICAL_KHR),
+-  X(EGL_DEBUG_MSG_ERROR_KHR),
+-  X(EGL_DEBUG_MSG_WARN_KHR),
+-  X(EGL_DEBUG_MSG_INFO_KHR),
+-#endif
+ };
+ #undef X
+ 
+ } // namespace
+ 
+-//! @todo remove when Raspberry Pi updates their EGL headers
+-#if !defined(TARGET_RASPBERRY_PI)
+-void EglErrorCallback(EGLenum error, const char *command, EGLint messageType, EGLLabelKHR threadLabel, EGLLabelKHR objectLabel, const char* message)
+-{
+-  std::string errorStr;
+-  std::string typeStr;
+-
+-  auto eglError = eglErrors.find(error);
+-  if (eglError != eglErrors.end())
+-  {
+-    errorStr = eglError->second;
+-  }
+-
+-  auto eglType = eglErrorType.find(messageType);
+-  if (eglType != eglErrorType.end())
+-  {
+-    typeStr = eglType->second;
+-  }
+-
+-  CLog::Log(LOGDEBUG, "EGL Debugging:\nError: {}\nCommand: {}\nType: {}\nMessage: {}", errorStr, command, typeStr, message);
+-}
+-#endif
+-
+ std::set<std::string> CEGLUtils::GetClientExtensions()
+ {
+   const char* extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+@@ -189,22 +159,6 @@ CEGLContextUtils::CEGLContextUtils()
+ CEGLContextUtils::CEGLContextUtils(EGLenum platform, std::string const& platformExtension)
+ : m_platform{platform}
+ {
+-//! @todo remove when Raspberry Pi updates their EGL headers
+-#if !defined(TARGET_RASPBERRY_PI)
+-  if (CEGLUtils::HasClientExtension("EGL_KHR_debug"))
+-  {
+-    auto eglDebugMessageControl = CEGLUtils::GetRequiredProcAddress<PFNEGLDEBUGMESSAGECONTROLKHRPROC>("eglDebugMessageControlKHR");
+-
+-    EGLAttrib eglDebugAttribs[] = {EGL_DEBUG_MSG_CRITICAL_KHR, EGL_TRUE,
+-                                   EGL_DEBUG_MSG_ERROR_KHR, EGL_TRUE,
+-                                   EGL_DEBUG_MSG_WARN_KHR, EGL_TRUE,
+-                                   EGL_DEBUG_MSG_INFO_KHR, EGL_TRUE,
+-                                   EGL_NONE};
+-
+-    eglDebugMessageControl(EglErrorCallback, eglDebugAttribs);
+-  }
+-#endif
+-
+   m_platformSupported = CEGLUtils::HasClientExtension("EGL_EXT_platform_base") && CEGLUtils::HasClientExtension(platformExtension);
+ }
+ 
+diff --git a/xbmc/utils/GLUtils.cpp b/xbmc/utils/GLUtils.cpp
+index e381fd6..e59f1b9 100644
+--- a/xbmc/utils/GLUtils.cpp
++++ b/xbmc/utils/GLUtils.cpp
+@@ -41,40 +41,14 @@ std::map<GLenum, const char*> glErrors =
+ 
+ std::map<GLenum, const char*> glErrorSource =
+ {
+-//! @todo remove TARGET_RASPBERRY_PI when Raspberry Pi updates their GL headers
+-#if defined(HAS_GLES) && defined(TARGET_LINUX) && !defined(TARGET_RASPBERRY_PI)
+-  X(GL_DEBUG_SOURCE_API_KHR),
+-  X(GL_DEBUG_SOURCE_WINDOW_SYSTEM_KHR),
+-  X(GL_DEBUG_SOURCE_SHADER_COMPILER_KHR),
+-  X(GL_DEBUG_SOURCE_THIRD_PARTY_KHR),
+-  X(GL_DEBUG_SOURCE_APPLICATION_KHR),
+-  X(GL_DEBUG_SOURCE_OTHER_KHR),
+-#endif
+ };
+ 
+ std::map<GLenum, const char*> glErrorType =
+ {
+-//! @todo remove TARGET_RASPBERRY_PI when Raspberry Pi updates their GL headers
+-#if defined(HAS_GLES) && defined(TARGET_LINUX) && !defined(TARGET_RASPBERRY_PI)
+-  X(GL_DEBUG_TYPE_ERROR_KHR),
+-  X(GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_KHR),
+-  X(GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_KHR),
+-  X(GL_DEBUG_TYPE_PORTABILITY_KHR),
+-  X(GL_DEBUG_TYPE_PERFORMANCE_KHR),
+-  X(GL_DEBUG_TYPE_OTHER_KHR),
+-  X(GL_DEBUG_TYPE_MARKER_KHR),
+-#endif
+ };
+ 
+ std::map<GLenum, const char*> glErrorSeverity =
+ {
+-//! @todo remove TARGET_RASPBERRY_PI when Raspberry Pi updates their GL headers
+-#if defined(HAS_GLES) && defined(TARGET_LINUX) && !defined(TARGET_RASPBERRY_PI)
+-  X(GL_DEBUG_SEVERITY_HIGH_KHR),
+-  X(GL_DEBUG_SEVERITY_MEDIUM_KHR),
+-  X(GL_DEBUG_SEVERITY_LOW_KHR),
+-  X(GL_DEBUG_SEVERITY_NOTIFICATION_KHR),
+-#endif
+ };
+ #undef X
+ 
