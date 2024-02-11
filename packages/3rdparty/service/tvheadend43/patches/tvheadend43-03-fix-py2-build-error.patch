@@ -1,0 +1,17 @@
+diff --git a/support/mkbundle b/support/mkbundle
+index 43d503b..170ef9a 100755
+--- a/support/mkbundle
++++ b/support/mkbundle
+@@ -45,10 +45,10 @@ if opts.deps:
+ # PNGquant
+ pngquant_bin = '/usr/bin/pngquant'
+ if opts.pngquant:
+-  from shutil import which
++  import distutils.spawn
+   import subprocess
+   import time
+-  which('pngquant')
++  distutils.spawn.find_executable('pngquant')
+ 
+ # Build hierarchy
+ root  = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), '..'))
