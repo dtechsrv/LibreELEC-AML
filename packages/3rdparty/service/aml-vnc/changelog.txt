@@ -1,3 +1,6 @@
+112
+- Update aml-vnc-server to 1.2.0
+
 111
 - Fix hash to patched 1.1.0 package
 - Add missing values to the default settings xml
