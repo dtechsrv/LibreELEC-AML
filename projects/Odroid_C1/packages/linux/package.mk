@@ -17,8 +17,8 @@ PKG_PATCH_DIRS="$LINUX"
 
 case "$LINUX" in
   amlogic-3.10)
-    PKG_VERSION="3eeaf4fb99c132b35a4e3ad416b0eeac1c8bc5ac"
-    PKG_SHA256="aef0d25b87a630b847ef958db8ebef4737e4ec3bf43315f87f8259a4500c7f27"
+    PKG_VERSION="68b363baaec1df9f543b4df4763e1b13b4b8591f"
+    PKG_SHA256="25dc20699086da3336a2ef4530ac9bfaad83387fa4055ae19c80bd53bcb433ea"
     PKG_URL="https://github.com/wrxtasy/linux-C1/archive/$PKG_VERSION.tar.gz"
     PKG_SOURCE_NAME="linux-$LINUX-$PKG_VERSION.tar.gz"
     PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET aml-dtbtools:host u-boot-tools-aml:host"

@@ -1,0 +1,257 @@
+From 6a3ec2391a8316e79d6af0f70f2b9389a9c61c35 Mon Sep 17 00:00:00 2001
+From: ckkim <ckkim@hardkernel.com>
+Date: Tue, 15 Mar 2016 17:14:32 +0900
+Subject: [PATCH] odroid-c1:HiFi-Shield sound_card driver as a module
+
+Change-Id: I12ccd21a9f4588ba216fdd4fe008b62a26f81058
+---
+ arch/arm/configs/odroidc_defconfig |  3 +-
+ sound/soc/aml/m8/Kconfig           |  6 +++-
+ sound/soc/aml/m8/Makefile          |  4 +--
+ sound/soc/aml/m8/odroid_audio.h    | 18 +++++-----
+ sound/soc/aml/m8/odroid_dac.c      | 57 +++++-------------------------
+ sound/soc/codecs/pcm5102.c         | 15 +++-----
+ 6 files changed, 31 insertions(+), 72 deletions(-)
+ mode change 100755 => 100644 sound/soc/aml/m8/Makefile
+
+diff --git a/arch/arm/configs/odroidc_defconfig b/arch/arm/configs/odroidc_defconfig
+index ae3f74147329fe..cbfdc56d4debc0 100644
+--- a/arch/arm/configs/odroidc_defconfig
++++ b/arch/arm/configs/odroidc_defconfig
+@@ -3322,12 +3322,13 @@ CONFIG_SND_SOC=y
+ CONFIG_SND_AML_M8_SOC=y
+ # CONFIG_SND_AML_M_DUMMY_CODEC is not set
+ CONFIG_SND_AML_M8=y
++CONFIG_SND_ODROID_HIFI1=m
+ # CONFIG_SND_AML_M8_PCM is not set
+ CONFIG_SND_SOC_I2C_AND_SPI=y
+ # CONFIG_SND_SOC_ALL_CODECS is not set
+ CONFIG_SND_SOC_AML_M8_CODEC=y
+ CONFIG_SND_SOC_DUMMY_CODEC=y
+-CONFIG_SND_SOC_PCM5102=y
++CONFIG_SND_SOC_PCM5102=m
+ # CONFIG_SND_SIMPLE_CARD is not set
+ # CONFIG_SOUND_PRIME is not set
+ CONFIG_AC97_BUS=m
+diff --git a/sound/soc/aml/m8/Kconfig b/sound/soc/aml/m8/Kconfig
+index 559f865e9fd737..ba9fb33eac6c57 100644
+--- a/sound/soc/aml/m8/Kconfig
++++ b/sound/soc/aml/m8/Kconfig
+@@ -6,9 +6,13 @@ config SND_AML_M8
+ 	tristate "AML-SND-M8 Board"
+ 	depends on SND_AML_M8_SOC && SWITCH
+ 	select SND_SOC_AML_M8_CODEC if SND_AML_M8
+-	select SND_SOC_PCM5102 if MACH_MESON8B_ODROIDC
+     select SND_SOC_DUMMY_CODEC
+ 
++config SND_ODROID_HIFI1
++	tristate "ODROID HiFi-Shield1(pcm5102) Support"
++	depends on SND_AML_M8_SOC && MACH_MESON8B_ODROIDC
++	select SND_SOC_PCM5102
++
+ config SND_AML_M8_PCM
+ 	tristate "M8 evaluation board with PCM2BT"
+ 	depends on SND_AML_M8_SOC
+diff --git a/sound/soc/aml/m8/Makefile b/sound/soc/aml/m8/Makefile
+old mode 100755
+new mode 100644
+index 543b9e796950a3..99d788fabda621
+--- a/sound/soc/aml/m8/Makefile
++++ b/sound/soc/aml/m8/Makefile
+@@ -24,11 +24,11 @@ obj-$(CONFIG_SND_AML_M8_SOC) += snd-soc-aml-spdif-dai.o
+ snd-soc-aml-spdif-codec-objs := aml_spdif_codec.o
+ #obj-$(CONFIG_SND_SOC_AML_SPDIF_CODEC) += snd-soc-aml-spdif-codec.o
+ obj-$(CONFIG_SND_AML_M8_SOC) += snd-soc-aml-spdif-codec.o
+-#AML M8 Machine support
++#ODROID Machine support
+ snd-soc-odroid-hdmi-objs := odroid_hdmi.o
+ snd-soc-odroid-dac-objs := odroid_dac.o
+ obj-$(CONFIG_SND_AML_M8_SOC) += snd-soc-odroid-hdmi.o
+-obj-$(CONFIG_SND_AML_M8_SOC) += snd-soc-odroid-dac.o
++obj-$(CONFIG_SND_ODROID_HIFI1) += snd-soc-odroid-dac.o
+ 
+ #AML M series with dummy codec support
+ snd-soc-aml-m-dummy-objs := aml_m_dummy.o
+diff --git a/sound/soc/aml/m8/odroid_audio.h b/sound/soc/aml/m8/odroid_audio.h
+index 24a336dee61154..42e35c52d15683 100644
+--- a/sound/soc/aml/m8/odroid_audio.h
++++ b/sound/soc/aml/m8/odroid_audio.h
+@@ -2,20 +2,18 @@
+ #define ODROID_AUDIO_H
+ 
+ struct odroid_audio_private_data {
+-    int bias_level;
+-    int clock_en;
+-	bool det_pol_inv;
+-    int gpio_i2s_m;
+-    int gpio_i2s_s;
+-    int gpio_i2s_r;
+-    int gpio_i2s_o;
++	int bias_level;
++	int clock_en;
++	int gpio_i2s_m;
++	int gpio_i2s_s;
++	int gpio_i2s_r;
++	int gpio_i2s_o;
++	const char *pinctrl_name;
+ 	struct pinctrl *pin_ctl;
+-
+-    void* data;
++	void* data;
+ };
+ 
+ void aml_spdif_pinmux_init(struct device *pdev);
+ 
+ void aml_spdif_pinmux_deinit(struct device *pdev);
+ #endif
+-
+diff --git a/sound/soc/aml/m8/odroid_dac.c b/sound/soc/aml/m8/odroid_dac.c
+index dfcefc5ecad866..eac0c6f8db8bb1 100644
+--- a/sound/soc/aml/m8/odroid_dac.c
++++ b/sound/soc/aml/m8/odroid_dac.c
+@@ -56,14 +56,6 @@
+ 
+ #define DRV_NAME "odroid_snd"
+ 
+-static int enable_audiodac = 0;
+-static int __init setup_audiodac(char *line)
+-{
+-    enable_audiodac = 1;
+-    return 0;
+-}
+-early_param("enabledac", setup_audiodac);
+-
+ static int odroid_hw_params(struct snd_pcm_substream *substream,
+     struct snd_pcm_hw_params *params)
+ {
+@@ -233,41 +225,12 @@ static struct snd_soc_card aml_snd_soc_card = {
+ #endif
+ };
+ 
+-static void i2s_pinmux_init(struct snd_soc_card *card)
+-{
+-	struct odroid_audio_private_data *p_odroid_audio;
+-	p_odroid_audio = snd_soc_card_get_drvdata(card);
+-    p_odroid_audio->pin_ctl = devm_pinctrl_get_select(card->dev, "odroid_i2s");
+-
+-#ifndef CONFIG_MESON_TRUSTZONE
+-    //aml_write_reg32(P_AO_SECURE_REG1,0x00000000);
+-    aml_clr_reg32_mask(P_AO_SECURE_REG1, ((1<<8) | (1<<1)));
+-#else
+-    /* Secure reg can only be accessed in Secure World if TrustZone enabled. */
+-    //meson_secure_reg_write(P_AO_SECURE_REG1, 0x00000000);
+-	meson_secure_reg_write(P_AO_SECURE_REG1, meson_secure_reg_read(P_AO_SECURE_REG1) & (~((1<<8) | (1<<1))));
+-#endif /* CONFIG_MESON_TRUSTZONE */
+-	printk(KERN_DEBUG "=%s==,i2s_pinmux_init done,---%d\n",__func__,p_odroid_audio->det_pol_inv);
+-}
+-
+-static void i2s_pinmux_deinit(struct snd_soc_card *card)
+-{
+-	struct odroid_audio_private_data *p_odroid_audio;
+-
+-	p_odroid_audio = snd_soc_card_get_drvdata(card);
+-    if(p_odroid_audio->pin_ctl)
+-        devm_pinctrl_put(p_odroid_audio->pin_ctl);
+-}
+-
+ static int odroid_audio_probe(struct platform_device *pdev)
+ {
+     struct snd_soc_card *card = &aml_snd_soc_card;
+     struct odroid_audio_private_data *p_odroid_audio;
+     int ret = 0;
+ 
+-    if(!enable_audiodac)
+-        return 0;
+-
+ #ifdef CONFIG_USE_OF
+     p_odroid_audio = devm_kzalloc(&pdev->dev,
+             sizeof(struct odroid_audio_private_data), GFP_KERNEL);
+@@ -284,6 +247,9 @@ static int odroid_audio_probe(struct platform_device *pdev)
+         ret = -EINVAL;
+         goto err;
+     }
++    ret=of_property_read_string(pdev->dev.of_node,"pinctrl-names",&p_odroid_audio->pinctrl_name);
++    printk(KERN_DEBUG "card->pinctrl_name:%s\n",p_odroid_audio->pinctrl_name);
++    p_odroid_audio->pin_ctl = devm_pinctrl_get_select(&pdev->dev, p_odroid_audio->pinctrl_name);
+ 
+     ret = snd_soc_of_parse_card_name(card, "aml,sound_card");
+     if (ret)
+@@ -295,13 +261,9 @@ static int odroid_audio_probe(struct platform_device *pdev)
+             ret);
+         goto err;
+     }
+-
+-    i2s_pinmux_init(card);
+     return 0;
+ #endif
+-
+ err:
+-    kfree(p_odroid_audio);
+     return ret;
+ }
+ 
+@@ -311,11 +273,11 @@ static int odroid_audio_remove(struct platform_device *pdev)
+ 	struct odroid_audio_private_data *p_odroid_audio;
+ 
+ 	p_odroid_audio = snd_soc_card_get_drvdata(card);
+-	snd_soc_unregister_card(card);
++	if(p_odroid_audio->pin_ctl)
++		devm_pinctrl_put(p_odroid_audio->pin_ctl);
+ 
+-	i2s_pinmux_deinit(card);
+-    kfree(p_odroid_audio);
+-    return 0;
++	snd_soc_unregister_card(card);
++	return 0;
+ }
+ 
+ #ifdef CONFIG_USE_OF
+@@ -356,9 +318,8 @@ module_init(odroid_audio_init);
+ module_exit(odroid_audio_exit);
+ 
+ /* Module information */
+-MODULE_AUTHOR("AMLogic, Inc.");
+-MODULE_DESCRIPTION("AML_M8 audio machine Asoc driver");
++MODULE_AUTHOR("Hardkernel, Inc.");
++MODULE_DESCRIPTION("ODROID audio machine Asoc driver");
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS("platform:" DRV_NAME);
+-MODULE_DEVICE_TABLE(of, amlogic_audio_dt_match);
+ 
+diff --git a/sound/soc/codecs/pcm5102.c b/sound/soc/codecs/pcm5102.c
+index 6d3fb91f0006a2..1c95f943739cb2 100644
+--- a/sound/soc/codecs/pcm5102.c
++++ b/sound/soc/codecs/pcm5102.c
+@@ -113,27 +113,22 @@ static const struct of_device_id codec_dt_match[]={
+ static int pcm5102_platform_probe(struct platform_device *pdev)
+ {
+ 	struct pcm5102_private *pcm5102;
+-    int ret;
++	int ret;
+     
+-    printk("pcm5102_platform_probe\n");
+-	pcm5102 = kzalloc(sizeof(struct pcm5102_private), GFP_KERNEL);
++	printk("pcm5102_platform_probe\n");
++	pcm5102 = devm_kzalloc(&pdev->dev, sizeof(struct pcm5102_private), GFP_KERNEL);
+ 	if (pcm5102 == NULL) {
+ 		return -ENOMEM;
+ 	}
+ 	platform_set_drvdata(pdev, pcm5102);
+-    ret = snd_soc_register_codec(&pdev->dev, &soc_codec_dev_pcm5102,
++	ret = snd_soc_register_codec(&pdev->dev, &soc_codec_dev_pcm5102,
+ 			pcm5102_dai, ARRAY_SIZE(pcm5102_dai));
+-    
+-	if (ret < 0)
+-		kfree(pcm5102);
+-    
+ 	return ret;
+ }
+ 
+ static int __exit pcm5102_platform_remove(struct platform_device *pdev)
+ {
+-    snd_soc_unregister_codec(&pdev->dev);
+-	kfree(platform_get_drvdata(pdev));
++	snd_soc_unregister_codec(&pdev->dev);
+ 	return 0;
+ }
+ 
