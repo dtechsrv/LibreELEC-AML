@@ -1,0 +1,57 @@
+diff --git a/xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp b/xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp
+index 878f772..fcbd2ed 100644
+--- a/xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp
++++ b/xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp
+@@ -27,6 +27,7 @@
+ #include "settings/SettingsComponent.h"
+ #if defined(HAS_LIBAMCODEC)
+ #include "utils/AMLUtils.h"
++#include "utils/SysfsUtils.h"
+ #endif
+ 
+ #ifdef TARGET_POSIX
+@@ -502,12 +503,31 @@ bool CAESinkALSA::Initialize(AEAudioFormat &format, std::string &device)
+   {
+     m_passthrough   = false;
+   }
+-#if defined(HAS_LIBAMCODEC)
+-  if (aml_present())
++
++  if (device.find("ODROIDHDMI") != std::string::npos)
+   {
++    int aml_digital_codec = 0;
++
++    if (m_passthrough)
++    {
++      switch(format.m_streamInfo.m_type)
++      {
++        case CAEStreamInfo::STREAM_TYPE_AC3:
++          aml_digital_codec = 2;
++          break;
++
++        case CAEStreamInfo::STREAM_TYPE_DTS_512:
++        case CAEStreamInfo::STREAM_TYPE_DTS_1024:
++        case CAEStreamInfo::STREAM_TYPE_DTS_2048:
++        case CAEStreamInfo::STREAM_TYPE_DTSHD_CORE:
++          aml_digital_codec = 3;
++          break;
++      }
++    }
++
+     aml_set_audio_passthrough(m_passthrough);
++    SysfsUtils::SetInt("/sys/class/audiodsp/digital_codec", aml_digital_codec);
+   }
+-#endif
+ 
+   if (inconfig.channels == 0)
+   {
+@@ -1358,6 +1378,9 @@ void CAESinkALSA::EnumerateDevice(AEDeviceInfoList &list, const std::string &dev
+     if (snd_card_get_name(cardNr, &cardName) == 0)
+       info.m_displayName = cardName;
+ 
++    if (info.m_displayName == "ODROID-HDMI")
++      info.m_deviceType = AE_DEVTYPE_HDMI;
++
+     if (info.m_deviceType == AE_DEVTYPE_HDMI && info.m_displayName.size() > 5 &&
+         info.m_displayName.substr(info.m_displayName.size()-5) == " HDMI")
+     {
