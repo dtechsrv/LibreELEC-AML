@@ -1,18 +1,5 @@
-From 50dc068589752abeba655b9062f9591db448ab1c Mon Sep 17 00:00:00 2001
-From: kszaq <kszaquitto@gmail.com>
-Date: Sun, 4 Sep 2016 00:51:03 +0200
-Subject: [PATCH] aml: Multichannel-PCM and HD Audio passthrough
-
-1. If we want passthrough, is should be redirected to device 1. To make sure device 1 output is enabled, set device 0 to stereo.
-2. Set digital_codec parameter to notify sound driver about audio format.
-3. Amlogic wants 48kHz for EAC3 passthrough.
-4. Identify Amlogic audio output as HDMI.
----
- xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp | 43 +++++++++++++++++--
- 1 file changed, 40 insertions(+), 3 deletions(-)
-
 diff --git a/xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp b/xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp
-index 878f772..93eb83e 100644
+index 878f772..e2b5d52 100644
 --- a/xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp
 +++ b/xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp
 @@ -27,6 +27,7 @@
@@ -30,7 +17,7 @@ index 878f772..93eb83e 100644
 -#if defined(HAS_LIBAMCODEC)
 -  if (aml_present())
 +
-+  if (device.find("M8AUDIO") != std::string::npos)
++  if (device.find("ODROID") != std::string::npos || device == "@")
    {
 +    int aml_digital_codec = 0;
 +
@@ -65,7 +52,7 @@ index 878f772..93eb83e 100644
 +    }
 +    else
 +    {
-+      device = "@:CARD=AMLM8AUDIO,DEV=0";
++      device = "@:CARD=ODROIDHDMI";
 +    }
 +
      aml_set_audio_passthrough(m_passthrough);
@@ -75,6 +62,13 @@ index 878f772..93eb83e 100644
  
    if (inconfig.channels == 0)
    {
--- 
-1.8.3.1
-
+@@ -1358,6 +1395,9 @@ void CAESinkALSA::EnumerateDevice(AEDeviceInfoList &list, const std::string &dev
+     if (snd_card_get_name(cardNr, &cardName) == 0)
+       info.m_displayName = cardName;
+ 
++    if (info.m_displayName == "ODROID-HDMI")
++      info.m_deviceType = AE_DEVTYPE_IEC958;
++
+     if (info.m_deviceType == AE_DEVTYPE_HDMI && info.m_displayName.size() > 5 &&
+         info.m_displayName.substr(info.m_displayName.size()-5) == " HDMI")
+     {
