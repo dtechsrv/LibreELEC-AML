@@ -1,5 +1,5 @@
 diff --git a/xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp b/xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp
-index 878f772..e2b5d52 100644
+index 878f772..2a825ce 100644
 --- a/xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp
 +++ b/xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp
 @@ -27,6 +27,7 @@
@@ -10,14 +10,14 @@ index 878f772..e2b5d52 100644
  #endif
  
  #ifdef TARGET_POSIX
-@@ -502,12 +503,48 @@ bool CAESinkALSA::Initialize(AEAudioFormat &format, std::string &device)
+@@ -502,12 +503,46 @@ bool CAESinkALSA::Initialize(AEAudioFormat &format, std::string &device)
    {
      m_passthrough   = false;
    }
 -#if defined(HAS_LIBAMCODEC)
 -  if (aml_present())
 +
-+  if (device.find("ODROID") != std::string::npos || device == "@")
++  if (device.find("ODROIDHDMI") != std::string::npos || device == "@")
    {
 +    int aml_digital_codec = 0;
 +
@@ -50,19 +50,17 @@ index 878f772..e2b5d52 100644
 +          break;
 +      }
 +    }
-+    else
-+    {
-+      device = "@:CARD=ODROIDHDMI";
-+    }
 +
      aml_set_audio_passthrough(m_passthrough);
 +    SysfsUtils::SetInt("/sys/class/audiodsp/digital_codec", aml_digital_codec);
++
++    CLog::Log(LOGINFO, "CAESinkALSA::Initialize - Set digital_codec %d", aml_digital_codec);
    }
 -#endif
  
    if (inconfig.channels == 0)
    {
-@@ -1358,6 +1395,9 @@ void CAESinkALSA::EnumerateDevice(AEDeviceInfoList &list, const std::string &dev
+@@ -1358,6 +1393,9 @@ void CAESinkALSA::EnumerateDevice(AEDeviceInfoList &list, const std::string &dev
      if (snd_card_get_name(cardNr, &cardName) == 0)
        info.m_displayName = cardName;
  
