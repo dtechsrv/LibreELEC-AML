@@ -5,7 +5,7 @@
 PKG_NAME="docker"
 PKG_VERSION="18.09.7"
 PKG_SHA256="f05dc15f5c11635472534c3aaf759c39c1bba842dd1ac23059431c2fd1ae1795"
-PKG_REV="127"
+PKG_REV="128"
 PKG_ARCH="any"
 PKG_LICENSE="ASL"
 PKG_SITE="http://www.docker.com/"
@@ -24,7 +24,6 @@ configure_target() {
   export DOCKER_BUILDTAGS="daemon \
                            autogen \
                            exclude_graphdriver_devicemapper \
-                           exclude_graphdriver_aufs \
                            exclude_graphdriver_btrfs \
                            journald"
 
@@ -127,19 +126,28 @@ makeinstall_target() {
 
 addon() {
   mkdir -p ${ADDON_BUILD}/${PKG_ADDON_ID}/bin
-    cp -P ${PKG_BUILD}/bin/docker ${ADDON_BUILD}/${PKG_ADDON_ID}/bin
-    cp -P ${PKG_BUILD}/bin/dockerd ${ADDON_BUILD}/${PKG_ADDON_ID}/bin
+  cp -P ${PKG_BUILD}/bin/docker ${ADDON_BUILD}/${PKG_ADDON_ID}/bin
+  cp -P ${PKG_BUILD}/bin/dockerd ${ADDON_BUILD}/${PKG_ADDON_ID}/bin
 
-    # containerd
-    cp -P $(get_build_dir containerd)/bin/containerd ${ADDON_BUILD}/${PKG_ADDON_ID}/bin/containerd
-    cp -P $(get_build_dir containerd)/bin/containerd-shim ${ADDON_BUILD}/${PKG_ADDON_ID}/bin/containerd-shim
+  # containerd
+  cp -P $(get_build_dir containerd)/bin/containerd ${ADDON_BUILD}/${PKG_ADDON_ID}/bin/containerd
+  cp -P $(get_build_dir containerd)/bin/containerd-shim ${ADDON_BUILD}/${PKG_ADDON_ID}/bin/containerd-shim
 
-    # libnetwork
-    cp -P $(get_build_dir libnetwork)/bin/docker-proxy ${ADDON_BUILD}/${PKG_ADDON_ID}/bin/docker-proxy
+  # libnetwork
+  cp -P $(get_build_dir libnetwork)/bin/docker-proxy ${ADDON_BUILD}/${PKG_ADDON_ID}/bin/docker-proxy
 
-    # runc
-    cp -P $(get_build_dir runc)/bin/runc ${ADDON_BUILD}/${PKG_ADDON_ID}/bin/runc
+  # runc
+  cp -P $(get_build_dir runc)/bin/runc ${ADDON_BUILD}/${PKG_ADDON_ID}/bin/runc
 
-    # tini
-    cp -P $(get_build_dir tini)/.${TARGET_NAME}/tini-static ${ADDON_BUILD}/${PKG_ADDON_ID}/bin/docker-init
+  # tini
+  cp -P $(get_build_dir tini)/.${TARGET_NAME}/tini-static ${ADDON_BUILD}/${PKG_ADDON_ID}/bin/docker-init
+
+  # config
+  mkdir -p ${ADDON_BUILD}/${PKG_ADDON_ID}/config
+  cp ${PKG_DIR}/docker.conf ${ADDON_BUILD}/${PKG_ADDON_ID}/config/docker.conf
+
+  # change default drivers to aufs for Amlogic S8xx devices
+  if [ ${LINUX} = "amlogic-3.10" ]; then
+    sed -i "s|DOCKER_STORAGE_OPTS=.*|DOCKER_STORAGE_OPTS=\"--storage-driver=aufs\"|" ${ADDON_BUILD}/${PKG_ADDON_ID}/config/docker.conf
+  fi
 }

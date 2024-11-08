@@ -1,3 +1,7 @@
+128
+- Remove exclusion of aufs driver from build options
+- Change default driver to aufs for Amlogic S8xx devices
+
 127
 - Rebuild tini without -DMINIMAL=ON to fix 'docker run --init'
 
