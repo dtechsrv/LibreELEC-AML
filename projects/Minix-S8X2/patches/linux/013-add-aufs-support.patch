@@ -1699,17 +1699,6 @@ index 0000000..575096b
 +Opened File) is specified (by default), aufs returns the filedata from
 +/new.
 +Otherwise from /new.
-diff --git a/Documentation/filesystems/porting b/Documentation/filesystems/porting
-index 85a4a03..4db22f6 100644
---- a/Documentation/filesystems/porting
-+++ b/Documentation/filesystems/porting
-@@ -445,6 +445,3 @@ object doesn't exist.  It's remote/distributed ones that might care...
- [mandatory]
- 	FS_REVAL_DOT is gone; if you used to have it, add ->d_weak_revalidate()
- in your dentry operations instead.
----
--[mandatory]
--	vfs_readdir() is gone; switch to iterate_dir() instead
 diff --git a/MAINTAINERS b/MAINTAINERS
 index 29d7d74..f8c0127 100644
 --- a/MAINTAINERS
@@ -1735,92 +1724,11 @@ index 29d7d74..f8c0127 100644
  AUXILIARY DISPLAY DRIVERS
  M:	Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>
  W:	http://miguelojeda.es/auxdisplay.htm
-diff --git a/arch/alpha/kernel/osf_sys.c b/arch/alpha/kernel/osf_sys.c
-index 1402fcc..b9e37ad 100644
---- a/arch/alpha/kernel/osf_sys.c
-+++ b/arch/alpha/kernel/osf_sys.c
-@@ -96,7 +96,6 @@ struct osf_dirent {
- };
- 
- struct osf_dirent_callback {
--	struct dir_context ctx;
- 	struct osf_dirent __user *dirent;
- 	long __user *basep;
- 	unsigned int count;
-@@ -147,17 +146,17 @@ SYSCALL_DEFINE4(osf_getdirentries, unsigned int, fd,
- {
- 	int error;
- 	struct fd arg = fdget(fd);
--	struct osf_dirent_callback buf = {
--		.ctx.actor = osf_filldir,
--		.dirent = dirent,
--		.basep = basep,
--		.count = count
--	};
-+	struct osf_dirent_callback buf;
- 
- 	if (!arg.file)
- 		return -EBADF;
- 
--	error = iterate_dir(arg.file, &buf.ctx);
-+	buf.dirent = dirent;
-+	buf.basep = basep;
-+	buf.count = count;
-+	buf.error = 0;
-+
-+	error = vfs_readdir(arg.file, osf_filldir, &buf);
- 	if (error >= 0)
- 		error = buf.error;
- 	if (count != buf.count)
-diff --git a/arch/parisc/hpux/fs.c b/arch/parisc/hpux/fs.c
-index 88d0962..838b479 100644
---- a/arch/parisc/hpux/fs.c
-+++ b/arch/parisc/hpux/fs.c
-@@ -60,7 +60,6 @@ struct hpux_dirent {
- };
- 
- struct getdents_callback {
--	struct dir_context ctx;
- 	struct hpux_dirent __user *current_dir;
- 	struct hpux_dirent __user *previous;
- 	int count;
-@@ -111,23 +110,24 @@ int hpux_getdents(unsigned int fd, struct hpux_dirent __user *dirent, unsigned i
- {
- 	struct fd arg;
- 	struct hpux_dirent __user * lastdirent;
--	struct getdents_callback buf = {
--		.ctx.actor = filldir,
--		.current_dir = dirent,
--		.count = count
--	};
-+	struct getdents_callback buf;
- 	int error;
- 
- 	arg = fdget(fd);
- 	if (!arg.file)
- 		return -EBADF;
- 
--	error = iterate_dir(arg.file, &buf.ctx);
-+	buf.current_dir = dirent;
-+	buf.previous = NULL;
-+	buf.count = count;
-+	buf.error = 0;
-+
-+	error = vfs_readdir(arg.file, filldir, &buf);
- 	if (error >= 0)
- 		error = buf.error;
- 	lastdirent = buf.previous;
- 	if (lastdirent) {
--		if (put_user(buf.ctx.pos, &lastdirent->d_off))
-+		if (put_user(arg.file->f_pos, &lastdirent->d_off))
- 			error = -EFAULT;
- 		else
- 			error = count - buf.count;
 diff --git a/fs/Kconfig b/fs/Kconfig
-index a4022b8..644d53b 100644
+index 183aedf..bfa2205 100644
 --- a/fs/Kconfig
 +++ b/fs/Kconfig
-@@ -214,6 +214,7 @@ source "fs/ufs/Kconfig"
+@@ -213,6 +213,7 @@ source "fs/ufs/Kconfig"
  source "fs/exofs/Kconfig"
  source "fs/f2fs/Kconfig"
  source "fs/efivarfs/Kconfig"
@@ -1829,10 +1737,10 @@ index a4022b8..644d53b 100644
  endif # MISC_FILESYSTEMS
  
 diff --git a/fs/Makefile b/fs/Makefile
-index 7f0529d..7e09436 100644
+index 56bb6d2..764c1b6 100644
 --- a/fs/Makefile
 +++ b/fs/Makefile
-@@ -128,3 +128,4 @@ obj-y				+= exofs/ # Multiple modules
+@@ -127,3 +127,4 @@ obj-y				+= exofs/ # Multiple modules
  obj-$(CONFIG_CEPH_FS)		+= ceph/
  obj-$(CONFIG_PSTORE)		+= pstore/
  obj-$(CONFIG_EFIVAR_FS)		+= efivarfs/
@@ -33697,227 +33605,8 @@ index 83fedaa..8f47436 100644
  
  	ret = __block_page_mkwrite(vma, vmf, get_block);
  	sb_end_pagefault(sb);
-diff --git a/fs/coda/dir.c b/fs/coda/dir.c
-index fc66861..b7d3a05 100644
---- a/fs/coda/dir.c
-+++ b/fs/coda/dir.c
-@@ -391,7 +391,8 @@ static int coda_readdir(struct file *coda_file, void *buf, filldir_t filldir)
- 	if (!host_file->f_op)
- 		return -ENOTDIR;
- 
--	if (host_file->f_op->readdir) {
-+	if (host_file->f_op->readdir)
-+	{
- 		/* potemkin case: we were handed a directory inode.
- 		 * We can't use vfs_readdir because we have to keep the file
- 		 * position in sync between the coda_file and the host_file.
-@@ -409,20 +410,8 @@ static int coda_readdir(struct file *coda_file, void *buf, filldir_t filldir)
- 
- 		coda_file->f_pos = host_file->f_pos;
- 		mutex_unlock(&host_inode->i_mutex);
--	} else if (host_file->f_op->iterate) {
--		struct inode *host_inode = file_inode(host_file);
--		struct dir_context *ctx = buf;
--
--		mutex_lock(&host_inode->i_mutex);
--		ret = -ENOENT;
--		if (!IS_DEADDIR(host_inode)) {
--			ret = host_file->f_op->iterate(host_file, ctx);
--			file_accessed(host_file);
--		}
--		mutex_unlock(&host_inode->i_mutex);
--
--		coda_file->f_pos = ctx->pos;
--	} else /* Venus: we must read Venus dirents from a file */
-+	}
-+	else /* Venus: we must read Venus dirents from a file */
- 		ret = coda_venus_readdir(coda_file, buf, filldir);
- 
- 	return ret;
-diff --git a/fs/compat.c b/fs/compat.c
-index 6af20de..fc3b55d 100644
---- a/fs/compat.c
-+++ b/fs/compat.c
-@@ -832,7 +832,6 @@ struct compat_old_linux_dirent {
- };
- 
- struct compat_readdir_callback {
--	struct dir_context ctx;
- 	struct compat_old_linux_dirent __user *dirent;
- 	int result;
- };
-@@ -874,15 +873,15 @@ asmlinkage long compat_sys_old_readdir(unsigned int fd,
- {
- 	int error;
- 	struct fd f = fdget(fd);
--	struct compat_readdir_callback buf = {
--		.ctx.actor = compat_fillonedir,
--		.dirent = dirent
--	};
-+	struct compat_readdir_callback buf;
- 
- 	if (!f.file)
- 		return -EBADF;
- 
--	error = iterate_dir(f.file, &buf.ctx);
-+	buf.result = 0;
-+	buf.dirent = dirent;
-+
-+	error = vfs_readdir(f.file, compat_fillonedir, &buf);
- 	if (buf.result)
- 		error = buf.result;
- 
-@@ -898,7 +897,6 @@ struct compat_linux_dirent {
- };
- 
- struct compat_getdents_callback {
--	struct dir_context ctx;
- 	struct compat_linux_dirent __user *current_dir;
- 	struct compat_linux_dirent __user *previous;
- 	int count;
-@@ -953,11 +951,7 @@ asmlinkage long compat_sys_getdents(unsigned int fd,
- {
- 	struct fd f;
- 	struct compat_linux_dirent __user * lastdirent;
--	struct compat_getdents_callback buf = {
--		.ctx.actor = compat_filldir,
--		.current_dir = dirent,
--		.count = count
--	};
-+	struct compat_getdents_callback buf;
- 	int error;
- 
- 	if (!access_ok(VERIFY_WRITE, dirent, count))
-@@ -967,12 +961,17 @@ asmlinkage long compat_sys_getdents(unsigned int fd,
- 	if (!f.file)
- 		return -EBADF;
- 
--	error = iterate_dir(f.file, &buf.ctx);
-+	buf.current_dir = dirent;
-+	buf.previous = NULL;
-+	buf.count = count;
-+	buf.error = 0;
-+
-+	error = vfs_readdir(f.file, compat_filldir, &buf);
- 	if (error >= 0)
- 		error = buf.error;
- 	lastdirent = buf.previous;
- 	if (lastdirent) {
--		if (put_user(buf.ctx.pos, &lastdirent->d_off))
-+		if (put_user(f.file->f_pos, &lastdirent->d_off))
- 			error = -EFAULT;
- 		else
- 			error = count - buf.count;
-@@ -984,7 +983,6 @@ asmlinkage long compat_sys_getdents(unsigned int fd,
- #ifndef __ARCH_OMIT_COMPAT_SYS_GETDENTS64
- 
- struct compat_getdents_callback64 {
--	struct dir_context ctx;
- 	struct linux_dirent64 __user *current_dir;
- 	struct linux_dirent64 __user *previous;
- 	int count;
-@@ -1038,11 +1036,7 @@ asmlinkage long compat_sys_getdents64(unsigned int fd,
- {
- 	struct fd f;
- 	struct linux_dirent64 __user * lastdirent;
--	struct compat_getdents_callback64 buf = {
--		.ctx.actor = compat_filldir64,
--		.current_dir = dirent,
--		.count = count
--	};
-+	struct compat_getdents_callback64 buf;
- 	int error;
- 
- 	if (!access_ok(VERIFY_WRITE, dirent, count))
-@@ -1052,12 +1046,17 @@ asmlinkage long compat_sys_getdents64(unsigned int fd,
- 	if (!f.file)
- 		return -EBADF;
- 
--	error = iterate_dir(f.file, &buf.ctx);
-+	buf.current_dir = dirent;
-+	buf.previous = NULL;
-+	buf.count = count;
-+	buf.error = 0;
-+
-+	error = vfs_readdir(f.file, compat_filldir64, &buf);
- 	if (error >= 0)
- 		error = buf.error;
- 	lastdirent = buf.previous;
- 	if (lastdirent) {
--		typeof(lastdirent->d_off) d_off = buf.ctx.pos;
-+		typeof(lastdirent->d_off) d_off = f.file->f_pos;
- 		if (__put_user_unaligned(d_off, &lastdirent->d_off))
- 			error = -EFAULT;
- 		else
-diff --git a/fs/ecryptfs/file.c b/fs/ecryptfs/file.c
-index fac9d01..d4644cc 100644
---- a/fs/ecryptfs/file.c
-+++ b/fs/ecryptfs/file.c
-@@ -68,7 +68,6 @@ static ssize_t ecryptfs_read_update_atime(struct kiocb *iocb,
- }
- 
- struct ecryptfs_getdents_callback {
--	struct dir_context ctx;
- 	void *dirent;
- 	struct dentry *dentry;
- 	filldir_t filldir;
-@@ -127,8 +126,7 @@ static int ecryptfs_readdir(struct file *file, void *dirent, filldir_t filldir)
- 	buf.filldir = filldir;
- 	buf.filldir_called = 0;
- 	buf.entries_written = 0;
--	buf.ctx.actor = ecryptfs_filldir;
--	rc = iterate_dir(lower_file, &buf.ctx);
-+	rc = vfs_readdir(lower_file, ecryptfs_filldir, (void *)&buf);
- 	file->f_pos = lower_file->f_pos;
- 	if (rc < 0)
- 		goto out;
-diff --git a/fs/exportfs/expfs.c b/fs/exportfs/expfs.c
-index dc4784b..b4eec4c 100644
---- a/fs/exportfs/expfs.c
-+++ b/fs/exportfs/expfs.c
-@@ -212,7 +212,6 @@ reconnect_path(struct vfsmount *mnt, struct dentry *target_dir, char *nbuf)
- }
- 
- struct getdents_callback {
--	struct dir_context ctx;
- 	char *name;		/* name that was found. It already points to a
- 				   buffer NAME_MAX+1 is size */
- 	unsigned long ino;	/* the inum we are looking for */
-@@ -255,11 +254,7 @@ static int get_name(const struct path *path, char *name, struct dentry *child)
- 	struct inode *dir = path->dentry->d_inode;
- 	int error;
- 	struct file *file;
--	struct getdents_callback buffer = {
--		.ctx.actor = filldir_one,
--		.name = name,
--		.ino = child->d_inode->i_ino
--	};
-+	struct getdents_callback buffer;
- 
- 	error = -ENOTDIR;
- 	if (!dir || !S_ISDIR(dir->i_mode))
-@@ -276,14 +271,17 @@ static int get_name(const struct path *path, char *name, struct dentry *child)
- 		goto out;
- 
- 	error = -EINVAL;
--	if (!file->f_op->readdir && !file->f_op->iterate)
-+	if (!file->f_op->readdir)
- 		goto out_close;
- 
-+	buffer.name = name;
-+	buffer.ino = child->d_inode->i_ino;
-+	buffer.found = 0;
- 	buffer.sequence = 0;
- 	while (1) {
- 		int old_seq = buffer.sequence;
- 
--		error = iterate_dir(file, &buffer.ctx);
-+		error = vfs_readdir(file, filldir_one, &buffer);
- 		if (buffer.found) {
- 			error = 0;
- 			break;
 diff --git a/fs/file_table.c b/fs/file_table.c
-index 28f02a7..21017e1 100644
+index 28f02a7..7451b2b 100644
 --- a/fs/file_table.c
 +++ b/fs/file_table.c
 @@ -36,6 +36,9 @@ struct files_stat_struct files_stat = {
@@ -33930,189 +33619,6 @@ index 28f02a7..21017e1 100644
  /* SLAB cache for file structures */
  static struct kmem_cache *filp_cachep __read_mostly;
  
-@@ -132,6 +135,7 @@ struct file *get_empty_filp(void)
- 		return ERR_PTR(error);
- 	}
- 
-+	INIT_LIST_HEAD(&f->f_u.fu_list);
- 	atomic_long_set(&f->f_count, 1);
- 	rwlock_init(&f->f_owner.lock);
- 	spin_lock_init(&f->f_lock);
-@@ -301,6 +305,7 @@ void fput(struct file *file)
- 	if (atomic_long_dec_and_test(&file->f_count)) {
- 		struct task_struct *task = current;
- 
-+		file_sb_list_del(file);
- 		if (likely(!in_interrupt() && !(task->flags & PF_KTHREAD))) {
- 			init_task_work(&file->f_u.fu_rcuhead, ____fput);
- 			if (!task_work_add(task, &file->f_u.fu_rcuhead, true))
-@@ -324,6 +329,7 @@ void __fput_sync(struct file *file)
- {
- 	if (atomic_long_dec_and_test(&file->f_count)) {
- 		struct task_struct *task = current;
-+		file_sb_list_del(file);
- 		BUG_ON(!(task->flags & PF_KTHREAD));
- 		__fput(file);
- 	}
-@@ -335,10 +341,127 @@ void put_filp(struct file *file)
- {
- 	if (atomic_long_dec_and_test(&file->f_count)) {
- 		security_file_free(file);
-+		file_sb_list_del(file);
- 		file_free(file);
- 	}
- }
- 
-+static inline int file_list_cpu(struct file *file)
-+{
-+#ifdef CONFIG_SMP
-+	return file->f_sb_list_cpu;
-+#else
-+	return smp_processor_id();
-+#endif
-+}
-+
-+/* helper for file_sb_list_add to reduce ifdefs */
-+static inline void __file_sb_list_add(struct file *file, struct super_block *sb)
-+{
-+	struct list_head *list;
-+#ifdef CONFIG_SMP
-+	int cpu;
-+	cpu = smp_processor_id();
-+	file->f_sb_list_cpu = cpu;
-+	list = per_cpu_ptr(sb->s_files, cpu);
-+#else
-+	list = &sb->s_files;
-+#endif
-+	list_add(&file->f_u.fu_list, list);
-+}
-+
-+/**
-+ * file_sb_list_add - add a file to the sb's file list
-+ * @file: file to add
-+ * @sb: sb to add it to
-+ *
-+ * Use this function to associate a file with the superblock of the inode it
-+ * refers to.
-+ */
-+void file_sb_list_add(struct file *file, struct super_block *sb)
-+{
-+	lg_local_lock(&files_lglock);
-+	__file_sb_list_add(file, sb);
-+	lg_local_unlock(&files_lglock);
-+}
-+
-+/**
-+ * file_sb_list_del - remove a file from the sb's file list
-+ * @file: file to remove
-+ * @sb: sb to remove it from
-+ *
-+ * Use this function to remove a file from its superblock.
-+ */
-+void file_sb_list_del(struct file *file)
-+{
-+	if (!list_empty(&file->f_u.fu_list)) {
-+		lg_local_lock_cpu(&files_lglock, file_list_cpu(file));
-+		list_del_init(&file->f_u.fu_list);
-+		lg_local_unlock_cpu(&files_lglock, file_list_cpu(file));
-+	}
-+}
-+
-+#ifdef CONFIG_SMP
-+
-+/*
-+ * These macros iterate all files on all CPUs for a given superblock.
-+ * files_lglock must be held globally.
-+ */
-+#define do_file_list_for_each_entry(__sb, __file)		\
-+{								\
-+	int i;							\
-+	for_each_possible_cpu(i) {				\
-+		struct list_head *list;				\
-+		list = per_cpu_ptr((__sb)->s_files, i);		\
-+		list_for_each_entry((__file), list, f_u.fu_list)
-+
-+#define while_file_list_for_each_entry				\
-+	}							\
-+}
-+
-+#else
-+
-+#define do_file_list_for_each_entry(__sb, __file)		\
-+{								\
-+	struct list_head *list;					\
-+	list = &(sb)->s_files;					\
-+	list_for_each_entry((__file), list, f_u.fu_list)
-+
-+#define while_file_list_for_each_entry				\
-+}
-+
-+#endif
-+
-+/**
-+ *	mark_files_ro - mark all files read-only
-+ *	@sb: superblock in question
-+ *
-+ *	All files are marked read-only.  We don't care about pending
-+ *	delete files so this should be used in 'force' mode only.
-+ */
-+void mark_files_ro(struct super_block *sb)
-+{
-+	struct file *f;
-+
-+	lg_global_lock(&files_lglock);
-+	do_file_list_for_each_entry(sb, f) {
-+		if (!S_ISREG(file_inode(f)->i_mode))
-+		       continue;
-+		if (!file_count(f))
-+			continue;
-+		if (!(f->f_mode & FMODE_WRITE))
-+			continue;
-+		spin_lock(&f->f_lock);
-+		f->f_mode &= ~FMODE_WRITE;
-+		spin_unlock(&f->f_lock);
-+		if (file_check_writeable(f) != 0)
-+			continue;
-+		__mnt_drop_write(f->f_path.mnt);
-+		file_release_write(f);
-+	} while_file_list_for_each_entry;
-+	lg_global_unlock(&files_lglock);
-+}
-+
- void __init files_init(unsigned long mempages)
- { 
- 	unsigned long n;
-@@ -354,5 +477,6 @@ void __init files_init(unsigned long mempages)
- 	n = (mempages * (PAGE_SIZE / 1024)) / 10;
- 	files_stat.max_files = max_t(unsigned long, n, NR_FILE);
- 	files_defer_init();
-+	lg_lock_init(&files_lglock, "files_lglock");
- 	percpu_counter_init(&nr_files, 0);
- } 
-diff --git a/fs/gfs2/export.c b/fs/gfs2/export.c
-index 7102c7a..9973df4 100644
---- a/fs/gfs2/export.c
-+++ b/fs/gfs2/export.c
-@@ -88,10 +88,7 @@ static int gfs2_get_name(struct dentry *parent, char *name,
- 	struct inode *dir = parent->d_inode;
- 	struct inode *inode = child->d_inode;
- 	struct gfs2_inode *dip, *ip;
--	struct get_name_filldir gnfd = {
--		.ctx.actor = get_name_filldir,
--		.name = name
--	};
-+	struct get_name_filldir gnfd;
- 	struct gfs2_holder gh;
- 	u64 offset = 0;
- 	int error;
-@@ -109,6 +106,7 @@ static int gfs2_get_name(struct dentry *parent, char *name,
- 	*name = 0;
- 	gnfd.inum.no_addr = ip->i_no_addr;
- 	gnfd.inum.no_formal_ino = ip->i_no_formal_ino;
-+	gnfd.name = name;
- 
- 	error = gfs2_glock_nq_init(dip->i_gl, LM_ST_SHARED, 0, &gh);
- 	if (error)
 diff --git a/fs/inode.c b/fs/inode.c
 index 17f95b4..5e21737 100644
 --- a/fs/inode.c
@@ -34142,22 +33648,8 @@ index 17f95b4..5e21737 100644
  
  /**
   *	touch_atime	-	update the access time
-diff --git a/fs/internal.h b/fs/internal.h
-index 17f4327..af27fb1 100644
---- a/fs/internal.h
-+++ b/fs/internal.h
-@@ -73,6 +73,9 @@ extern void chroot_fs_refs(const struct path *, const struct path *);
- /*
-  * file_table.c
-  */
-+extern void file_sb_list_add(struct file *f, struct super_block *sb);
-+extern void file_sb_list_del(struct file *f);
-+extern void mark_files_ro(struct super_block *);
- extern struct file *get_empty_filp(void);
- 
- /*
 diff --git a/fs/namei.c b/fs/namei.c
-index 348721e..aad2909 100644
+index c87e15e..72cee8c 100644
 --- a/fs/namei.c
 +++ b/fs/namei.c
 @@ -221,7 +221,7 @@ void putname(struct filename *name)
@@ -34178,7 +33670,7 @@ index 348721e..aad2909 100644
  /*
   * This does the basic permission checking
 diff --git a/fs/namespace.c b/fs/namespace.c
-index 2c128d0..a4d188a 100644
+index d0244c8..8ecc31c 100644
 --- a/fs/namespace.c
 +++ b/fs/namespace.c
 @@ -54,6 +54,7 @@ EXPORT_SYMBOL_GPL(fs_kobj);
@@ -34197,7 +33689,7 @@ index 2c128d0..a4d188a 100644
  
  /**
   * mnt_drop_write - give up write access to a mount
-@@ -1501,6 +1503,7 @@ int iterate_mounts(int (*f)(struct vfsmount *, void *), void *arg,
+@@ -1474,6 +1476,7 @@ int iterate_mounts(int (*f)(struct vfsmount *, void *), void *arg,
  	}
  	return 0;
  }
@@ -34205,103 +33697,6 @@ index 2c128d0..a4d188a 100644
  
  static void cleanup_group_ids(struct mount *mnt, struct mount *end)
  {
-diff --git a/fs/nfsd/nfs4recover.c b/fs/nfsd/nfs4recover.c
-index 105a3b0..4e9a21d 100644
---- a/fs/nfsd/nfs4recover.c
-+++ b/fs/nfsd/nfs4recover.c
-@@ -240,16 +240,11 @@ struct name_list {
- 	struct list_head list;
- };
- 
--struct nfs4_dir_ctx {
--	struct dir_context ctx;
--	struct list_head names;
--};
--
- static int
- nfsd4_build_namelist(void *arg, const char *name, int namlen,
- 		loff_t offset, u64 ino, unsigned int d_type)
- {
--	struct nfs4_dir_ctx *ctx = arg;
-+	struct list_head *names = arg;
- 	struct name_list *entry;
- 
- 	if (namlen != HEXDIR_LEN - 1)
-@@ -259,7 +254,7 @@ nfsd4_build_namelist(void *arg, const char *name, int namlen,
- 		return -ENOMEM;
- 	memcpy(entry->name, name, HEXDIR_LEN - 1);
- 	entry->name[HEXDIR_LEN - 1] = '\0';
--	list_add(&entry->list, &ctx->names);
-+	list_add(&entry->list, names);
- 	return 0;
- }
- 
-@@ -268,10 +263,7 @@ nfsd4_list_rec_dir(recdir_func *f, struct nfsd_net *nn)
- {
- 	const struct cred *original_cred;
- 	struct dentry *dir = nn->rec_file->f_path.dentry;
--	struct nfs4_dir_ctx ctx = {
--		.ctx.actor = nfsd4_build_namelist,
--		.names = LIST_HEAD_INIT(ctx.names)
--	};
-+	LIST_HEAD(names);
- 	int status;
- 
- 	status = nfs4_save_creds(&original_cred);
-@@ -284,11 +276,11 @@ nfsd4_list_rec_dir(recdir_func *f, struct nfsd_net *nn)
- 		return status;
- 	}
- 
--	status = iterate_dir(nn->rec_file, &ctx.ctx);
-+	status = vfs_readdir(nn->rec_file, nfsd4_build_namelist, &names);
- 	mutex_lock_nested(&dir->d_inode->i_mutex, I_MUTEX_PARENT);
--	while (!list_empty(&ctx.names)) {
-+	while (!list_empty(&names)) {
- 		struct name_list *entry;
--		entry = list_entry(ctx.names.next, struct name_list, list);
-+		entry = list_entry(names.next, struct name_list, list);
- 		if (!status) {
- 			struct dentry *dentry;
- 			dentry = lookup_one_len(entry->name, dir, HEXDIR_LEN-1);
-diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
-index 11224fa..81325ba 100644
---- a/fs/nfsd/vfs.c
-+++ b/fs/nfsd/vfs.c
-@@ -1950,7 +1950,6 @@ struct buffered_dirent {
- };
- 
- struct readdir_data {
--	struct dir_context ctx;
- 	char		*dirent;
- 	size_t		used;
- 	int		full;
-@@ -1982,15 +1981,13 @@ static int nfsd_buffered_filldir(void *__buf, const char *name, int namlen,
- static __be32 nfsd_buffered_readdir(struct file *file, filldir_t func,
- 				    struct readdir_cd *cdp, loff_t *offsetp)
- {
-+	struct readdir_data buf;
- 	struct buffered_dirent *de;
- 	int host_err;
- 	int size;
- 	loff_t offset;
--	struct readdir_data buf = {
--		.ctx.actor = nfsd_buffered_filldir,
--		.dirent = (void *)__get_free_page(GFP_KERNEL)
--	};
- 
-+	buf.dirent = (void *)__get_free_page(GFP_KERNEL);
- 	if (!buf.dirent)
- 		return nfserrno(-ENOMEM);
- 
-@@ -2004,7 +2001,7 @@ static __be32 nfsd_buffered_readdir(struct file *file, filldir_t func,
- 		buf.used = 0;
- 		buf.full = 0;
- 
--		host_err = iterate_dir(file, &buf.ctx);
-+		host_err = vfs_readdir(file, nfsd_buffered_filldir, &buf);
- 		if (buf.full)
- 			host_err = 0;
- 
 diff --git a/fs/notify/group.c b/fs/notify/group.c
 index bd2625b..2ff2a0f 100644
 --- a/fs/notify/group.c
@@ -34375,7 +33770,7 @@ index f08b3b7..fb55964 100644
  static int fsnotify_mark_destroy(void *ignored)
  {
 diff --git a/fs/open.c b/fs/open.c
-index 1a61c03..0768eaf 100644
+index 5f12968..42ee52e 100644
 --- a/fs/open.c
 +++ b/fs/open.c
 @@ -61,6 +61,7 @@ int do_truncate(struct dentry *dentry, loff_t length, unsigned int time_attrs,
@@ -34394,237 +33789,6 @@ index 1a61c03..0768eaf 100644
  
  SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
  {
-@@ -674,6 +676,7 @@ static int do_dentry_open(struct file *f,
- 	}
- 
- 	f->f_mapping = inode->i_mapping;
-+	file_sb_list_add(f, inode->i_sb);
- 
- 	if (unlikely(f->f_mode & FMODE_PATH)) {
- 		f->f_op = &empty_fops;
-@@ -708,6 +711,7 @@ static int do_dentry_open(struct file *f,
- 
- cleanup_all:
- 	fops_put(f->f_op);
-+	file_sb_list_del(f);
- 	if (f->f_mode & FMODE_WRITE) {
- 		if (!special_file(inode->i_mode)) {
- 			/*
-diff --git a/fs/overlayfs/copy_up.c b/fs/overlayfs/copy_up.c
-index b171e1f..7b9fb6d 100644
---- a/fs/overlayfs/copy_up.c
-+++ b/fs/overlayfs/copy_up.c
-@@ -110,7 +110,6 @@ static int ovl_copy_up_data(struct path *old, struct path *new, loff_t len)
- 			error = bytes;
- 			break;
- 		}
--		WARN_ON(old_pos != new_pos);
- 
- 		len -= bytes;
- 	}
-diff --git a/fs/overlayfs/readdir.c b/fs/overlayfs/readdir.c
-index d1b4403..4c18abf 100644
---- a/fs/overlayfs/readdir.c
-+++ b/fs/overlayfs/readdir.c
-@@ -28,8 +28,6 @@ struct ovl_cache_entry {
- };
- 
- struct ovl_readdir_data {
--	struct dir_context ctx;
--	bool is_merge;
- 	struct rb_root *root;
- 	struct list_head *list;
- 	struct list_head *middle;
-@@ -127,12 +125,13 @@ static int ovl_cache_entry_add_rb(struct ovl_readdir_data *rdd,
- 	return 0;
- }
- 
--static int ovl_fill_lower(struct ovl_readdir_data *rdd,
--			  const char *name, int namelen,
--			  loff_t offset, u64 ino, unsigned int d_type)
-+static int ovl_fill_lower(void *buf, const char *name, int namelen,
-+			    loff_t offset, u64 ino, unsigned int d_type)
- {
-+	struct ovl_readdir_data *rdd = buf;
- 	struct ovl_cache_entry *p;
- 
-+	rdd->count++;
- 	p = ovl_cache_entry_find(rdd->root, name, namelen);
- 	if (p) {
- 		list_move_tail(&p->l_node, rdd->middle);
-@@ -158,20 +157,17 @@ static void ovl_cache_free(struct list_head *list)
- 	INIT_LIST_HEAD(list);
- }
- 
--static int ovl_fill_merge(void *buf, const char *name, int namelen,
-+static int ovl_fill_upper(void *buf, const char *name, int namelen,
- 			  loff_t offset, u64 ino, unsigned int d_type)
- {
- 	struct ovl_readdir_data *rdd = buf;
- 
- 	rdd->count++;
--	if (!rdd->is_merge)
--		return ovl_cache_entry_add_rb(rdd, name, namelen, ino, d_type);
--	else
--		return ovl_fill_lower(rdd, name, namelen, offset, ino, d_type);
-+	return ovl_cache_entry_add_rb(rdd, name, namelen, ino, d_type);
- }
- 
- static inline int ovl_dir_read(struct path *realpath,
--			       struct ovl_readdir_data *rdd)
-+			       struct ovl_readdir_data *rdd, filldir_t filler)
- {
- 	struct file *realfile;
- 	int err;
-@@ -180,11 +176,10 @@ static inline int ovl_dir_read(struct path *realpath,
- 	if (IS_ERR(realfile))
- 		return PTR_ERR(realfile);
- 
--	rdd->ctx.pos = 0;
- 	do {
- 		rdd->count = 0;
- 		rdd->err = 0;
--		err = iterate_dir(realfile, &rdd->ctx);
-+		err = vfs_readdir(realfile, filler, rdd);
- 		if (err >= 0)
- 			err = rdd->err;
- 	} while (!err && rdd->count);
-@@ -254,25 +249,20 @@ static int ovl_dir_mark_whiteouts(struct ovl_readdir_data *rdd)
- 
- static inline int ovl_dir_read_merged(struct path *upperpath,
- 				      struct path *lowerpath,
--				      struct list_head *list)
-+				      struct ovl_readdir_data *rdd)
- {
- 	int err;
- 	struct rb_root root = RB_ROOT;
- 	struct list_head middle;
--	struct ovl_readdir_data rdd = {
--		.ctx.actor = ovl_fill_merge,
--		.list = list,
--		.root = &root,
--		.is_merge = false,
--	};
- 
-+	rdd->root = &root;
- 	if (upperpath->dentry) {
--		rdd.dir = upperpath->dentry;
--		err = ovl_dir_read(upperpath, &rdd);
-+		rdd->dir = upperpath->dentry;
-+		err = ovl_dir_read(upperpath, rdd, ovl_fill_upper);
- 		if (err)
- 			goto out;
- 
--		err = ovl_dir_mark_whiteouts(&rdd);
-+		err = ovl_dir_mark_whiteouts(rdd);
- 		if (err)
- 			goto out;
- 	}
-@@ -280,12 +270,13 @@ static inline int ovl_dir_read_merged(struct path *upperpath,
- 	 * Insert lowerpath entries before upperpath ones, this allows
- 	 * offsets to be reasonably constant
- 	 */
--	list_add(&middle, rdd.list);
--	rdd.middle = &middle;
--	rdd.is_merge = true;
--	err = ovl_dir_read(lowerpath, &rdd);
-+	list_add(&middle, rdd->list);
-+	rdd->middle = &middle;
-+	err = ovl_dir_read(lowerpath, rdd, ovl_fill_lower);
- 	list_del(&middle);
- out:
-+	rdd->root = NULL;
-+
- 	return err;
- }
- 
-@@ -303,16 +294,17 @@ static void ovl_seek_cursor(struct ovl_dir_file *od, loff_t pos)
- 	list_move_tail(&od->cursor, l);
- }
- 
--static int ovl_iterate(struct file *file, struct dir_context *ctx)
-+static int ovl_readdir(struct file *file, void *buf, filldir_t filler)
- {
- 	struct ovl_dir_file *od = file->private_data;
- 	int res;
- 
--	if (!ctx->pos)
-+	if (!file->f_pos)
- 		ovl_dir_reset(file);
- 
- 	if (od->is_real) {
--		res = iterate_dir(od->realfile, ctx);
-+		res = vfs_readdir(od->realfile, filler, buf);
-+		file->f_pos = od->realfile->f_pos;
- 
- 		return res;
- 	}
-@@ -320,31 +312,37 @@ static int ovl_iterate(struct file *file, struct dir_context *ctx)
- 	if (!od->is_cached) {
- 		struct path lowerpath;
- 		struct path upperpath;
-+		struct ovl_readdir_data rdd = { .list = &od->cache };
- 
- 		ovl_path_lower(file->f_path.dentry, &lowerpath);
- 		ovl_path_upper(file->f_path.dentry, &upperpath);
- 
--		res = ovl_dir_read_merged(&upperpath, &lowerpath, &od->cache);
-+		res = ovl_dir_read_merged(&upperpath, &lowerpath, &rdd);
- 		if (res) {
--			ovl_cache_free(&od->cache);
-+			ovl_cache_free(rdd.list);
- 			return res;
- 		}
- 
- 		od->cache_version = ovl_dentry_version_get(file->f_path.dentry);
- 		od->is_cached = true;
- 
--		ovl_seek_cursor(od, ctx->pos);
-+		ovl_seek_cursor(od, file->f_pos);
- 	}
- 
- 	while (od->cursor.next != &od->cache) {
-+		int over;
-+		loff_t off;
- 		struct ovl_cache_entry *p;
- 
- 		p = list_entry(od->cursor.next, struct ovl_cache_entry, l_node);
-+		off = file->f_pos;
- 		if (!p->is_whiteout) {
--			if (!dir_emit(ctx, p->name, p->len, p->ino, p->type))
-+			over = filler(buf, p->name, p->len, off, p->ino,
-+				      p->type);
-+			if (over)
- 				break;
- 		}
--		ctx->pos++;
-+		file->f_pos++;
- 		list_move(&od->cursor, &p->l_node);
- 	}
- 
-@@ -452,7 +450,7 @@ static int ovl_dir_open(struct inode *inode, struct file *file)
- const struct file_operations ovl_dir_operations = {
- 	.read		= generic_read_dir,
- 	.open		= ovl_dir_open,
--	.iterate	= ovl_iterate,
-+	.readdir	= ovl_readdir,
- 	.llseek		= ovl_dir_llseek,
- 	.fsync		= ovl_dir_fsync,
- 	.release	= ovl_dir_release,
-@@ -464,11 +462,12 @@ static int ovl_check_empty_dir(struct dentry *dentry, struct list_head *list)
- 	struct path lowerpath;
- 	struct path upperpath;
- 	struct ovl_cache_entry *p;
-+	struct ovl_readdir_data rdd = { .list = list };
- 
- 	ovl_path_upper(dentry, &upperpath);
- 	ovl_path_lower(dentry, &lowerpath);
- 
--	err = ovl_dir_read_merged(&upperpath, &lowerpath, list);
-+	err = ovl_dir_read_merged(&upperpath, &lowerpath, &rdd);
- 	if (err)
- 		return err;
- 
 diff --git a/fs/proc/base.c b/fs/proc/base.c
 index 6e704cf..55e2d89 100644
 --- a/fs/proc/base.c
@@ -34694,171 +33858,8 @@ index 123c198..98d9800 100644
  		dev = inode->i_sb->s_dev;
  		ino = inode->i_ino;
  		pgoff = (loff_t)vma->vm_pgoff << PAGE_SHIFT;
-diff --git a/fs/readdir.c b/fs/readdir.c
-index d46eca8..fee38e0 100644
---- a/fs/readdir.c
-+++ b/fs/readdir.c
-@@ -20,11 +20,11 @@
- 
- #include <asm/uaccess.h>
- 
--int iterate_dir(struct file *file, struct dir_context *ctx)
-+int vfs_readdir(struct file *file, filldir_t filler, void *buf)
- {
- 	struct inode *inode = file_inode(file);
- 	int res = -ENOTDIR;
--	if (!file->f_op || (!file->f_op->readdir && !file->f_op->iterate))
-+	if (!file->f_op || !file->f_op->readdir)
- 		goto out;
- 
- 	res = security_file_permission(file, MAY_READ);
-@@ -37,21 +37,15 @@ int iterate_dir(struct file *file, struct dir_context *ctx)
- 
- 	res = -ENOENT;
- 	if (!IS_DEADDIR(inode)) {
--		if (file->f_op->iterate) {
--			ctx->pos = file->f_pos;
--			res = file->f_op->iterate(file, ctx);
--			file->f_pos = ctx->pos;
--		} else {
--			res = file->f_op->readdir(file, ctx, ctx->actor);
--			ctx->pos = file->f_pos;
--		}
-+		res = file->f_op->readdir(file, buf, filler);
- 		file_accessed(file);
- 	}
- 	mutex_unlock(&inode->i_mutex);
- out:
- 	return res;
- }
--EXPORT_SYMBOL(iterate_dir);
-+
-+EXPORT_SYMBOL(vfs_readdir);
- 
- /*
-  * Traditional linux readdir() handling..
-@@ -72,7 +66,6 @@ struct old_linux_dirent {
- };
- 
- struct readdir_callback {
--	struct dir_context ctx;
- 	struct old_linux_dirent __user * dirent;
- 	int result;
- };
-@@ -80,7 +73,7 @@ struct readdir_callback {
- static int fillonedir(void * __buf, const char * name, int namlen, loff_t offset,
- 		      u64 ino, unsigned int d_type)
- {
--	struct readdir_callback *buf = (struct readdir_callback *) __buf;
-+	struct readdir_callback * buf = (struct readdir_callback *) __buf;
- 	struct old_linux_dirent __user * dirent;
- 	unsigned long d_ino;
- 
-@@ -114,15 +107,15 @@ SYSCALL_DEFINE3(old_readdir, unsigned int, fd,
- {
- 	int error;
- 	struct fd f = fdget(fd);
--	struct readdir_callback buf = {
--		.ctx.actor = fillonedir,
--		.dirent = dirent
--	};
-+	struct readdir_callback buf;
- 
- 	if (!f.file)
- 		return -EBADF;
- 
--	error = iterate_dir(f.file, &buf.ctx);
-+	buf.result = 0;
-+	buf.dirent = dirent;
-+
-+	error = vfs_readdir(f.file, fillonedir, &buf);
- 	if (buf.result)
- 		error = buf.result;
- 
-@@ -144,7 +137,6 @@ struct linux_dirent {
- };
- 
- struct getdents_callback {
--	struct dir_context ctx;
- 	struct linux_dirent __user * current_dir;
- 	struct linux_dirent __user * previous;
- 	int count;
-@@ -199,11 +191,7 @@ SYSCALL_DEFINE3(getdents, unsigned int, fd,
- {
- 	struct fd f;
- 	struct linux_dirent __user * lastdirent;
--	struct getdents_callback buf = {
--		.ctx.actor = filldir,
--		.count = count,
--		.current_dir = dirent
--	};
-+	struct getdents_callback buf;
- 	int error;
- 
- 	if (!access_ok(VERIFY_WRITE, dirent, count))
-@@ -213,12 +201,17 @@ SYSCALL_DEFINE3(getdents, unsigned int, fd,
- 	if (!f.file)
- 		return -EBADF;
- 
--	error = iterate_dir(f.file, &buf.ctx);
-+	buf.current_dir = dirent;
-+	buf.previous = NULL;
-+	buf.count = count;
-+	buf.error = 0;
-+
-+	error = vfs_readdir(f.file, filldir, &buf);
- 	if (error >= 0)
- 		error = buf.error;
- 	lastdirent = buf.previous;
- 	if (lastdirent) {
--		if (put_user(buf.ctx.pos, &lastdirent->d_off))
-+		if (put_user(f.file->f_pos, &lastdirent->d_off))
- 			error = -EFAULT;
- 		else
- 			error = count - buf.count;
-@@ -228,7 +221,6 @@ SYSCALL_DEFINE3(getdents, unsigned int, fd,
- }
- 
- struct getdents_callback64 {
--	struct dir_context ctx;
- 	struct linux_dirent64 __user * current_dir;
- 	struct linux_dirent64 __user * previous;
- 	int count;
-@@ -279,11 +271,7 @@ SYSCALL_DEFINE3(getdents64, unsigned int, fd,
- {
- 	struct fd f;
- 	struct linux_dirent64 __user * lastdirent;
--	struct getdents_callback64 buf = {
--		.ctx.actor = filldir64,
--		.count = count,
--		.current_dir = dirent
--	};
-+	struct getdents_callback64 buf;
- 	int error;
- 
- 	if (!access_ok(VERIFY_WRITE, dirent, count))
-@@ -293,12 +281,17 @@ SYSCALL_DEFINE3(getdents64, unsigned int, fd,
- 	if (!f.file)
- 		return -EBADF;
- 
--	error = iterate_dir(f.file, &buf.ctx);
-+	buf.current_dir = dirent;
-+	buf.previous = NULL;
-+	buf.count = count;
-+	buf.error = 0;
-+
-+	error = vfs_readdir(f.file, filldir64, &buf);
- 	if (error >= 0)
- 		error = buf.error;
- 	lastdirent = buf.previous;
- 	if (lastdirent) {
--		typeof(lastdirent->d_off) d_off = buf.ctx.pos;
-+		typeof(lastdirent->d_off) d_off = f.file->f_pos;
- 		if (__put_user(d_off, &lastdirent->d_off))
- 			error = -EFAULT;
- 		else
 diff --git a/fs/splice.c b/fs/splice.c
-index 0f54632..59e8a78 100644
+index ce6ffe9..e97702b 100644
 --- a/fs/splice.c
 +++ b/fs/splice.c
 @@ -1120,8 +1120,8 @@ EXPORT_SYMBOL(generic_splice_sendpage);
@@ -34898,160 +33899,6 @@ index 0f54632..59e8a78 100644
  
  /**
   * splice_direct_to_actor - splices data directly between two non-pipes
-diff --git a/fs/squashfs/dir.c b/fs/squashfs/dir.c
-index d8c2d74..1c3952a 100644
---- a/fs/squashfs/dir.c
-+++ b/fs/squashfs/dir.c
-@@ -107,7 +107,7 @@ static int get_dir_index_using_offset(struct super_block *sb,
- }
- 
- 
--static int squashfs_readdir(struct file *file, struct dir_context *ctx)
-+static int squashfs_readdir(struct file *file, void *dirent, filldir_t filldir)
- {
- 	struct inode *inode = file_inode(file);
- 	struct squashfs_sb_info *msblk = inode->i_sb->s_fs_info;
-@@ -133,11 +133,11 @@ static int squashfs_readdir(struct file *file, struct dir_context *ctx)
- 	 * It also means that the external f_pos is offset by 3 from the
- 	 * on-disk directory f_pos.
- 	 */
--	while (ctx->pos < 3) {
-+	while (file->f_pos < 3) {
- 		char *name;
- 		int i_ino;
- 
--		if (ctx->pos == 0) {
-+		if (file->f_pos == 0) {
- 			name = ".";
- 			size = 1;
- 			i_ino = inode->i_ino;
-@@ -147,18 +147,24 @@ static int squashfs_readdir(struct file *file, struct dir_context *ctx)
- 			i_ino = squashfs_i(inode)->parent;
- 		}
- 
--		if (!dir_emit(ctx, name, size, i_ino,
--				squashfs_filetype_table[1]))
-+		TRACE("Calling filldir(%p, %s, %d, %lld, %d, %d)\n",
-+				dirent, name, size, file->f_pos, i_ino,
-+				squashfs_filetype_table[1]);
-+
-+		if (filldir(dirent, name, size, file->f_pos, i_ino,
-+				squashfs_filetype_table[1]) < 0) {
-+				TRACE("Filldir returned less than 0\n");
- 			goto finish;
-+		}
- 
--		ctx->pos += size;
-+		file->f_pos += size;
- 	}
- 
- 	length = get_dir_index_using_offset(inode->i_sb, &block, &offset,
- 				squashfs_i(inode)->dir_idx_start,
- 				squashfs_i(inode)->dir_idx_offset,
- 				squashfs_i(inode)->dir_idx_cnt,
--				ctx->pos);
-+				file->f_pos);
- 
- 	while (length < i_size_read(inode)) {
- 		/*
-@@ -198,7 +204,7 @@ static int squashfs_readdir(struct file *file, struct dir_context *ctx)
- 
- 			length += sizeof(*dire) + size;
- 
--			if (ctx->pos >= length)
-+			if (file->f_pos >= length)
- 				continue;
- 
- 			dire->name[size] = '\0';
-@@ -209,12 +215,22 @@ static int squashfs_readdir(struct file *file, struct dir_context *ctx)
- 			if (type > SQUASHFS_MAX_DIR_TYPE)
- 				goto failed_read;
- 
--			if (!dir_emit(ctx, dire->name, size,
-+			TRACE("Calling filldir(%p, %s, %d, %lld, %x:%x, %d, %d)"
-+					"\n", dirent, dire->name, size,
-+					file->f_pos,
-+					le32_to_cpu(dirh.start_block),
-+					le16_to_cpu(dire->offset),
-+					inode_number,
-+					squashfs_filetype_table[type]);
-+
-+			if (filldir(dirent, dire->name, size, file->f_pos,
- 					inode_number,
--					squashfs_filetype_table[type]))
-+					squashfs_filetype_table[type]) < 0) {
-+				TRACE("Filldir returned less than 0\n");
- 				goto finish;
-+			}
- 
--			ctx->pos = length;
-+			file->f_pos = length;
- 		}
- 	}
- 
-@@ -231,6 +247,6 @@ failed_read:
- 
- const struct file_operations squashfs_dir_ops = {
- 	.read = generic_read_dir,
--	.iterate = squashfs_readdir,
-+	.readdir = squashfs_readdir,
- 	.llseek = default_llseek,
- };
-diff --git a/fs/super.c b/fs/super.c
-index fae4651..4410e74 100644
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -163,6 +163,19 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags)
- 			s = NULL;
- 			goto out;
- 		}
-+#ifdef CONFIG_SMP
-+		s->s_files = alloc_percpu(struct list_head);
-+		if (!s->s_files)
-+			goto err_out;
-+		else {
-+			int i;
-+
-+			for_each_possible_cpu(i)
-+				INIT_LIST_HEAD(per_cpu_ptr(s->s_files, i));
-+		}
-+#else
-+		INIT_LIST_HEAD(&s->s_files);
-+#endif
- 		if (init_sb_writers(s, type))
- 			goto err_out;
- 		s->s_flags = flags;
-@@ -212,6 +225,10 @@ out:
- 	return s;
- err_out:
- 	security_sb_free(s);
-+#ifdef CONFIG_SMP
-+	if (s->s_files)
-+		free_percpu(s->s_files);
-+#endif
- 	destroy_sb_writers(s);
- 	kfree(s);
- 	s = NULL;
-@@ -226,6 +243,9 @@ err_out:
-  */
- static inline void destroy_super(struct super_block *s)
- {
-+#ifdef CONFIG_SMP
-+	free_percpu(s->s_files);
-+#endif
- 	destroy_sb_writers(s);
- 	security_sb_free(s);
- 	WARN_ON(!list_empty(&s->s_mounts));
-@@ -706,8 +726,7 @@ int do_remount_sb(struct super_block *sb, int flags, void *data, int force)
- 	   make sure there are no rw files opened */
- 	if (remount_ro) {
- 		if (force) {
--			sb->s_readonly_remount = 1;
--			smp_wmb();
-+			mark_files_ro(sb);
- 		} else {
- 			retval = sb_prepare_remount_readonly(sb);
- 			if (retval)
 diff --git a/fs/xattr.c b/fs/xattr.c
 index 3377dff..1de03c8 100644
 --- a/fs/xattr.c
@@ -35065,10 +33912,23 @@ index 3377dff..1de03c8 100644
  /* Compare an extended attribute value with the given value */
  int vfs_xattr_cmp(struct dentry *dentry, const char *xattr_name,
 diff --git a/include/linux/fs.h b/include/linux/fs.h
-index d729de5..a0731b8 100644
+index 5c9dc84..a0731b8 100644
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -768,7 +768,12 @@ static inline int ra_has_index(struct file_ra_state *ra, pgoff_t index)
+@@ -245,6 +245,12 @@ struct iattr {
+  */
+ #include <linux/quota.h>
+ 
++/*
++ * Maximum number of layers of fs stack.  Needs to be limited to
++ * prevent kernel stack overflow
++ */
++#define FILESYSTEM_MAX_STACK_DEPTH 2
++
+ /** 
+  * enum positive_aop_returns - aop return codes with specific semantics
+  *
+@@ -762,7 +768,12 @@ static inline int ra_has_index(struct file_ra_state *ra, pgoff_t index)
  #define FILE_MNT_WRITE_RELEASED	2
  
  struct file {
@@ -35081,7 +33941,7 @@ index d729de5..a0731b8 100644
  		struct llist_node	fu_llist;
  		struct rcu_head 	fu_rcuhead;
  	} f_u;
-@@ -782,6 +787,9 @@ struct file {
+@@ -776,6 +787,9 @@ struct file {
  	 * Must not be taken from IRQ context.
  	 */
  	spinlock_t		f_lock;
@@ -35091,7 +33951,7 @@ index d729de5..a0731b8 100644
  	atomic_long_t		f_count;
  	unsigned int 		f_flags;
  	fmode_t			f_mode;
-@@ -1257,6 +1265,11 @@ struct super_block {
+@@ -1251,6 +1265,11 @@ struct super_block {
  
  	struct list_head	s_inodes;	/* all inodes */
  	struct hlist_bl_head	s_anon;		/* anonymous dentries for (nfs) exporting */
@@ -35103,33 +33963,32 @@ index d729de5..a0731b8 100644
  	struct list_head	s_mounts;	/* list of mounts; _not_ for fs use */
  	/* s_dentry_lru, s_nr_dentry_unused protected by dcache.c lru locks */
  	struct list_head	s_dentry_lru;	/* unused dentry lru */
-@@ -1506,17 +1519,6 @@ int fiemap_check_flags(struct fiemap_extent_info *fieinfo, u32 fs_flags);
-  * to have different dirent layouts depending on the binary type.
-  */
- typedef int (*filldir_t)(void *, const char *, int, loff_t, u64, unsigned);
--struct dir_context {
--	const filldir_t actor;
--	loff_t pos;
--};
--
--static inline bool dir_emit(struct dir_context *ctx,
--			    const char *name, int namelen,
--			    u64 ino, unsigned type)
--{
--	return ctx->actor(ctx, name, namelen, ctx->pos, ino, type) == 0;
--}
- struct block_device_operations;
+@@ -1311,6 +1330,11 @@ struct super_block {
  
- /* These macros are for out of kernel modules to test that
-@@ -1533,7 +1535,6 @@ struct file_operations {
- 	ssize_t (*aio_read) (struct kiocb *, const struct iovec *, unsigned long, loff_t);
- 	ssize_t (*aio_write) (struct kiocb *, const struct iovec *, unsigned long, loff_t);
- 	int (*readdir) (struct file *, void *, filldir_t);
--	int (*iterate) (struct file *, struct dir_context *);
- 	unsigned int (*poll) (struct file *, struct poll_table_struct *);
- 	long (*unlocked_ioctl) (struct file *, unsigned int, unsigned long);
- 	long (*compat_ioctl) (struct file *, unsigned int, unsigned long);
-@@ -2026,6 +2027,7 @@ extern struct file * dentry_open(const struct path *, int, const struct cred *);
+ 	/* Being remounted read-only */
+ 	int s_readonly_remount;
++
++	/*
++	 * Indicates how deep in a filesystem stack this SB is
++	 */
++	int s_stack_depth;
+ };
+ 
+ /* superblock cache pruning functions */
+@@ -1564,6 +1588,7 @@ struct inode_operations {
+ 	int (*atomic_open)(struct inode *, struct dentry *,
+ 			   struct file *, unsigned open_flag,
+ 			   umode_t create_mode, int *opened);
++	int (*dentry_open)(struct dentry *, struct file *, const struct cred *);
+ } ____cacheline_aligned;
+ 
+ ssize_t rw_copy_check_uvector(int type, const struct iovec __user * uvector,
+@@ -1997,10 +2022,12 @@ extern struct file *file_open_name(struct filename *, int, umode_t);
+ extern struct file *filp_open(const char *, int, umode_t);
+ extern struct file *file_open_root(struct dentry *, struct vfsmount *,
+ 				   const char *, int);
++extern int vfs_open(const struct path *, struct file *, const struct cred *);
+ extern struct file * dentry_open(const struct path *, int, const struct cred *);
  extern int filp_close(struct file *, fl_owner_t id);
  
  extern struct filename *getname(const char __user *);
@@ -35137,15 +33996,33 @@ index d729de5..a0731b8 100644
  
  enum {
  	FILE_CREATED = 1,
-@@ -2513,7 +2515,6 @@ loff_t inode_get_bytes(struct inode *inode);
- void inode_set_bytes(struct inode *inode, loff_t bytes);
+@@ -2197,6 +2224,7 @@ extern sector_t bmap(struct inode *, sector_t);
+ #endif
+ extern int notify_change(struct dentry *, struct iattr *);
+ extern int inode_permission(struct inode *, int);
++extern int __inode_permission(struct inode *, int);
+ extern int generic_permission(struct inode *, int);
  
- extern int vfs_readdir(struct file *, filldir_t, void *);
--extern int iterate_dir(struct file *, struct dir_context *);
+ static inline bool execute_ok(struct inode *inode)
+@@ -2403,6 +2431,9 @@ extern ssize_t generic_file_splice_write(struct pipe_inode_info *,
+ 		struct file *, loff_t *, size_t, unsigned int);
+ extern ssize_t generic_splice_sendpage(struct pipe_inode_info *pipe,
+ 		struct file *out, loff_t *, size_t len, unsigned int flags);
++extern long do_splice_direct(struct file *in, loff_t *ppos, struct file *out,
++		loff_t *opos, size_t len, unsigned int flags);
++
  
- extern int vfs_stat(const char __user *, struct kstat *);
- extern int vfs_lstat(const char __user *, struct kstat *);
-@@ -2595,6 +2596,7 @@ extern int inode_change_ok(const struct inode *, struct iattr *);
+ extern void
+ file_ra_state_init(struct file_ra_state *ra, struct address_space *mapping);
+@@ -2532,6 +2563,7 @@ extern int simple_write_begin(struct file *file, struct address_space *mapping,
+ extern int simple_write_end(struct file *file, struct address_space *mapping,
+ 			loff_t pos, unsigned len, unsigned copied,
+ 			struct page *page, void *fsdata);
++extern struct inode *alloc_anon_inode(struct super_block *);
+ 
+ extern struct dentry *simple_lookup(struct inode *, struct dentry *, unsigned int flags);
+ extern ssize_t generic_read_dir(struct file *, char __user *, size_t, loff_t *);
+@@ -2564,6 +2596,7 @@ extern int inode_change_ok(const struct inode *, struct iattr *);
  extern int inode_newsize_ok(const struct inode *, loff_t offset);
  extern void setattr_copy(struct inode *inode, const struct iattr *attr);
  
@@ -35222,7 +34099,7 @@ index 74575cb..bfc6fb6 100644
 +			 unsigned int flags);
  #endif
 diff --git a/include/uapi/linux/Kbuild b/include/uapi/linux/Kbuild
-index bdc6e87..349600c 100644
+index edbe6a9..8d33e17 100644
 --- a/include/uapi/linux/Kbuild
 +++ b/include/uapi/linux/Kbuild
 @@ -56,6 +56,7 @@ header-y += atmppp.h
