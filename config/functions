@@ -1088,9 +1088,14 @@ install_addon_images() {
     cp "$PKG_DIR/icon/icon.png" "$dest_dir/resources"
   fi
 
-  if [ -f "$DISTRO_DIR/$DISTRO/addons/fanart.png" ]; then
+  if [ -f "$PKG_DIR/fanart/fanart.png" ]; then
     mkdir -p "$dest_dir/resources"
-    cp "$DISTRO_DIR/$DISTRO/addons/fanart.png" "$dest_dir/resources"
+    cp "$PKG_DIR/fanart/fanart.png" "$dest_dir/resources"
+  else
+    if [ -f "$DISTRO_DIR/$DISTRO/addons/fanart.png" ]; then
+      mkdir -p "$dest_dir/resources"
+      cp "$DISTRO_DIR/$DISTRO/addons/fanart.png" "$dest_dir/resources"
+    fi
   fi
 }
 
