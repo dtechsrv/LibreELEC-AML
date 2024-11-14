@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="@PKG_ADDON_ID@" name="@ADDON_NAME@" version="@PKG_VERSION@" provider-name="@PROVIDER_NAME@">
+  <extension point="xbmc.addon.repository" name="@ADDON_NAME@">
+    <dir maxversion="18.9.0">
+      <info compressed="false">@PKG_SITE@addons.xml</info>
+      <checksum>@PKG_SITE@addons.xml.md5</checksum>
+      <datadir zip="true">@PKG_SITE@</datadir>
+      <hashes>false</hashes>
+    </dir>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>@PKG_SHORTDESC@</summary>
+    <description>
+@PKG_LONGDESC@
+    </description>
+    <platform>all</platform>
+    <news>
+@PKG_ADDON_NEWS@
+    </news>
+    <assets>
+      <icon>resources/icon.png</icon>
+      <fanart>resources/fanart.png</fanart>
+    </assets>
+  </extension>
+</addon>

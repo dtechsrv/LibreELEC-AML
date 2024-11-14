@@ -1,0 +1,11 @@
+1.0.2
+- make compatible with the LE package format
+- replace the fanart image
+- add changelog
+- move icon and fanart to the resources directory
+
+1.0.1
+- fix a typo
+
+1.0.0
+- initial version
