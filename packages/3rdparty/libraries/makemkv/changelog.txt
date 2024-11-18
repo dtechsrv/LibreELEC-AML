@@ -1,3 +1,10 @@
+126
+- updated again to 1.17.8
+- add method to patch makemkvcon binary using patchelf
+- and missing dependent files from glibc-2.34 for all platforms
+- modify makemkvcon bootstrap script to prepare environment for the new libs
+- add ability to download missing sdf.bin for new installation
+
 125
 - rollback to 1.17.7 because the updated closed source binary is broken
 

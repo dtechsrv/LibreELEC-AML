@@ -3,9 +3,9 @@
 # Copyright (C) 2022-present Gabor Dee (dee.gabor@gmail.com)
 
 PKG_NAME="makemkv"
-PKG_VERSION="1.17.7"
-PKG_SHA256="762e552d46f9ec75a7c62dcb7d97c0fd9e6a15120d0ef6f5a080cee291d3a0ef"
-PKG_REV="125"
+PKG_VERSION="1.17.8"
+PKG_SHA256="92752bce3fc9f97939375b60d2af622174fe86a4ad9248cbdd8736629e6dbc8a"
+PKG_REV="126"
 PKG_ARCH="x86_64 arm aarch64"
 PKG_LICENSE="OSS"
 PKG_SITE="http://makemkv.com/"
@@ -49,8 +49,8 @@ addon() {
   install -m 0755 $(get_build_dir makemkv-bin)/bin/${BIN_ARCH}/makemkvcon ${ADDON_BUILD}/${PKG_ADDON_ID}/bin/makemkvcon.bin
 
   # Copy additional binaries
-  cp ${PKG_BUILD}/out/mmccextr ${ADDON_BUILD}/${PKG_ADDON_ID}/bin
-  cp ${PKG_BUILD}/out/mmgplsrv ${ADDON_BUILD}/${PKG_ADDON_ID}/bin
+  cp -P ${PKG_BUILD}/out/mmccextr ${ADDON_BUILD}/${PKG_ADDON_ID}/bin
+  cp -P ${PKG_BUILD}/out/mmgplsrv ${ADDON_BUILD}/${PKG_ADDON_ID}/bin
 
   # Copy licence file
   mkdir -p ${ADDON_BUILD}/${PKG_ADDON_ID}/license
@@ -58,8 +58,12 @@ addon() {
 
   # Install libs
   mkdir -p ${ADDON_BUILD}/${PKG_ADDON_ID}/lib
-  cp ${PKG_BUILD}/out/libmakemkv.so.? ${ADDON_BUILD}/${PKG_ADDON_ID}/lib
-  cp ${PKG_BUILD}/out/libdriveio.so.? ${ADDON_BUILD}/${PKG_ADDON_ID}/lib
-  cp ${PKG_BUILD}/out/libmmbd.so.? ${ADDON_BUILD}/${PKG_ADDON_ID}/lib
+  cp -P ${PKG_BUILD}/out/libmakemkv.so.? ${ADDON_BUILD}/${PKG_ADDON_ID}/lib
+  cp -P ${PKG_BUILD}/out/libdriveio.so.? ${ADDON_BUILD}/${PKG_ADDON_ID}/lib
+  cp -P ${PKG_BUILD}/out/libmmbd.so.? ${ADDON_BUILD}/${PKG_ADDON_ID}/lib
   cp -PL $(get_build_dir openssl)/.install_pkg/usr/lib/libcrypto.so.?.? ${ADDON_BUILD}/${PKG_ADDON_ID}/lib
+
+  # Patch binary and add dependent libraries
+  patchelf --set-interpreter /storage/.kodi/addons/${PKG_ADDON_ID}/lib/ld.so --set-rpath /storage/.kodi/addons/${PKG_ADDON_ID}/lib/ --force-rpath ${ADDON_BUILD}/${PKG_ADDON_ID}/bin/makemkvcon.bin
+  cp -PR ${PKG_DIR}/glibc-deps/${TARGET_ARCH}/* ${ADDON_BUILD}/${PKG_ADDON_ID}/lib
 }

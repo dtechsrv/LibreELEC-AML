@@ -6,12 +6,17 @@
 . /etc/profile
 
 ADDON_DIR="/storage/.kodi/addons/lib.multimedia.makemkv"
-SETTINGS_FILE=$HOME/.config/MakeMKV/settings.conf
+SETTINGS_FILE=${HOME}/.config/MakeMKV/settings.conf
 
-if [ ! -f $SETTINGS_FILE ] || [ ! -L /storage/.MakeMKV ]; then
+if [ ! -L ${ADDON_DIR}/lib/ld.so ]; then
+  chmod +x ${ADDON_DIR}/lib/ld-*
+  ln -sf ${ADDON_DIR}/lib/ld-* ${ADDON_DIR}/lib/ld.so
+fi
+
+if [ ! -f ${SETTINGS_FILE} ] || [ ! -L "/storage/.MakeMKV" ]; then
   makemkv-key-update
 fi
 
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$ADDON_DIR/lib"
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${ADDON_DIR}/lib"
 
 makemkvcon.bin $@
