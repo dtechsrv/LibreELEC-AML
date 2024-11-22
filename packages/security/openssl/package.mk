@@ -3,11 +3,11 @@
 # Copyright (C) 2016-present Team LibreELEC (https://libreelec.tv)
 
 PKG_NAME="openssl"
-PKG_VERSION="1.1.1w"
-PKG_SHA256="cf3098950cb4d853ad95c0841f1f9c6d3dc102dccfcacd521d93925208b76ac8"
+PKG_VERSION="1.1.1zb_p1"
+PKG_SHA256="e9d120b2e2b9fcbd5de82e34a25582dafa49689fe8a1ecbdc4bca238ffa30647"
 PKG_LICENSE="BSD"
 PKG_SITE="https://www.openssl.org"
-PKG_URL="https://www.openssl.org/source/${PKG_NAME}-${PKG_VERSION}.tar.gz"
+PKG_URL="https://github.com/kzalewski/openssl-1.1.1/archive/${PKG_VERSION}.tar.gz"
 PKG_DEPENDS_HOST="ccache:host"
 PKG_DEPENDS_TARGET="toolchain"
 PKG_LONGDESC="The Open Source toolkit for Secure Sockets Layer and Transport Layer Security"
