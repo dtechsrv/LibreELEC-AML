@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
-# Copyright (C) 2018-present Team CoreELEC (https://coreelec.org)
+# Copyright (C) 2018-2023 Team CoreELEC (https://coreelec.org)
+# Copyright (C) 2024-present Gabor Dee (dee.gabor@gmail.com)
 
 PKG_NAME="media_tree_aml"
 PKG_VERSION="f9a4b158183866c589ee8c06ab740f41aa08fa66"

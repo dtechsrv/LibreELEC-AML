@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
-# Copyright (C) 2016-present Team LibreELEC (https://libreelec.tv)
+# Copyright (C) 2016-2020 Team LibreELEC (https://libreelec.tv)
+# Copyright (C) 2021-present Gabor Dee (dee.gabor@gmail.com)
 
 PKG_NAME="dvb-latest"
 PKG_VERSION="0f25e6fb13b6bc345218800ad9ac863deb2ee9c8"
