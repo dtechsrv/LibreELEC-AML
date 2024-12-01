@@ -18,16 +18,16 @@ PKG_PATCH_DIRS="${LINUX}"
 case "${LINUX}" in
   amlogic-3.10)
     PKG_VERSION="1be06c2371eb3cc3376b282cf77b4d4dee50f01f"
-    PKG_SHA256="40c3436bfe4470e46d7556d6247d9fa33cb7a314ae31280035036ac5f12bbd73"
-    PKG_URL="https://github.com/dtechsrv/linux-${LINUX}/archive/${PKG_VERSION}.tar.gz"
+    PKG_SHA256="e3f1c493c606f27e3a653576774bc48ac06c940657b6a3343939dc5da8199924"
+    PKG_URL="https://github.com/dtechsrv/linux-amlogic/archive/${PKG_VERSION}.tar.gz"
     PKG_SOURCE_NAME="linux-${LINUX}-${PKG_VERSION}.tar.gz"
     PKG_DEPENDS_TARGET="${PKG_DEPENDS_TARGET} aml-dtbtools:host u-boot-tools-aml:host"
     PKG_BUILD_PERF="no"
     ;;
   amlogic-3.14)
     PKG_VERSION="79b5701b4bc6c0ed23f75a2b57fddff500f0a650"
-    PKG_SHA256="9c0674c8ec49ff7961b7da8112c26c09fcb3e68ff1ec3ce0509ffba3fd61f57e"
-    PKG_URL="https://github.com/dtechsrv/linux-${LINUX}/archive/${PKG_VERSION}.tar.gz"
+    PKG_SHA256="0855f7aedcb8e68747c0e8012e4ccdc414f89564f7b2dec0942bff8a33a416f3"
+    PKG_URL="https://github.com/dtechsrv/linux-amlogic/archive/${PKG_VERSION}.tar.gz"
     PKG_SOURCE_NAME="linux-${LINUX}-${PKG_VERSION}.tar.gz"
     PKG_DEPENDS_TARGET="${PKG_DEPENDS_TARGET} aml-dtbtools:host"
     PKG_BUILD_PERF="no"
