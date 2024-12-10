@@ -9,7 +9,7 @@ PKG_LICENSE="GPL"
 PKG_SITE="http://git.linuxtv.org/media_build.git"
 PKG_URL="https://git.linuxtv.org/media_build.git/snapshot/${PKG_VERSION}.tar.gz"
 PKG_DEPENDS_TARGET="toolchain linux media_tree"
-PKG_NEED_UNPACK="$LINUX_DEPENDS $(get_pkg_directory media_tree)"
+PKG_NEED_UNPACK="${LINUX_DEPENDS} $(get_pkg_directory media_tree)"
 PKG_SECTION="driver.dvb"
 PKG_LONGDESC="DVB drivers from the latest kernel (media_build)"
 
@@ -81,11 +81,10 @@ make_target() {
       sed -e 's/CONFIG_V4L_AMLOGIC_VIDEO2=m/# CONFIG_V4L_AMLOGIC_VIDEO2 is not set/g' -i ${PKG_BUILD}/v4l/.config
       sed -e 's/CONFIG_VIDEO_AU0828=m/# CONFIG_VIDEO_AU0828 is not set/g' -i ${PKG_BUILD}/v4l/.config
       sed -e 's/CONFIG_IR_NUVOTON=m/# CONFIG_IR_NUVOTON is not set/g' -i ${PKG_BUILD}/v4l/.config
-      sed -e 's/CONFIG_DVB_USB_TBS5520SE=m/# CONFIG_DVB_USB_TBS5520SE is not set/g' -i ${PKG_BUILD}/v4l/.config
     fi
   fi
 
-  kernel_make VER=$KERNEL_VER SRCDIR=$(kernel_path)
+  kernel_make VER=${KERNEL_VER} SRCDIR=$(kernel_path)
 }
 
 makeinstall_target() {
