@@ -24,10 +24,10 @@ PKG_ADDON_VERSION="${ADDON_VERSION}.${PKG_REV}"
 
 case "${LINUX}" in
   amlogic-3.10)
-    PKG_PATCH_DIRS+="amlogic-3.10"
+    PKG_PATCH_DIRS+=" amlogic-3.10"
     ;;
   amlogic-3.14)
-    PKG_PATCH_DIRS+="amlogic-3.14"
+    PKG_PATCH_DIRS+=" amlogic-3.14"
     PKG_DEPENDS_TARGET="${PKG_DEPENDS_TARGET} media_tree_aml"
     PKG_NEED_UNPACK="${PKG_NEED_UNPACK} $(get_pkg_directory media_tree_aml)"
     ;;
