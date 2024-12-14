@@ -1,0 +1,35 @@
+From 399f64e0c6664295dd9f5d14b49350ac58a8cc27 Mon Sep 17 00:00:00 2001
+From: Butterfly <gokhanlnx@gmail.com>
+Date: Thu, 9 Dec 2021 16:45:28 +0300
+Subject: [PATCH] Added new device IDs
+
+Added new device IDs
+---
+ os_dep/linux/usb_intf.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/os_dep/linux/usb_intf.c b/os_dep/linux/usb_intf.c
+index 433f45a..5247214 100644
+--- a/os_dep/linux/usb_intf.c
++++ b/os_dep/linux/usb_intf.c
+@@ -136,7 +136,8 @@ static void rtw_dev_shutdown(struct device *dev)
+ 
+ 
+ #define USB_VENDER_ID_REALTEK		0x0BDA
+-
++#define USB_VENDER_ID_ASUS		0x0B05
++#define USB_VENDER_ID_EDIMAX		0x7392
+ 
+ /* DID_USB_v916_20130116 */
+ static struct usb_device_id rtw_usb_id_tbl[] = {
+@@ -249,6 +250,10 @@ static struct usb_device_id rtw_usb_id_tbl[] = {
+ 	/*=== Realtek demoboard ===*/
+ 	{USB_DEVICE_AND_INTERFACE_INFO(USB_VENDER_ID_REALTEK, 0xF192, 0xff, 0xff, 0xff), .driver_info = RTL8192F}, /* 8192FU 2*2 */
+ 	{USB_DEVICE_AND_INTERFACE_INFO(USB_VENDER_ID_REALTEK, 0xA725, 0xff, 0xff, 0xff), .driver_info = RTL8192F}, /* 8725AU 2*2 */
++	/*=== Customer ID ===*/
++	{USB_DEVICE_AND_INTERFACE_INFO(USB_VENDER_ID_ASUS, 0x18F1, 0xff, 0xff, 0xff), .driver_info = RTL8192F}, /* 8192FU 2*2 */
++	{USB_DEVICE_AND_INTERFACE_INFO(USB_VENDER_ID_EDIMAX, 0xB722, 0xff, 0xff, 0xff), .driver_info = RTL8192F}, /* 8192FU 2*2 */
++	{USB_DEVICE_AND_INTERFACE_INFO(USB_VENDER_ID_REALTEK, 0x318B, 0xff, 0xff, 0xff), .driver_info = RTL8192F}, /* 8192FU 2*2 */
+ #endif
+ 
+ #ifdef CONFIG_RTL8821C
