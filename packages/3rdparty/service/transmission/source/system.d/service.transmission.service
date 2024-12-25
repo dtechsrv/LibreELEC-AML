@@ -4,7 +4,7 @@ After=graphical.target
 
 [Service]
 Type=idle
-ExecStart=/bin/sh -c "exec sh /storage/.kodi/addons/service.downloadmanager.transmission/bin/transmission.start"
+ExecStart=/bin/sh -c "exec sh /storage/.kodi/addons/service.transmission/bin/transmission.start"
 TimeoutStopSec=1
 Restart=always
 RestartSec=2

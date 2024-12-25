@@ -1,12 +1,7 @@
-102
-- updated to transmission 3.0.0 stable
-
-101
-- reworked build opts
-- updated to transmission 3.0.0 nightly
-
 100
-- reworked build opts
-- updated to transmission 2.94
-- updated translations
-- added configuration options
+- reset addon version
+- remove downloadmanager subcategory
+- rewrite service start script
+- rewrite configuration settings
+- rework localization files
+- add restart option when config changes

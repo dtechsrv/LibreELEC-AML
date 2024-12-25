@@ -1,0 +1,95 @@
+# Kodi Media Center language file
+# Addon Name: Transmission BitTorrent Client
+# Addon id: service.transmission
+# Addon Provider: dtech(.hu)
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: hu_HU\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#10000"
+msgid "Server Settings"
+msgstr "Szerver beállítások"
+
+msgctxt "#10001"
+msgid "Network Settings"
+msgstr "Hálózati beállítások"
+
+msgctxt "#10002"
+msgid "Directory Settings"
+msgstr "Könyvtár beállítások"
+
+msgctxt "#10100"
+msgid "User settings"
+msgstr "Felhasználó beállításai"
+
+msgctxt "#10101"
+msgid "Use authentification"
+msgstr "Hitelesítés használata"
+
+msgctxt "#10102"
+msgid "Username"
+msgstr "Felhasználónév"
+
+msgctxt "#10103"
+msgid "Password"
+msgstr "Jelszó"
+
+msgctxt "#10200"
+msgid "Communication port and protocol settings"
+msgstr "Kommunikációs port és protokoll beállítások"
+
+msgctxt "#10201"
+msgid "RPC port"
+msgstr "RPC port"
+
+msgctxt "#10202"
+msgid "Port for incoming peers"
+msgstr "Az átvitelhez használt port"
+
+msgctxt "#10203"
+msgid "Portmapping via NAT-PMP or UPnP"
+msgstr "Port átirányítása NAT-PMP vagy UPnP segítségével"
+
+msgctxt "#10204"
+msgid "Enable DHT"
+msgstr "DHT engedélyezése"
+
+msgctxt "#10205"
+msgid "Enable local peer discovery"
+msgstr "Helyi kapcsolatok felfedezésének engedélyezése"
+
+msgctxt "#10206"
+msgid "Enable µTP protocol"
+msgstr "µTP protokoll engedélyezése"
+
+msgctxt "#10207"
+msgid "Encrypt all peer connections"
+msgstr "Minden kapcsolat titkosítása"
+
+msgctxt "#10208"
+msgid "Limit number of global peers"
+msgstr "Globális kapcsolatok számának korlátozása"
+
+msgctxt "#10209"
+msgid "Limit number of peers per torrent"
+msgstr "Kapcsolatok számának korlátozása torrentenként"
+
+msgctxt "#10300"
+msgid "Storage directory settings"
+msgstr "Tárolási könyvtár beállításai"
+
+msgctxt "#10301"
+msgid "Path to finished downloads"
+msgstr "A befejezett letöltések elérési útja"
+
+msgctxt "#10302"
+msgid "Enable directory for incomplete downloads"
+msgstr "Könyvtár engedélyezése a félkész letöltésekhez"
+
+msgctxt "#10303"
+msgid "Path to incomplete downloads"
+msgstr "A félkész letöltések elérési útja"
