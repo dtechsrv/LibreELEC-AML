@@ -1,7 +1,6 @@
 [Unit]
-Description = Amlogic VNC server
-After = network-online.target
-Requires = kodi.service
+Description = Amlogic VNC Server
+After = network-online.target graphical.target
 
 [Service]
 Type = simple
@@ -13,3 +12,4 @@ RestartSec = 0
 
 [Install]
 WantedBy = kodi.target
+Alias = aml-vnc.service
