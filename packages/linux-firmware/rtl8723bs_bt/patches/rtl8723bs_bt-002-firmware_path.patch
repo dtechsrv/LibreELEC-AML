@@ -5,7 +5,7 @@
  	struct stat st;
  
 -	ret = sprintf(firmware_file_name, FIRMWARE_DIRECTORY"rtlbt_fw");
-+	ret = sprintf(firmware_file_name, FIRMWARE_DIRECTORY"rtl8723b_fw");
++	ret = sprintf(firmware_file_name, FIRMWARE_DIRECTORY"rtl8723b_fw.bin");
  
  	return firmware_file_name;
  }
@@ -14,7 +14,7 @@
  	int i = 0;
  
 -	ret = sprintf(bt_config_file_name, BT_CONFIG_DIRECTORY"rtlbt_config"); 
-+	ret = sprintf(bt_config_file_name, BT_CONFIG_DIRECTORY"rtl8723b_config");
++	ret = sprintf(bt_config_file_name, BT_CONFIG_DIRECTORY"rtl8723b_config.bin");
  	if (stat(bt_config_file_name, &st) < 0) {
  		RS_ERR("can't access bt config file:%s, errno:%d\n", bt_config_file_name, errno);
  		return -1;
