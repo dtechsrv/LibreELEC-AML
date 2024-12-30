@@ -11,6 +11,10 @@ PKG_URL="https://github.com/systemd/systemd/archive/v${PKG_VERSION}.tar.gz"
 PKG_DEPENDS_TARGET="toolchain libcap kmod util-linux entropy libidn2 wait-time-sync"
 PKG_LONGDESC="A system and session manager for Linux, compatible with SysV and LSB init scripts."
 
+if [ ${LINUX} = "amlogic-3.10" -o ${LINUX} = "amlogic-3.14" ]; then
+  PKG_PATCH_DIRS="amlogic"
+fi
+
 PKG_MESON_OPTS_TARGET="--libdir=/usr/lib \
                        -Drootprefix=/usr \
                        -Dsplit-usr=false \
