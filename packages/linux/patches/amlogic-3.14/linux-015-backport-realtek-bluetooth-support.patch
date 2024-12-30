@@ -1,36 +1,22 @@
 diff --git a/drivers/bluetooth/Kconfig b/drivers/bluetooth/Kconfig
-index 11a6104..b3ac087 100644
+index 11a6104..3139d3e 100644
 --- a/drivers/bluetooth/Kconfig
 +++ b/drivers/bluetooth/Kconfig
-@@ -2,6 +2,10 @@
- menu "Bluetooth device drivers"
- 	depends on BT
+@@ -242,4 +242,14 @@ config BT_WILINK
  
-+config BT_RTL
-+	tristate
-+	select FW_LOADER
+ 	  Say Y here to compile support for Texas Instrument's WiLink7 driver
+ 	  into the kernel or say M to compile it as module.
 +
- config BT_HCIBTUSB
- 	tristate "HCI USB driver"
- 	depends on USB
-@@ -13,6 +17,17 @@ config BT_HCIBTUSB
- 	  Say Y here to compile support for Bluetooth USB devices into the
- 	  kernel or say M to compile it as module (btusb).
- 
-+config BT_HCIBTUSB_RTL
-+	bool "Realtek protocol support"
++config BT_RTL
++	tristate "Realtek Bluetooth Driver"
 +	depends on BT_HCIBTUSB
-+	select BT_RTL
-+	default y
++	select FW_LOADER
 +	help
 +	  The Realtek protocol support enables firmware and configuration
 +	  download support for Realtek Bluetooth controllers.
 +
 +	  Say Y here to compile support for Realtek protocol.
-+
- config BT_HCIBTSDIO
- 	tristate "HCI SDIO driver"
- 	depends on MMC
+ endmenu
 diff --git a/drivers/bluetooth/Makefile b/drivers/bluetooth/Makefile
 index 9fe8a87..8e423cd 100644
 --- a/drivers/bluetooth/Makefile
@@ -602,7 +588,7 @@ index 0000000..38ffe48
 +
 +#endif
 diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
-index e00c3f8..00a3d5c 100644
+index e00c3f8..31078e5 100644
 --- a/drivers/bluetooth/btusb.c
 +++ b/drivers/bluetooth/btusb.c
 @@ -28,6 +28,8 @@
@@ -649,6 +635,9 @@ index e00c3f8..00a3d5c 100644
 +	{ USB_DEVICE(0x0bda, 0xb009), .driver_info = BTUSB_REALTEK },
 +	{ USB_DEVICE(0x2ff8, 0xb011), .driver_info = BTUSB_REALTEK },
 +
++	/* Additional Realtek 8761B Bluetooth devices */
++	{ USB_DEVICE(0x2357, 0x0604), .driver_info = BTUSB_REALTEK },
++
 +	/* Additional Realtek 8821AE Bluetooth devices */
 +	{ USB_DEVICE(0x0b05, 0x17dc), .driver_info = BTUSB_REALTEK },
 +	{ USB_DEVICE(0x13d3, 0x3414), .driver_info = BTUSB_REALTEK },
@@ -661,9 +650,6 @@ index e00c3f8..00a3d5c 100644
 +
 +	/* Additional Realtek 8822CE Bluetooth devices */
 +	{ USB_DEVICE(0x04ca, 0x4005), .driver_info = BTUSB_REALTEK },
-+
-+	/* Tp-Link UB5A */
-+	{ USB_DEVICE(0x2357, 0x0604), .driver_info = BTUSB_REALTEK },
 +
  	{ }	/* Terminating entry */
  };
