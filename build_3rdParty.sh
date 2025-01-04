@@ -32,4 +32,3 @@ PROJECT=Odroid_C1 ARCH=arm make image -j$(nproc)
 # Remove unnecessary files after the build process
 rm -rf target/*.kernel
 rm -rf target/*.system
-rm -rf target/*.initrd

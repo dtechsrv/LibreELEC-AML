@@ -4,30 +4,26 @@
 # Copyright (C) 2017-2022 Team LibreELEC (https://libreelec.tv)
 # Copyright (C) 2022-present Gabor Dee (dee.gabor@gmail.com)
 
-# copy initial ramdisk image
-mcopy $RELEASE_DIR/target/INITRD ::/INITRD
-mcopy $RELEASE_DIR/target/INITRD.md5 ::/INITRD.md5
-
 # copy device trees to part1
 for dtb in $RELEASE_DIR/3rdparty/bootloader/device_trees $RELEASE_DIR/3rdparty/bootloader/*.dtb $RELEASE_DIR/3rdparty/bootloader/dtb.img ; do
   [ -e "$dtb" ] && mcopy -s "$dtb" ::
 done
 
-if [ -f "$RELEASE_DIR/3rdparty/bootloader/u-boot" -a -f "$RELEASE_DIR/3rdparty/bootloader/bl1" ]; then
+if [ -f "$RELEASE_DIR/3rdparty/bootloader/u-boot.bin" -a -f "$RELEASE_DIR/3rdparty/bootloader/bl1.bin" ]; then
   echo "Writing u-boot to $(basename $DISK)"
-  dd if="$RELEASE_DIR/3rdparty/bootloader/bl1" of="$DISK" conv=fsync,notrunc bs=1 count=442 >"$SAVE_ERROR" 2>&1 || show_error
-  dd if="$RELEASE_DIR/3rdparty/bootloader/bl1" of="$DISK" conv=fsync,notrunc bs=512 skip=1 seek=1 >"$SAVE_ERROR" 2>&1 || show_error
-  dd if="$RELEASE_DIR/3rdparty/bootloader/u-boot" of="$DISK" conv=fsync,notrunc bs=512 seek=64 >"$SAVE_ERROR" 2>&1 || show_error
+  dd if="$RELEASE_DIR/3rdparty/bootloader/bl1.bin" of="$DISK" conv=fsync,notrunc bs=1 count=442 >"$SAVE_ERROR" 2>&1 || show_error
+  dd if="$RELEASE_DIR/3rdparty/bootloader/bl1.bin" of="$DISK" conv=fsync,notrunc bs=512 skip=1 seek=1 >"$SAVE_ERROR" 2>&1 || show_error
+  dd if="$RELEASE_DIR/3rdparty/bootloader/u-boot.bin" of="$DISK" conv=fsync,notrunc bs=512 seek=64 >"$SAVE_ERROR" 2>&1 || show_error
 fi
 
 if [ -f "$RELEASE_DIR/3rdparty/bootloader/boot.ini" ]; then
-  cp -p "$RELEASE_DIR/3rdparty/bootloader/boot.ini" "$LE_TMP/boot.ini"
-  sed -e "s/@BOOT_UUID@/$UUID_SYSTEM/" \
-      -e "s/@DISK_UUID@/$UUID_STORAGE/" \
-      -i "$LE_TMP/boot.ini"
-  mcopy "$LE_TMP/boot.ini" ::
+  mcopy $RELEASE_DIR/3rdparty/bootloader/boot.ini ::
 fi
 
 if [ -f "$RELEASE_DIR/3rdparty/bootloader/config.ini" ]; then
   mcopy $RELEASE_DIR/3rdparty/bootloader/config.ini ::
+fi
+
+if [ -f "$RELEASE_DIR/3rdparty/bootloader/boot-logo.bmp.gz" ]; then
+  mcopy $RELEASE_DIR/3rdparty/bootloader/boot-logo.bmp.gz ::
 fi
