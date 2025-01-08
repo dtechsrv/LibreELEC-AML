@@ -50,7 +50,9 @@ Amlogic M6 SoC, 1 GB RAM, 4 GB NAND, 10/100 Mbps Ethernet (SMSC LAN8720A), AP621
 1. **Create bootable media (SD card or USB flash drive):**<br />
 To create bootable media you need to download the [LibreELEC-AML USB-SD Creator](https://github.com/dtechsrv/usb-sd-creator/releases) tool. Select the file you want to download and click the `Download` button, or click the `Select file` button and browse the previously downloaded disk image *(\*.img.gz)*.
 
-***NOTICE:** Only the S905/S912 can boot from USB devices, the S805/S8X2 devices can only be booted from an SD card.*
+***NOTICE #1:** Meson8\* devices (S805/S8X2) only support USB boot since version v9.2.8.16. However, this option is not enabled by default, because scanning USB ports in some cases increases the boot time with additional delay.<br />
+To enable it needs to set a variable in the uboot environment: `fw_setenv enableusbboot 1` (default: 0).*<br />
+***NOTICE #2:** It is important to note that some devices cannot boot from USB at all, or only certain USB ports can be used for this purpose.*
 
 2. **Boot LibreELEC from your previously prepared bootable media:**<br />
 If you want to boot the device from your bootable media, you need to perform the toothpick method first: Disconnect the power plug, insert the prepared boot media, and then press and hold the reset button. Reconnect the power jack while holding down the reset button, then release it after about 3-5 seconds.
