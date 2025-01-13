@@ -588,7 +588,7 @@ index 0000000..38ffe48
 +
 +#endif
 diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
-index 537ad68..716c46b 100644
+index 537ad68..892b326 100644
 --- a/drivers/bluetooth/btusb.c
 +++ b/drivers/bluetooth/btusb.c
 @@ -28,6 +28,8 @@
@@ -600,7 +600,7 @@ index 537ad68..716c46b 100644
  #define VERSION "0.6"
  
  static bool ignore_dga;
-@@ -50,6 +52,7 @@ static struct usb_driver btusb_driver;
+@@ -50,11 +52,15 @@ static struct usb_driver btusb_driver;
  #define BTUSB_ATH3012		0x80
  #define BTUSB_INTEL		0x100
  #define BTUSB_INTEL_BOOT	0x200
@@ -608,7 +608,15 @@ index 537ad68..716c46b 100644
  
  static struct usb_device_id btusb_table[] = {
  	/* Generic Bluetooth USB device */
-@@ -232,6 +235,45 @@ static struct usb_device_id blacklist_table[] = {
+ 	{ USB_DEVICE_INFO(0xe0, 0x01, 0x01) },
+ 
++	/* Generic Bluetooth USB interface */
++	{ USB_INTERFACE_INFO(0xe0, 0x01, 0x01) },
++
+ 	/* Apple-specific (Broadcom) devices */
+ 	{ USB_VENDOR_AND_INTERFACE_INFO(0x05ac, 0xff, 0x01, 0x01) },
+ 
+@@ -232,6 +238,45 @@ static struct usb_device_id blacklist_table[] = {
  	/* Intel Bluetooth device */
  	{ USB_DEVICE(0x8087, 0x07dc), .driver_info = BTUSB_INTEL },
  
@@ -654,7 +662,7 @@ index 537ad68..716c46b 100644
  	{ }	/* Terminating entry */
  };
  
-@@ -1459,6 +1501,9 @@ static int btusb_probe(struct usb_interface *intf,
+@@ -1459,6 +1504,9 @@ static int btusb_probe(struct usb_interface *intf,
  	if (id->driver_info & BTUSB_INTEL_BOOT)
  		set_bit(HCI_QUIRK_RAW_DEVICE, &hdev->quirks);
  

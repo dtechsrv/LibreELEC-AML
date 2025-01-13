@@ -588,7 +588,7 @@ index 0000000..38ffe48
 +
 +#endif
 diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
-index e00c3f8..31078e5 100644
+index e00c3f8..636d587 100644
 --- a/drivers/bluetooth/btusb.c
 +++ b/drivers/bluetooth/btusb.c
 @@ -28,6 +28,8 @@
@@ -600,7 +600,7 @@ index e00c3f8..31078e5 100644
  #define VERSION "0.6"
  
  static bool ignore_dga;
-@@ -49,6 +51,7 @@ static struct usb_driver btusb_driver;
+@@ -49,11 +51,15 @@ static struct usb_driver btusb_driver;
  #define BTUSB_WRONG_SCO_MTU	0x40
  #define BTUSB_ATH3012		0x80
  #define BTUSB_INTEL		0x100
@@ -608,7 +608,15 @@ index e00c3f8..31078e5 100644
  
  static const struct usb_device_id btusb_table[] = {
  	/* Generic Bluetooth USB device */
-@@ -229,6 +232,45 @@ static const struct usb_device_id blacklist_table[] = {
+ 	{ USB_DEVICE_INFO(0xe0, 0x01, 0x01) },
+ 
++	/* Generic Bluetooth USB interface */
++	{ USB_INTERFACE_INFO(0xe0, 0x01, 0x01) },
++
+ 	/* Apple-specific (Broadcom) devices */
+ 	{ USB_VENDOR_AND_INTERFACE_INFO(0x05ac, 0xff, 0x01, 0x01) },
+ 
+@@ -229,6 +235,45 @@ static const struct usb_device_id blacklist_table[] = {
  	{ USB_DEVICE(0x8087, 0x07dc), .driver_info = BTUSB_INTEL },
  	{ USB_DEVICE(0x8087, 0x0a2a), .driver_info = BTUSB_INTEL },
  
@@ -654,7 +662,7 @@ index e00c3f8..31078e5 100644
  	{ }	/* Terminating entry */
  };
  
-@@ -1491,6 +1533,9 @@ static int btusb_probe(struct usb_interface *intf,
+@@ -1491,6 +1536,9 @@ static int btusb_probe(struct usb_interface *intf,
  	if (id->driver_info & BTUSB_INTEL)
  		hdev->setup = btusb_setup_intel;
  
