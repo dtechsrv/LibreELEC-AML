@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2009-2016 Stephan Raue (stephan@openelec.tv)
+# Copyright (C) 2023-present Gabor Dee (dee.gabor@gmail.com)
 
 PKG_NAME="amremote"
 PKG_VERSION="6431040"
