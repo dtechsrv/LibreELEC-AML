@@ -1,0 +1,24 @@
+diff --git a/drivers/amlogic/mmc/aml_sdio.c b/drivers/amlogic/mmc/aml_sdio.c
+index 733aaf3..fd9833c 100755
+--- a/drivers/amlogic/mmc/aml_sdio.c
++++ b/drivers/amlogic/mmc/aml_sdio.c
+@@ -552,8 +552,10 @@ timeout_handle:
+     host->mrq->cmd->error = -ETIMEDOUT;
+     spin_unlock_irqrestore(&host->mrq_lock, flags);
+ 
++#if defined(CONFIG_MMC_AML_DEBUG)
+     sdio_err("time_start_cnt:%ld\n", time_start_cnt);
+     aml_sdio_print_err(host, "Timeout error");
++#endif
+     // if (pdata->port == MESON_SDIO_PORT_A) {
+         // sdio_err("power_on_pin=%d\n",
+                 // amlogic_get_value(185, "sdio_wifi")); // G24-113, G33-185
+@@ -859,7 +861,7 @@ irqreturn_t aml_sdio_irq_thread(int irq, void *data)
+     xfer_step = host->xfer_step;
+ 
+     if ((xfer_step == XFER_FINISHED) || (xfer_step == XFER_TIMER_TIMEOUT)) {
+-        sdhc_err("Warning: xfer_step=%d\n", xfer_step);
++        //sdhc_err("Warning: xfer_step=%d\n", xfer_step);
+         spin_unlock_irqrestore(&host->mrq_lock, flags);
+         return IRQ_HANDLED;
+     }
