@@ -19,7 +19,7 @@ case "${LINUX}" in
   amlogic-3.10)
     PKG_VERSION="68b363baaec1df9f543b4df4763e1b13b4b8591f"
     PKG_SHA256="1e842b536ece545f733970d20e3cf41e5c4c462730b25c8b5f53aed4e9c78fe2"
-    PKG_URL="https://github.com/dtechsrv/linux-odroid-c1/archive/$PKG_VERSION.tar.gz"
+    PKG_URL="https://github.com/dtechsrv/linux-odroid-c1/archive/${PKG_VERSION}.tar.gz"
     PKG_SOURCE_NAME="linux-${LINUX}-${PKG_VERSION}.tar.gz"
     PKG_DEPENDS_TARGET="${PKG_DEPENDS_TARGET} aml-dtbtools:host u-boot-tools-aml:host"
     PKG_BUILD_PERF="no"
