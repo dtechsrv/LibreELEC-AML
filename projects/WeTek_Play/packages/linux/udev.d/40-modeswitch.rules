@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2009-2014 Stephan Raue (stephan@openelec.tv)
+# Copyright (C) 2024-present Gabor Dee (dee.gabor@gmail.com)
 
 ACTION!="add|change", GOTO="end_modeswitch"
 KERNEL!="sr[0-9]*", GOTO="end_modeswitch"
@@ -7,5 +8,11 @@ SUBSYSTEM!="block", GOTO="end_modeswitch"
 
 # Atheros Wireless / Netgear WNDA3200
 ATTRS{idVendor}=="0cf3", ATTRS{idProduct}=="20ff", RUN+="/usr/bin/eject '/dev/%k'"
+
+# Realtek RTL8192FU chipset based adapters (IEEE 802.11n / Wi-Fi 4)
+ATTRS{idVendor}=="0bda", ATTRS{idProduct}=="a192", RUN+="/usr/bin/eject '/dev/%k'"
+
+# Realtek RTL8821CU chipset based adapters (IEEE 802.11ac / Wi-Fi 5)
+ATTRS{idVendor}=="0bda", ATTRS{idProduct}=="1a2b", RUN+="/usr/bin/eject '/dev/%k'"
 
 LABEL="end_modeswitch"
