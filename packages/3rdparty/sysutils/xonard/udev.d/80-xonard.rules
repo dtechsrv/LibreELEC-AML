@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: GPL-2.0
+# Copyright (C) 2025-present Gabor Dee (dee.gabor@gmail.com)
+
+ACTION!="add", GOTO="end"
+SUBSYSTEM!="hidraw", GOTO="end"
+
+# ASUS Xonar U1 Audio Station
+ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="1743", TAG+="systemd", ENV{SYSTEMD_WANTS}+="xonard.service"
+
+LABEL="end"

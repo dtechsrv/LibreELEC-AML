@@ -146,6 +146,9 @@
 # build and install Joystick support (yes / no)
   JOYSTICK_SUPPORT="yes"
 
+# Xonar U1 control support (yes / no)
+  XONARD_SUPPORT="yes"
+
 # build and install CEC adapter support (yes / no)
   CEC_SUPPORT="yes"
 

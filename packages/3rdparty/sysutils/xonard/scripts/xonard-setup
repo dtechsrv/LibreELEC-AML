@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# SPDX-License-Identifier: GPL-2.0
+# Copyright (C) 2023-present Gabor Dee (dee.gabor@gmail.com)
+
+for DEVNAME in /dev/hidraw*
+do
+  xonard "$DEVNAME"
+  PID=$(ps aux | awk '/xonard \/dev\/hidraw/ {print $1; exit 0}')
+  if [ "$PID" != "" ]
+  then
+    echo "$PID" > /run/xonard.pid
+    break
+  fi
+done

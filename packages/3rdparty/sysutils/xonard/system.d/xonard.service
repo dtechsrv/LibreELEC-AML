@@ -1,0 +1,10 @@
+[Unit]
+Description=ASUS Xonar U1 Control
+After=graphical.target
+
+[Service]
+Type=simple
+ExecStart=/usr/lib/xonard/xonard-setup
+ExecStop=/bin/kill -HUP $MAINPID
+PIDFile=/run/xonard.pid
+StartLimitInterval=0
