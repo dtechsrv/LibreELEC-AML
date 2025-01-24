@@ -1,6 +1,0 @@
-101
-- Remove xonarctl binary from the package
-- Search for correct hidraw* number by binary
-
-100
-- Initial release
