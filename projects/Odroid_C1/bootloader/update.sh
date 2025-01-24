@@ -68,3 +68,8 @@ if [ -e /storage/.kodi/addons/service.libreelec.settings ]; then
   echo "Removing outdated LibreELEC Configuration update..."
   rm -rf /storage/.kodi/addons/service.libreelec.settings
 fi
+
+if [ -e /storage/.kodi/addons/service.xonard ]; then
+  echo "Removing obsolete Xonard service add-on..."
+  rm -rf /storage/.kodi/addons/service.xonard
+fi
