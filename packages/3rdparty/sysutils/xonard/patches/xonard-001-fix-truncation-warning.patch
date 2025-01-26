@@ -1,0 +1,13 @@
+diff --git a/xonard.c b/xonard.c
+index e634144..741199e 100644
+--- a/xonard.c
++++ b/xonard.c
+@@ -323,7 +323,7 @@ int main(int argc, char* argv[])
+     }
+     snprintf(logMessage, 256, "VENDOR: %x, PRODUCT: %x", devInfo.vendor, devInfo.product);
+ 	logMsg(logMessage);
+-	char nameBuffer[256];
++	char nameBuffer[250];
+ 	ioctl(hidfd, HIDIOCGRAWNAME(256), nameBuffer);
+     snprintf(logMessage, 256, "NAME: %s", nameBuffer);
+ 	logMsg(logMessage);
