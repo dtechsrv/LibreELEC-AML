@@ -33,18 +33,16 @@ PKG_CMAKE_OPTS_TARGET="-DENABLE_DAEMON=ON \
                        -DINSTALL_LIB=OFF"
 
 addon() {
-  # Create directories
+  # Install daemon binary
   mkdir -p ${ADDON_BUILD}/${PKG_ADDON_ID}/bin
-  mkdir -p ${ADDON_BUILD}/${PKG_ADDON_ID}/lib
-  mkdir -p ${ADDON_BUILD}/${PKG_ADDON_ID}/web
-
-  # Install binaries
   cp ${PKG_BUILD}/.${TARGET_NAME}/daemon/transmission-daemon ${ADDON_BUILD}/${PKG_ADDON_ID}/bin
 
-  # Install libs
+  # Install dependent libraries
+  mkdir -p ${ADDON_BUILD}/${PKG_ADDON_ID}/lib
   cp -PL $(get_build_dir libevent)/.${TARGET_NAME}/lib/libevent-?.?.so.? ${ADDON_BUILD}/${PKG_ADDON_ID}/lib
 
-  # Install web
+  # Install web interface
+  mkdir -p ${ADDON_BUILD}/${PKG_ADDON_ID}/web
   cp -R ${PKG_BUILD}/web/* ${ADDON_BUILD}/${PKG_ADDON_ID}/web
 
   # Clean up
