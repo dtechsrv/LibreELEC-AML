@@ -5,20 +5,20 @@
 PKG_NAME="makemkv"
 PKG_VERSION="1.17.7"
 PKG_SHA256="762e552d46f9ec75a7c62dcb7d97c0fd9e6a15120d0ef6f5a080cee291d3a0ef"
-PKG_REV="125"
+PKG_REV="100"
 PKG_ARCH="x86_64 arm aarch64"
 PKG_LICENSE="OSS"
 PKG_SITE="http://makemkv.com/"
 PKG_URL="http://www.makemkv.com/download/makemkv-oss-${PKG_VERSION}.tar.gz"
 PKG_MAINTAINER="dtech(.hu)"
 PKG_DEPENDS_TARGET="toolchain makemkv-bin openssl expat ffmpeg zlib"
-PKG_SECTION="lib/multimedia"
-PKG_SHORTDESC="MakeMKV converts proprietary and usually encrypted video clips from disc into MKV files."
-PKG_LONGDESC="MakeMKV is your one-click solution to convert video that you own into free and patents-unencumbered format that can be played everywhere. MakeMKV is a format converter, otherwise called transcoder. It converts the video clips from proprietary (and usually encrypted) disc into a set of MKV files, preserving most information but not changing it in any way. The MKV format can store multiple video/audio tracks with all meta-information and preserve chapters. There are many players that can play MKV files nearly on all platforms, and there are tools to convert MKV files to many formats, including DVD and Blu-ray discs. Additionally MakeMKV can instantly stream decrypted video without intermediate conversion to wide range of players, so you may watch Blu-ray and DVD discs with your favorite player on your favorite OS or on your favorite device."
+PKG_SECTION="service"
+PKG_SHORTDESC="MakeMKV"
+PKG_LONGDESC="MakeMKV allows you to decode encrypted discs so they can be played on the fly or archived in MKV format"
 
 PKG_IS_ADDON="yes"
 PKG_ADDON_NAME="MakeMKV"
-PKG_ADDON_TYPE="xbmc.python.script"
+PKG_ADDON_TYPE="xbmc.service"
 
 PKG_CONFIGURE_OPTS_TARGET="--disable-gui"
 
@@ -46,7 +46,7 @@ makeinstall_target() {
 addon() {
   # Install makemkv binary
   mkdir -p ${ADDON_BUILD}/${PKG_ADDON_ID}/bin
-  install -m 0755 $(get_build_dir makemkv-bin)/bin/${BIN_ARCH}/makemkvcon ${ADDON_BUILD}/${PKG_ADDON_ID}/bin/makemkvcon.bin
+  install -m 0755 $(get_build_dir makemkv-bin)/bin/${BIN_ARCH}/makemkvcon ${ADDON_BUILD}/${PKG_ADDON_ID}/bin/makemkvcon
 
   # Copy additional binaries
   cp ${PKG_BUILD}/out/mmccextr ${ADDON_BUILD}/${PKG_ADDON_ID}/bin
@@ -61,5 +61,4 @@ addon() {
   cp ${PKG_BUILD}/out/libmakemkv.so.? ${ADDON_BUILD}/${PKG_ADDON_ID}/lib
   cp ${PKG_BUILD}/out/libdriveio.so.? ${ADDON_BUILD}/${PKG_ADDON_ID}/lib
   cp ${PKG_BUILD}/out/libmmbd.so.? ${ADDON_BUILD}/${PKG_ADDON_ID}/lib
-  cp -PL $(get_build_dir openssl)/.install_pkg/usr/lib/libcrypto.so.?.? ${ADDON_BUILD}/${PKG_ADDON_ID}/lib
 }

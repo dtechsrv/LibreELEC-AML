@@ -1,0 +1,12 @@
+[Unit]
+Description=MakeMKV bootstrap service
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c "exec sh /storage/.kodi/addons/service.makemkv/bin/libmakemkv-bootstrap.start"
+RemainAfterExit=yes
+
+[Install]
+WantedBy=kodi.target
+Alias=makemkv.service
