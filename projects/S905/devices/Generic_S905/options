@@ -6,7 +6,7 @@
   # Space separated list is supported,
   # e.g. ADDITIONAL_DRIVERS="DRIVER1 DRIVER2"
     ADDITIONAL_DRIVERS+=" ap6xxx-aml mt7601u-aml mt7603u-aml qca9377-aml \
-                        RTL8822BU-aml ssv6xxx-aml linux_openvfd avl6862-aml"
+                         ssv6xxx-aml linux_openvfd avl6862-aml"
 
   # additional Firmware to use (dvb-firmware, misc-firmware, wlan-firmware)
   # Space separated list is supported,
