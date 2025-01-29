@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+  <category label="50000">
+    <setting type="lsep" />
+    <setting id="MAKEMKV_KEY_ENABLE" type="bool" label="50001" default="false" />
+    <setting id="MAKEMKV_KEY_STRING" type="text" label="50002" default="" enable="eq(-1,true)" />
+  </category>
+</settings>

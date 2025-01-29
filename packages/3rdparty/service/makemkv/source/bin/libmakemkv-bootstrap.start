@@ -8,38 +8,48 @@
 oe_setup_addon service.makemkv
 
 MODULE_NAME="sg"
-BETA_KEY=$(wget -qO- "https://forum.makemkv.com/forum/viewtopic.php?f=5&t=1053" | awk 'FNR == 269 {print $13}'| cut -c 23-90)
-CONFIG_DIR="${HOME}/.MakeMKV"
-SETTINGS_FILE="settings.conf"
+CONFIG_SYMLINK="${HOME}/.MakeMKV"
+SETTINGS_FILE="${ADDON_HOME}/settings.conf"
+KEY_REGEX="^[A-Za-z0-9@_-]{68}$"
 
 # Try to load SCSI Generic module
 if [ $(cat /proc/modules | grep -c ${MODULE_NAME}) == "0" ]; then
-  echo "Try to load \"${MODULE_NAME}\" module..."
+  echo "Try to load \"${MODULE_NAME}\" kernel module..."
   modprobe ${MODULE_NAME}
 fi
 
-# Userdata directory
+# Check userdata directory
 if [ ! -d ${ADDON_HOME} ]; then
   mkdir -p ${ADDON_HOME}
 fi
 
-# Update symlink for userdata directory
-rm -rf ${CONFIG_DIR}
-ln -s ${ADDON_HOME} ${CONFIG_DIR}
+# Force update symlink for userdata directory
+rm -rf ${CONFIG_SYMLINK}
+ln -s ${ADDON_HOME} ${CONFIG_SYMLINK}
 
-# Check beta key in settings
-if [ ! -f ${CONFIG_DIR}/${SETTINGS_FILE} ]; then
-  echo "No ${SETTINGS_FILE} found, creating a new one in \"${CONFIG_DIR}\"."
-  mkdir -p ${CONFIG_DIR}
-  echo "app_Key=\"${BETA_KEY}\"" > ${CONFIG_DIR}/${SETTINGS_FILE}
+# Check for key string
+if [ ${MAKEMKV_KEY_ENABLE} == "true" ]; then
+  echo "Use the user-defined static key from the add-on settings..."
+  KEY_STRING=${MAKEMKV_KEY_STRING}
 else
-  echo "Checking the beta key in \"${SETTINGS_FILE}\"."
-  if [ ${BETA_KEY} != "$(cat ${CONFIG_DIR}/${SETTINGS_FILE} | grep app_Key="*" | cut -c10-77)" ]; then
-    echo "The MakeMKV beta key is outdated, updating \"${SETTINGS_FILE}\"."
-    sed -i '/app_Key=/d' ${CONFIG_DIR}/${SETTINGS_FILE}
-    echo -e "\napp_Key=\"${BETA_KEY}\"" >> ${CONFIG_DIR}/${SETTINGS_FILE}
-    sed -i '/^\s*$/d' ${CONFIG_DIR}/${SETTINGS_FILE}
+  echo "No static key defined, checking current free beta key..."
+  KEY_STRING=$(wget -qO- "https://forum.makemkv.com/forum/viewtopic.php?f=5&t=1053" -T 10 2> /dev/null | grep -o '<code>.*</code>' | sed 's/\(<code>\|<\/code>\)//g')
+fi
+
+# Check for key validity and difference
+if [[ "$(echo "${KEY_STRING}" | awk '/'${KEY_REGEX}'/p')" != "${KEY_STRING}" || "${KEY_STRING}" == "" ]]; then
+  echo "The received key does not meet the regex criteria, so it will not be written to the settings file."
+else
+  if [ ! -f ${SETTINGS_FILE} ]; then
+    echo "No settings file found, creating a new one: '${SETTINGS_FILE}'."
+    echo "app_Key=\"${KEY_STRING}\"" > ${SETTINGS_FILE}
   else
-    echo "The latest MakeMKV beta key in \"${SETTINGS_FILE}\" was found. Nothing to do!"
+    echo "Checking the stored key in the '${SETTINGS_FILE}' file."
+    if [ ${KEY_STRING} != "$(cat ${SETTINGS_FILE} | grep app_Key="*" | cut -d '"' -f 2)" ]; then
+      echo "The stored key is outdated, replace it with the received key."
+      sed -i 's/^app_Key=.*$/app_Key=\"'${KEY_STRING}'\"/g' ${SETTINGS_FILE}
+    else
+      echo "The received and stored keys are identical, no further action is required."
+    fi
   fi
 fi
