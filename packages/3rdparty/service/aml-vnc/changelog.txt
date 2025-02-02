@@ -1,3 +1,7 @@
+114
+- Fix default settings issue
+- Disable logging to the addon directory
+
 113
 - Add missing service alias
 - Remove kodi as a dependent service

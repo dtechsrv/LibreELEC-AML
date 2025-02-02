@@ -20,4 +20,4 @@ if [ ${AML_VNC_STAT} == "true" ] ; then
   export VNC_SERVERNAME="${AML_VNC_NAME}"
 fi
 
-exec aml-vnc &> ${ADDON_HOME}/service.log
+exec aml-vnc

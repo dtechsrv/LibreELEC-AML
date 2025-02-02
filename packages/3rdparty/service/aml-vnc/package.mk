@@ -5,7 +5,7 @@
 PKG_NAME="aml-vnc"
 PKG_VERSION="1.2.0"
 PKG_SHA256="38009d0ea84868c7e077eb7594f2808bf5acdae3b7e691cb73fb800e9489d064"
-PKG_REV="113"
+PKG_REV="114"
 PKG_ARCH="arm aarch64"
 PKG_LICENSE="GPL"
 PKG_SITE="https://github.com/dtechsrv/aml-vnc-server"
