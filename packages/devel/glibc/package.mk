@@ -3,11 +3,11 @@
 # Copyright (C) 2018-present Team LibreELEC (https://libreelec.tv)
 
 PKG_NAME="glibc"
-PKG_VERSION="2.29"
-PKG_SHA256="f3eeb8d57e25ca9fc13c2af3dae97754f9f643bc69229546828e3a240e2af04b"
+PKG_VERSION="2.34"
+PKG_SHA256="44d26a1fe20b8853a48f470ead01e4279e869ac149b195dda4e44a195d981ab2"
 PKG_LICENSE="GPL"
-PKG_SITE="http://www.gnu.org/software/libc/"
-PKG_URL="http://ftp.gnu.org/pub/gnu/glibc/$PKG_NAME-$PKG_VERSION.tar.xz"
+PKG_SITE="https://www.gnu.org/software/libc/"
+PKG_URL="https://ftp.gnu.org/pub/gnu/glibc/${PKG_NAME}-${PKG_VERSION}.tar.xz"
 PKG_DEPENDS_TARGET="ccache:host autotools:host linux:host gcc:bootstrap pigz:host"
 PKG_DEPENDS_INIT="glibc"
 PKG_LONGDESC="The Glibc package contains the main C library."
@@ -19,20 +19,20 @@ PKG_CONFIGURE_OPTS_TARGET="BASH_SHELL=/bin/sh \
                            --libexecdir=/usr/lib/glibc \
                            --cache-file=config.cache \
                            --disable-profile \
+                           --disable-werror \
                            --disable-sanity-checks \
                            --enable-add-ons \
                            --enable-bind-now \
                            --with-elf \
                            --with-tls \
                            --with-__thread \
-                           --with-binutils=$BUILD/toolchain/bin \
-                           --with-headers=$SYSROOT_PREFIX/usr/include \
+                           --with-binutils=${BUILD}/toolchain/bin \
+                           --with-headers=${SYSROOT_PREFIX}/usr/include \
                            --enable-kernel=3.0.0 \
                            --without-cvs \
                            --without-gd \
                            --disable-build-nscd \
                            --disable-nscd \
-                           --enable-lock-elision \
                            --disable-timezone-tools"
 
 # workaround to use arm patches for aarch64
@@ -45,13 +45,13 @@ fi
 PKG_CONFIGURE_OPTS_TARGET+=" --enable-obsolete-rpc"
 
 if build_with_debug; then
-  PKG_CONFIGURE_OPTS_TARGET="$PKG_CONFIGURE_OPTS_TARGET --enable-debug"
+  PKG_CONFIGURE_OPTS_TARGET+=" --enable-debug"
 else
-  PKG_CONFIGURE_OPTS_TARGET="$PKG_CONFIGURE_OPTS_TARGET --disable-debug"
+  PKG_CONFIGURE_OPTS_TARGET+=" --disable-debug"
 fi
 
 pre_build_target() {
-  cd $PKG_BUILD
+  cd ${PKG_BUILD}
     aclocal --force --verbose
     autoconf --force --verbose
   cd -
@@ -59,26 +59,26 @@ pre_build_target() {
 
 pre_configure_target() {
 # Filter out some problematic *FLAGS
-  export CFLAGS=`echo $CFLAGS | sed -e "s|-ffast-math||g"`
-  export CFLAGS=`echo $CFLAGS | sed -e "s|-Ofast|-O2|g"`
-  export CFLAGS=`echo $CFLAGS | sed -e "s|-O.|-O2|g"`
+  export CFLAGS=$(echo ${CFLAGS} | sed -e "s|-ffast-math||g")
+  export CFLAGS=$(echo ${CFLAGS} | sed -e "s|-Ofast|-O2|g")
+  export CFLAGS=$(echo ${CFLAGS} | sed -e "s|-O.|-O2|g")
 
-  if [ -n "$PROJECT_CFLAGS" ]; then
-    export CFLAGS=`echo $CFLAGS | sed -e "s|$PROJECT_CFLAGS||g"`
+  if [ -n "${PROJECT_CFLAGS}" ]; then
+    export CFLAGS=$(echo ${CFLAGS} | sed -e "s|${PROJECT_CFLAGS}||g")
   fi
 
-  export LDFLAGS=`echo $LDFLAGS | sed -e "s|-ffast-math||g"`
-  export LDFLAGS=`echo $LDFLAGS | sed -e "s|-Ofast|-O2|g"`
-  export LDFLAGS=`echo $LDFLAGS | sed -e "s|-O.|-O2|g"`
+  export LDFLAGS=$(echo ${LDFLAGS} | sed -e "s|-ffast-math||g")
+  export LDFLAGS=$(echo ${LDFLAGS} | sed -e "s|-Ofast|-O2|g")
+  export LDFLAGS=$(echo ${LDFLAGS} | sed -e "s|-O.|-O2|g")
 
-  export LDFLAGS=`echo $LDFLAGS | sed -e "s|-Wl,--as-needed||"`
+  export LDFLAGS=$(echo ${LDFLAGS} | sed -e "s|-Wl,--as-needed||")
 
   unset LD_LIBRARY_PATH
 
   # set some CFLAGS we need
-  export CFLAGS="$CFLAGS -g -fno-stack-protector"
+  export CFLAGS="${CFLAGS} -g -fno-stack-protector"
 
-  export BUILD_CC=$HOST_CC
+  export BUILD_CC=${HOST_CC}
   export OBJDUMP_FOR_HOST=objdump
 
   cat >config.cache <<EOF
@@ -101,7 +101,7 @@ EOF
   GLIBC_INCLUDE_BIN="getent ldd locale"
 
   # Generic "installer" needs localedef to define drawing chars
-  if [ "$PROJECT" = "Generic" ]; then
+  if [ "${PROJECT}" = "Generic" ]; then
     GLIBC_INCLUDE_BIN+=" localedef"
   fi
 }
@@ -116,44 +116,44 @@ post_makeinstall_target() {
     listcontains "${GLIBC_INCLUDE_BIN}" "$(basename "${f}")" || rm -fr "${f}"
   done
 
-  rm -rf $INSTALL/usr/lib/audit
-  rm -rf $INSTALL/usr/lib/glibc
-  rm -rf $INSTALL/usr/lib/libc_pic
-  rm -rf $INSTALL/usr/lib/*.o
-  rm -rf $INSTALL/usr/lib/*.map
-  rm -rf $INSTALL/var
+  rm -rf ${INSTALL}/usr/lib/audit
+  rm -rf ${INSTALL}/usr/lib/glibc
+  rm -rf ${INSTALL}/usr/lib/libc_pic
+  rm -rf ${INSTALL}/usr/lib/*.o
+  rm -rf ${INSTALL}/usr/lib/*.map
+  rm -rf ${INSTALL}/var
 
 # remove locales and charmaps
-  rm -rf $INSTALL/usr/share/i18n/charmaps
+  rm -rf ${INSTALL}/usr/share/i18n/charmaps
 
 # add UTF-8 charmap for Generic (charmap is needed for installer)
-  if [ "$PROJECT" = "Generic" ]; then
-    mkdir -p $INSTALL/usr/share/i18n/charmaps
-    cp -PR $PKG_BUILD/localedata/charmaps/UTF-8 $INSTALL/usr/share/i18n/charmaps
-    pigz --best --force $INSTALL/usr/share/i18n/charmaps/UTF-8
+  if [ "${PROJECT}" = "Generic" ]; then
+    mkdir -p ${INSTALL}/usr/share/i18n/charmaps
+    cp -PR ${PKG_BUILD}/localedata/charmaps/UTF-8 ${INSTALL}/usr/share/i18n/charmaps
+    pigz --best --force ${INSTALL}/usr/share/i18n/charmaps/UTF-8
   fi
 
-  if [ ! "$GLIBC_LOCALES" = yes ]; then
-    rm -rf $INSTALL/usr/share/i18n/locales
+  if [ ! "${GLIBC_LOCALES}" = yes ]; then
+    rm -rf ${INSTALL}/usr/share/i18n/locales
 
-    mkdir -p $INSTALL/usr/share/i18n/locales
-      cp -PR $PKG_BUILD/localedata/locales/POSIX $INSTALL/usr/share/i18n/locales
+    mkdir -p ${INSTALL}/usr/share/i18n/locales
+      cp -PR ${PKG_BUILD}/localedata/locales/POSIX ${INSTALL}/usr/share/i18n/locales
   fi
 
 # create default configs
-  mkdir -p $INSTALL/etc
-    cp $PKG_DIR/config/nsswitch-target.conf $INSTALL/etc/nsswitch.conf
-    cp $PKG_DIR/config/host.conf $INSTALL/etc
-    cp $PKG_DIR/config/gai.conf $INSTALL/etc
+  mkdir -p ${INSTALL}/etc
+    cp ${PKG_DIR}/config/nsswitch-target.conf ${INSTALL}/etc/nsswitch.conf
+    cp ${PKG_DIR}/config/host.conf ${INSTALL}/etc
+    cp ${PKG_DIR}/config/gai.conf ${INSTALL}/etc
 
-  if [ "$TARGET_ARCH" = "arm" -a "$TARGET_FLOAT" = "hard" ]; then
-    ln -sf ld.so $INSTALL/usr/lib/ld-linux.so.3
+  if [ "${TARGET_ARCH}" = "arm" -a "${TARGET_FLOAT}" = "hard" ]; then
+    ln -sf ld.so ${INSTALL}/usr/lib/ld-linux.so.3
   fi
 }
 
 configure_init() {
-  cd $PKG_BUILD
-    rm -rf $PKG_BUILD/.$TARGET_NAME-init
+  cd ${PKG_BUILD}
+    rm -rf ${PKG_BUILD}/.${TARGET_NAME}-init
 }
 
 make_init() {
@@ -161,22 +161,22 @@ make_init() {
 }
 
 makeinstall_init() {
-  mkdir -p $INSTALL/usr/lib
-    cp -PR $PKG_BUILD/.$TARGET_NAME/elf/ld*.so* $INSTALL/usr/lib
-    cp -PR $PKG_BUILD/.$TARGET_NAME/libc.so* $INSTALL/usr/lib
-    cp -PR $PKG_BUILD/.$TARGET_NAME/math/libm.so* $INSTALL/usr/lib
-    cp -PR $PKG_BUILD/.$TARGET_NAME/nptl/libpthread.so* $INSTALL/usr/lib
-    cp -PR $PKG_BUILD/.$TARGET_NAME/rt/librt.so* $INSTALL/usr/lib
-    cp -PR $PKG_BUILD/.$TARGET_NAME/resolv/libnss_dns.so* $INSTALL/usr/lib
-    cp -PR $PKG_BUILD/.$TARGET_NAME/resolv/libresolv.so* $INSTALL/usr/lib
+  mkdir -p ${INSTALL}/usr/lib
+    cp -PR ${PKG_BUILD}/.${TARGET_NAME}/elf/ld*.so* ${INSTALL}/usr/lib
+    cp -PR ${PKG_BUILD}/.${TARGET_NAME}/libc.so* ${INSTALL}/usr/lib
+    cp -PR ${PKG_BUILD}/.${TARGET_NAME}/math/libm.so* ${INSTALL}/usr/lib
+    cp -PR ${PKG_BUILD}/.${TARGET_NAME}/nptl/libpthread.so* ${INSTALL}/usr/lib
+    cp -PR ${PKG_BUILD}/.${TARGET_NAME}/rt/librt.so* ${INSTALL}/usr/lib
+    cp -PR ${PKG_BUILD}/.${TARGET_NAME}/resolv/libnss_dns.so* ${INSTALL}/usr/lib
+    cp -PR ${PKG_BUILD}/.${TARGET_NAME}/resolv/libresolv.so* ${INSTALL}/usr/lib
 
-    if [ "$TARGET_ARCH" = "arm" -a "$TARGET_FLOAT" = "hard" ]; then
-      ln -sf ld.so $INSTALL/usr/lib/ld-linux.so.3
+    if [ "${TARGET_ARCH}" = "arm" -a "${TARGET_FLOAT}" = "hard" ]; then
+      ln -sf ld.so ${INSTALL}/usr/lib/ld-linux.so.3
     fi
 }
 
 post_makeinstall_init() {
 # create default configs
-  mkdir -p $INSTALL/etc
-    cp $PKG_DIR/config/nsswitch-init.conf $INSTALL/etc/nsswitch.conf
+  mkdir -p ${INSTALL}/etc
+    cp ${PKG_DIR}/config/nsswitch-init.conf ${INSTALL}/etc/nsswitch.conf
 }
