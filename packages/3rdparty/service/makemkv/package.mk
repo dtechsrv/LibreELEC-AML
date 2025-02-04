@@ -3,9 +3,9 @@
 # Copyright (C) 2022-present Gabor Dee (dee.gabor@gmail.com)
 
 PKG_NAME="makemkv"
-PKG_VERSION="1.17.7"
-PKG_SHA256="762e552d46f9ec75a7c62dcb7d97c0fd9e6a15120d0ef6f5a080cee291d3a0ef"
-PKG_REV="100"
+PKG_VERSION="1.17.9"
+PKG_SHA256="26b115e6ba4935181b5ea88a2cd51966d59b672478e0431377591229518b67aa"
+PKG_REV="101"
 PKG_ARCH="x86_64 arm aarch64"
 PKG_LICENSE="OSS"
 PKG_SITE="http://makemkv.com/"

@@ -42,12 +42,17 @@ if [[ "$(echo "${KEY_STRING}" | awk '/'${KEY_REGEX}'/p')" != "${KEY_STRING}" || 
 else
   if [ ! -f ${SETTINGS_FILE} ]; then
     echo "No settings file found, creating a new one: '${SETTINGS_FILE}'."
-    echo "app_Key=\"${KEY_STRING}\"" > ${SETTINGS_FILE}
+    echo "# This file was created by the makemkv service bootstrap script." > ${SETTINGS_FILE}
+    echo "app_Key = \"${KEY_STRING}\"" >> ${SETTINGS_FILE}
   else
     echo "Checking the stored key in the '${SETTINGS_FILE}' file."
-    if [ ${KEY_STRING} != "$(cat ${SETTINGS_FILE} | grep app_Key="*" | cut -d '"' -f 2)" ]; then
+    KEY_STORED=$(cat ${SETTINGS_FILE} | grep app_Key | cut -d '"' -f 2)
+    if [ "${KEY_STORED}" == "" ]; then
+      echo "The settings file does not contain a key, so the received key will be saved."
+      echo "app_Key = \"${KEY_STRING}\"" >> ${SETTINGS_FILE}
+    elif [ "${KEY_STORED}" != "${KEY_STRING}" ]; then
       echo "The stored key is outdated, replace it with the received key."
-      sed -i 's/^app_Key=.*$/app_Key=\"'${KEY_STRING}'\"/g' ${SETTINGS_FILE}
+      sed -i 's/^app_Key.*$/app_Key = \"'${KEY_STRING}'\"/g' ${SETTINGS_FILE}
     else
       echo "The received and stored keys are identical, no further action is required."
     fi
