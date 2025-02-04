@@ -139,7 +139,7 @@
     DRIVER_ADDONS="dvb-latest"
 
   # Addon Server Url
-    ADDON_SERVER_URL="http://libreelec.dtech.hu/packages"
+    ADDON_SERVER_URL="https://libreelec.dtech.hu/packages"
 
   # set the addon dirs
     ADDON_PATH="$ADDON_VERSION/${DEVICE:-$PROJECT}/$TARGET_ARCH"
