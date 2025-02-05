@@ -2,10 +2,11 @@
 # Copyright (C) 2018-present Team LibreELEC (https://libreelec.tv)
 
 PKG_NAME="stress-ng"
-PKG_VERSION="0.09.50"
-PKG_SHA256="b07290495794092cdf2f8d51ac631f28b8cec9455a16552d8ca48bc1f376c634"
+PKG_VERSION="0.13.00"
+PKG_SHA256="7b3d691e409ece3c13c33bbe4cd6ed00da7cb04639a03bd6f37d21426e48e40d"
 PKG_LICENSE="GPLv2"
-PKG_SITE="http://kernel.ubuntu.com/~cking/stress-ng/"
-PKG_URL="http://kernel.ubuntu.com/~cking/tarballs/stress-ng/stress-ng-$PKG_VERSION.tar.xz"
+PKG_SITE="https://github.com/ColinIanKing/stress-ng"
+PKG_URL="https://github.com/ColinIanKing/stress-ng/archive/refs/tags/V${PKG_VERSION}.tar.gz"
 PKG_DEPENDS_TARGET="toolchain attr keyutils libaio libcap zlib"
 PKG_LONGDESC="stress-ng will stress test a computer system in various selectable ways"
+PKG_BUILD_FLAGS="-sysroot"
