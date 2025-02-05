@@ -1,0 +1,29 @@
+From f41ef8674d08b58a93516bf884b0b293214d5c82 Mon Sep 17 00:00:00 2001
+From: Etheling Lydas <32774859+etheling@users.noreply.github.com>
+Date: Fri, 30 Oct 2020 20:55:51 +0200
+Subject: [PATCH] Linux 5.5+, glibc 2.32+ build fix
+
+Only include sys/sysctl.h when compiling for Apple (actual sysctl call is already inside ifdef __APPLE__ block). sys/sysctl.h was removed in Linux 5.5 and glibc support was removed in version 2.32.
+---
+ retrodep/memory.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/retrodep/memory.c b/retrodep/memory.c
+index 48dc1d37..c58c9e23 100644
+--- a/retrodep/memory.c
++++ b/retrodep/memory.c
+@@ -18,12 +18,14 @@
+ #ifndef __CELLOS_LV2__
+ #ifndef _WIN32
+ #ifndef VITA
++#ifdef __APPLE__
+ #include <sys/sysctl.h>
+ #endif
+ #endif
+ #endif
+ #endif
+ #endif
++#endif
+ #include "include/memory_uae.h"
+ #include "misc.h"
+ 
