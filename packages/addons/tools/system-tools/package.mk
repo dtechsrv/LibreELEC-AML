@@ -159,7 +159,7 @@ addon() {
     cp -P $(get_build_dir smartmontools)/.$TARGET_NAME/smartctl $ADDON_BUILD/$PKG_ADDON_ID/bin
 
     # strace
-    cp -P $(get_build_dir strace)/.$TARGET_NAME/strace $ADDON_BUILD/$PKG_ADDON_ID/bin
+    cp -P $(get_build_dir strace)/.install_pkg/usr/bin/strace $ADDON_BUILD/$PKG_ADDON_ID/bin
 
     # stress-ng
     cp -P $(get_build_dir stress-ng)/.install_pkg/usr/bin/stress-ng $ADDON_BUILD/$PKG_ADDON_ID/bin
