@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index 60a6864..d63c8b2 100644
+index 60a6864..d48b74f 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -3,7 +3,7 @@
@@ -7,7 +7,7 @@ index 60a6864..d63c8b2 100644
  
  ADDON_NAME=service.libreelec.settings
 -ADDON_VERSION=9.0.0
-+ADDON_VERSION=9.2.0.102
++ADDON_VERSION=9.2.1.102
  DISTRONAME:=LibreELEC
  
  SHELL=/bin/bash
