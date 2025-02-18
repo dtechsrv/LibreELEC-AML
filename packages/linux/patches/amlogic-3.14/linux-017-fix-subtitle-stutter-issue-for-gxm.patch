@@ -1,0 +1,38 @@
+diff --git a/drivers/amlogic/display/osd/osd_fb.c b/drivers/amlogic/display/osd/osd_fb.c
+index bc204c4..aeb6209 100644
+--- a/drivers/amlogic/display/osd/osd_fb.c
++++ b/drivers/amlogic/display/osd/osd_fb.c
+@@ -43,6 +43,7 @@
+ #include <linux/dma-mapping.h>
+ #include <meson_ion.h>
+ /* Amlogic Headers */
++#include <linux/amlogic/cpu_version.h>
+ #include <linux/amlogic/vout/vout_notify.h>
+ #include <linux/amlogic/instaboot/instaboot.h>
+ #include <sw_sync.h>
+@@ -908,7 +909,10 @@ static int osd_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+ 			break;
+ 		}
+ 	case FBIO_WAITFORVSYNC:
+-		osd_wait_vsync_event();
++		if (get_cpu_type() == MESON_CPU_MAJOR_ID_GXM)
++			osd_wait_vsync_hw();
++		else
++			osd_wait_vsync_event();
+ 		ret = copy_to_user(argp, &ret, sizeof(u32));
+ 		break;
+ 	default:
+diff --git a/drivers/amlogic/display/osd/osd_hw.c b/drivers/amlogic/display/osd/osd_hw.c
+index df0d7b6..28570d6 100644
+--- a/drivers/amlogic/display/osd/osd_hw.c
++++ b/drivers/amlogic/display/osd/osd_hw.c
+@@ -2003,7 +2003,8 @@ void osd_pan_display_hw(u32 index, unsigned int xoffset, unsigned int yoffset)
+ 		osd_hw.pandata[index].y_start += diff_y;
+ 		osd_hw.pandata[index].y_end   += diff_y;
+ 		add_to_update_list(index, DISP_GEOMETRY);
+-		osd_wait_vsync_hw();
++		if ((get_vpu_mem_pd_vmod(VPU_DI_PRE) == 1) || (get_cpu_type() != MESON_CPU_MAJOR_ID_GXM))
++			osd_wait_vsync_hw();
+ 	}
+ #ifdef CONFIG_AM_FB_EXT
+ 	osd_ext_clone_pan(index);
