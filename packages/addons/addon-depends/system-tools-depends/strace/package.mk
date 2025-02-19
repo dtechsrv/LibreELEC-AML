@@ -12,6 +12,6 @@ PKG_LONGDESC="strace is a diagnostic, debugging and instructional userspace util
 PKG_TOOLCHAIN="autotools"
 PKG_BUILD_FLAGS="-sysroot"
 
-if [ "${TARGET_ARCH}" = x86_64 ]; then
+if [ "${TARGET_ARCH}" = "x86_64" ] || [ "${TARGET_ARCH}" = "aarch64" ]; then
   PKG_CONFIGURE_OPTS_TARGET="--enable-mpers=no"
 fi
