@@ -1,0 +1,40 @@
+diff --git a/aml_dmx.c b/aml_dmx.c
+index 231db0a..8959789 100644
+--- a/aml_dmx.c
++++ b/aml_dmx.c
+@@ -547,7 +547,7 @@ static void section_notify(struct aml_dmx *dmx, struct aml_filter *f, u8 *p)
+ 	struct dvb_demux_feed *feed = dmx->channel[f->chan_id].feed;
+ 
+ 	if (feed && feed->cb.sec)
+-		feed->cb.sec(p, sec_len, NULL, 0, f->filter);
++		feed->cb.sec(p, sec_len, NULL, 0, f->filter, DMX_OK);
+ }
+ 
+ static void hardware_match_section(struct aml_dmx *dmx,
+@@ -968,7 +968,7 @@ static void process_sub(struct aml_dmx *dmx)
+ 		if (dmx->channel[2].feed && dmx->channel[2].feed->cb.ts) {
+ 			dmx->channel[2].feed->cb.ts(buffer1_virt, len1,
+ 						buffer2_virt, len2,
+-						&dmx->channel[2].feed->feed.ts);
++						&dmx->channel[2].feed->feed.ts, DMX_OK);
+ 		}
+ 	}
+ 	WRITE_MPEG_REG(PARSER_SUB_RP, rd_ptr);
+@@ -1167,7 +1167,7 @@ static void dvr_process_channel(struct aml_asyncfifo *afifo,
+ 			channel->dvr_feed->cb.ts(
+ 					(u8 *)afifo->pages+afifo->buf_read*size,
+ 					cnt*size, NULL, 0,
+-					&channel->dvr_feed->feed.ts);
++					&channel->dvr_feed->feed.ts, DMX_OK);
+ 		afifo->buf_read = 0;
+ 	}
+ 
+@@ -1186,7 +1186,7 @@ static void dvr_process_channel(struct aml_asyncfifo *afifo,
+ 			channel->dvr_feed->cb.ts(
+ 					(u8 *)afifo->pages+afifo->buf_read*size,
+ 					cnt*size, NULL, 0,
+-					&channel->dvr_feed->feed.ts);
++					&channel->dvr_feed->feed.ts, DMX_OK);
+ 		afifo->buf_read = afifo->buf_toggle;
+ 	}
+ 
