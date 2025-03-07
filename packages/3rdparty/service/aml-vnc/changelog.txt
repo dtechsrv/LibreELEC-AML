@@ -1,2 +1,5 @@
+101
+- Update aml-vnc-server to 1.2.1
+
 100
 - Reset addon version

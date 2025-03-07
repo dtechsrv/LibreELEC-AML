@@ -3,9 +3,9 @@
 # Copyright (C) 2021-present Gabor Dee (dee.gabor@gmail.com)
 
 PKG_NAME="aml-vnc"
-PKG_VERSION="1.2.0"
-PKG_SHA256="38009d0ea84868c7e077eb7594f2808bf5acdae3b7e691cb73fb800e9489d064"
-PKG_REV="100"
+PKG_VERSION="1.2.1"
+PKG_SHA256="751231c4e8c295a71e750b05e5f371395add0cb1853e7f8fcd41ef1067abc4ae"
+PKG_REV="101"
 PKG_ARCH="arm aarch64"
 PKG_LICENSE="GPL"
 PKG_SITE="https://github.com/dtechsrv/aml-vnc-server"
@@ -25,7 +25,9 @@ makeinstall_target() {
 }
 
 addon() {
-  mkdir -p ${ADDON_BUILD}/${PKG_ADDON_ID}/{bin,lib}
+  mkdir -p ${ADDON_BUILD}/${PKG_ADDON_ID}/bin
   cp -P ${PKG_BUILD}/aml-vnc ${ADDON_BUILD}/${PKG_ADDON_ID}/bin
+
+  mkdir -p ${ADDON_BUILD}/${PKG_ADDON_ID}/lib
   cp -PL $(get_build_dir libvncserver)/.install_pkg/usr/lib/libvncserver.so.? ${ADDON_BUILD}/${PKG_ADDON_ID}/lib
 }
