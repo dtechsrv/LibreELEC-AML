@@ -28,26 +28,6 @@ for all_dtb in $BOOT_ROOT/*.dtb; do
   fi
 done
 
-if [ -f "$SYSTEM_ROOT/usr/share/bootloader/boot.ini" ]; then
-  echo -n "Updating boot.ini... "
-  cp -p "$SYSTEM_ROOT/usr/share/bootloader/boot.ini" "$BOOT_ROOT"
-  echo "done"
-
-  if [ -f "$SYSTEM_ROOT/usr/share/bootloader/config.ini" ]; then
-    if [ ! -f "$BOOT_ROOT/config.ini" ]; then
-      echo -n "Creating config.ini... "
-      cp -p "$SYSTEM_ROOT/usr/share/bootloader/config.ini" "$BOOT_ROOT"
-      echo "done"
-    fi
-  fi
-fi
-
-if [ -f $SYSTEM_ROOT/usr/share/bootloader/boot-logo.bmp.gz ]; then
-  echo -n "Updating boot logo... "
-  cp -p $SYSTEM_ROOT/usr/share/bootloader/boot-logo.bmp.gz $BOOT_ROOT
-  echo "done"
-fi
-
 if [ -f $SYSTEM_ROOT/usr/share/bootloader/u-boot.bin -a -f $SYSTEM_ROOT/usr/share/bootloader/bl1.bin ]; then
   echo -n "Updating u-boot on $BOOT_DISK... "
   dd if=$SYSTEM_ROOT/usr/share/bootloader/bl1.bin of=$BOOT_DISK conv=fsync bs=1 count=442 status=none

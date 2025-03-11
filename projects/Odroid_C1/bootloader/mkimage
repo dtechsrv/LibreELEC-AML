@@ -19,11 +19,3 @@ fi
 if [ -f "$RELEASE_DIR/3rdparty/bootloader/boot.ini" ]; then
   mcopy $RELEASE_DIR/3rdparty/bootloader/boot.ini ::
 fi
-
-if [ -f "$RELEASE_DIR/3rdparty/bootloader/config.ini" ]; then
-  mcopy $RELEASE_DIR/3rdparty/bootloader/config.ini ::
-fi
-
-if [ -f "$RELEASE_DIR/3rdparty/bootloader/boot-logo.bmp.gz" ]; then
-  mcopy $RELEASE_DIR/3rdparty/bootloader/boot-logo.bmp.gz ::
-fi
