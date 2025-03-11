@@ -7,7 +7,6 @@
 [ -z "$SYSTEM_ROOT" ] && SYSTEM_ROOT=""
 [ -z "$BOOT_ROOT" ] && BOOT_ROOT="/flash"
 [ -z "$BOOT_PART" ] && BOOT_PART=$(df "$BOOT_ROOT" | tail -1 | awk {' print $1 '})
-[ -z "$UPDATE_DIR" ] && UPDATE_DIR="/storage/.update"
 
 if [ -z "$BOOT_DISK" ]; then
   case $BOOT_PART in
@@ -27,26 +26,6 @@ for all_dtb in $BOOT_ROOT/*.dtb; do
     echo "done"
   fi
 done
-
-if [ -f "$SYSTEM_ROOT/usr/share/bootloader/boot.ini" ]; then
-  echo -n "Updating boot.ini... "
-  cp -p "$SYSTEM_ROOT/usr/share/bootloader/boot.ini" "$BOOT_ROOT"
-  echo "done"
-
-  if [ -f "$SYSTEM_ROOT/usr/share/bootloader/config.ini" ]; then
-    if [ ! -f "$BOOT_ROOT/config.ini" ]; then
-      echo -n "Creating config.ini... "
-      cp -p "$SYSTEM_ROOT/usr/share/bootloader/config.ini" "$BOOT_ROOT"
-      echo "done"
-    fi
-  fi
-fi
-
-if [ -f $SYSTEM_ROOT/usr/share/bootloader/boot-logo.bmp.gz ]; then
-  echo -n "Updating boot logo... "
-  cp -p $SYSTEM_ROOT/usr/share/bootloader/boot-logo.bmp.gz $BOOT_ROOT
-  echo "done"
-fi
 
 if [ -f $SYSTEM_ROOT/usr/share/bootloader/u-boot.bin -a -f $SYSTEM_ROOT/usr/share/bootloader/bl1.bin ]; then
   echo -n "Updating u-boot on $BOOT_DISK... "
