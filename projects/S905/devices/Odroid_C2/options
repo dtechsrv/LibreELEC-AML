@@ -1,0 +1,20 @@
+  # Configuration for u-boot
+    UBOOT_CONFIG="odroidc2_defconfig"
+
+  # Target Configfile for u-boot
+    UBOOT_CONFIGFILE="boot.ini"
+
+  # Kernel target for u-boot (default 'uImage' if BOOTLOADER=u-boot) (uImage / zImage)
+    KERNEL_TARGET="Image"
+
+  # Kernel extra targets to build
+    KERNEL_UBOOT_EXTRA_TARGET="gxbb_p200_odroidc2.dtb"
+
+  # Build Android kernel image using mkbootimg
+    BUILD_ANDROID_BOOTIMG=""
+
+  # Additional options to be passed to Android mkbootimg
+    ANDROID_BOOTIMG_OPTIONS=""
+
+  # kernel image name
+    KERNEL_NAME="KERNEL"

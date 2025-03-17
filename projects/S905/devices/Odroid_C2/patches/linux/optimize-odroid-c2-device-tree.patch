@@ -1,0 +1,29 @@
+diff --git a/arch/arm64/boot/dts/amlogic/odroidc2.dts b/arch/arm64/boot/dts/amlogic/gxbb_p200_odroidc2.dts
+similarity index 99%
+rename from arch/arm64/boot/dts/amlogic/odroidc2.dts
+rename to arch/arm64/boot/dts/amlogic/gxbb_p200_odroidc2.dts
+index f8fd3d1..d26872f 100644
+--- a/arch/arm64/boot/dts/amlogic/odroidc2.dts
++++ b/arch/arm64/boot/dts/amlogic/gxbb_p200_odroidc2.dts
+@@ -21,8 +21,9 @@
+ #include <dt-bindings/reset/aml_gxbb.h>
+ #include "amlogic/mesongxbb.dtsi"
+ / {
++	le-dt-id = "gxb_p200_odroidc2_2g";
+ 	model = "ODROID-C2";
+-	amlogic-dt-id = "odroidc2_2g";
++	amlogic-dt-id = "gxb_p200_odroidc2_2g";
+ 	compatible = "amlogic, Gxbb";
+ 	interrupt-parent = <&gic>;
+ 	#address-cells = <2>;
+@@ -892,8 +893,8 @@
+ 	status = "okay";
+ };
+ &aml_remote {
+-	status = "disabled";
++	status = "okay";
+ };
+ &meson_ir {
+-	status = "okay";
++	status = "disabled";
+ };
