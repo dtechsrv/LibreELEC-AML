@@ -1,0 +1,102 @@
+diff --git a/xbmc/cores/DllLoader/exports/emu_msvcrt.cpp b/xbmc/cores/DllLoader/exports/emu_msvcrt.cpp
+index e0b6b3a..bc78135 100644
+--- a/xbmc/cores/DllLoader/exports/emu_msvcrt.cpp
++++ b/xbmc/cores/DllLoader/exports/emu_msvcrt.cpp
+@@ -2020,21 +2020,38 @@ extern "C"
+ 
+   struct mntent *dll_getmntent(FILE *fp)
+   {
+-    if (fp == NULL)
+-      return NULL;
++    if (!fp)
++      return nullptr;
++
++#if defined(TARGET_LINUX)
++    struct mntent* mountPoint = getmntent(fp);
++    if (mountPoint)
++      return mountPoint;
+ 
++    // warn if this is a kodi vfs file not associated with a mountpoint
+     CFile* pFile = g_emuFileWrapper.GetFileXbmcByStream(fp);
+     if (pFile)
+     {
+-      CLog::Log(LOGERROR, "%s - getmntent is not implemented for our virtual filesystem", __FUNCTION__);
+-      return NULL;
++      CLog::LogF(LOGWARNING, "getmntent is not implemented for our virtual filesystem");
+     }
+-#if defined(TARGET_LINUX)
+-    return getmntent(fp);
++    return nullptr;
+ #else
+-    CLog::Log(LOGWARNING, "%s - unimplemented function called", __FUNCTION__);
+-    return NULL;
++    CLog::LogF(LOGWARNING, "Unimplemented function called");
++    return nullptr;
++#endif
++  }
++
++  struct mntent* dll_getmntent_r(FILE* fp, struct mntent* result, char* buffer, int bufsize)
++  {
++    if (!fp || !result || !buffer)
++      return nullptr;
++
++#if defined(TARGET_LINUX) && !defined(TARGET_ANDROID)
++    struct mntent* mountPoint = getmntent_r(fp, result, buffer, bufsize);
++    if (mountPoint)
++      return mountPoint;
+ #endif
++    return nullptr;
+   }
+ 
+   // this needs to be wrapped, since dll's have their own file
+diff --git a/xbmc/cores/DllLoader/exports/wrapper.c b/xbmc/cores/DllLoader/exports/wrapper.c
+index d618565..ebdd6ba 100644
+--- a/xbmc/cores/DllLoader/exports/wrapper.c
++++ b/xbmc/cores/DllLoader/exports/wrapper.c
+@@ -99,6 +99,7 @@ FILE* dll_popen(const char *command, const char *mode);
+ void* dll_dlopen(const char *filename, int flag);
+ int dll_setvbuf(FILE *stream, char *buf, int type, size_t size);
+ struct mntent *dll_getmntent(FILE *fp);
++struct mntent* dll_getmntent_r(FILE* fp, struct mntent* result, char* buffer, int bufsize);
+ 
+ void *__wrap_dlopen(const char *filename, int flag)
+ {
+@@ -391,6 +392,11 @@ int __wrap_stat(const char *path, struct _stat *buffer)
+   return dll_stat(path, buffer);
+ }
+ 
++int __wrap_stat64(const char* path, struct stat64* buffer)
++{
++  return dll_stat64(path, buffer);
++}
++
+ int __wrap___xstat(int __ver, const char *__filename, struct stat *__stat_buf)
+ {
+   return dll_stat(__filename, __stat_buf);
+@@ -436,6 +442,11 @@ int __wrap_fstat(int fd, struct _stat *buf)
+   return dll_fstat(fd, buf);
+ }
+ 
++int __wrap_fstat64(int fd, struct stat64* buf)
++{
++  return dll_fstat64(fd, buf);
++}
++
+ int __wrap_setvbuf(FILE *stream, char *buf, int type, size_t size)
+ {
+    return dll_setvbuf(stream, buf, type, size);
+@@ -449,6 +460,14 @@ struct mntent *__wrap_getmntent(FILE *fp)
+   return NULL;
+ }
+ 
++struct mntent* __wrap_getmntent_r(FILE* fp, struct mntent* result, char* buffer, int bufsize)
++{
++#ifdef TARGET_POSIX
++  return dll_getmntent_r(fp, result, buffer, bufsize);
++#endif
++  return NULL;
++}
++
+ // GCC 4.3 in Ubuntu 8.10 defines _FORTIFY_SOURCE=2 which means, that fread, read etc
+ // are actually #defines which are inlined when compiled with -O. Those defines
+ // actually call __*chk (for example, __fread_chk). We need to bypass this whole
