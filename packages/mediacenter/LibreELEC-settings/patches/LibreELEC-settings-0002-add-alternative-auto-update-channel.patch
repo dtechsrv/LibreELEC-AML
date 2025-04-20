@@ -1,5 +1,5 @@
 diff --git a/src/defaults.py b/src/defaults.py
-index f302540..58df7d1 100644
+index f302540..a2fba5f 100644
 --- a/src/defaults.py
 +++ b/src/defaults.py
 @@ -80,7 +80,8 @@ system = {
@@ -7,8 +7,8 @@ index f302540..58df7d1 100644
      'ENABLED': not os.path.exists('/dev/.update_disabled'),
      'UPDATE_REQUEST_URL': 'https://update.libreelec.tv/updates.php',
 -    'UPDATE_DOWNLOAD_URL': 'http://%s.libreelec.tv/%s',
-+    'UPDATE_REQUEST_URL_ALTERNATIVE': 'http://libreelec.dtech.hu/updates.php',
-+    'UPDATE_DOWNLOAD_URL': 'http://libreelec.dtech.hu/%s/%s',
++    'UPDATE_REQUEST_URL_ALTERNATIVE': 'https://libreelec.dtech.hu/updates.php',
++    'UPDATE_DOWNLOAD_URL': 'https://libreelec.dtech.hu/%s/%s',
      'LOCAL_UPDATE_DIR': '/storage/.update/',
  
      'RPI_FLASHING_TRIGGER': '/storage/.rpi_flash_firmware',

@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index 60a6864..d48b74f 100644
+index 60a6864..b1a6a7e 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -3,7 +3,7 @@
@@ -7,16 +7,19 @@ index 60a6864..d48b74f 100644
  
  ADDON_NAME=service.libreelec.settings
 -ADDON_VERSION=9.0.0
-+ADDON_VERSION=9.2.1.102
++ADDON_VERSION=9.2.1.103
  DISTRONAME:=LibreELEC
  
  SHELL=/bin/bash
 diff --git a/changelog.txt b/changelog.txt
-index 6b8744b..7d7ca7a 100644
+index 6b8744b..aa39c3b 100644
 --- a/changelog.txt
 +++ b/changelog.txt
-@@ -1 +1,9 @@
+@@ -1 +1,12 @@
 -changelog: https://github.com/LibreELEC/service.libreelec.settings
++103
++- Change update channel to HTTPS protocol
++
 +102
 +- Change version numbering
 +- Add persistent logs and journal-configuration
