@@ -1,2 +1,7 @@
+101
+- Update to 4.3-2375
+- Remove alpha label
+- Replace tvh-dtv-scan-tables package with dtv-scan-tables
+
 100
 - Reset addon version
