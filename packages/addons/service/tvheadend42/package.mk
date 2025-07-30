@@ -5,13 +5,13 @@ PKG_NAME="tvheadend42"
 PKG_VERSION="5bdcfd8ac97b3337e1c7911ae24127df76fa693a"
 PKG_SHA256="b562a26248cdc02dc94cc62038deea172668fa4c079b2ea4e1b4220f3b1d34f5"
 PKG_VERSION_NUMBER="4.2.8-36"
-PKG_REV="125"
+PKG_REV="126"
 PKG_ARCH="any"
 PKG_LICENSE="GPL"
 PKG_SITE="http://www.tvheadend.org"
 PKG_URL="https://github.com/tvheadend/tvheadend/archive/${PKG_VERSION}.tar.gz"
 PKG_DEPENDS_TARGET="toolchain avahi comskip curl dvb-apps ffmpegx libdvbcsa libhdhomerun \
-                    libiconv openssl pngquant:host Python2:host tvh-dtv-scan-tables"
+                    libiconv openssl pngquant:host Python2:host dtv-scan-tables"
 PKG_SECTION="service"
 PKG_SHORTDESC="Tvheadend: a TV streaming server for Linux"
 PKG_LONGDESC="Tvheadend (${PKG_VERSION_NUMBER}): is a TV streaming server for Linux supporting DVB-S/S2, DVB-C, DVB-T/T2, IPTV, SAT>IP, ATSC and ISDB-T"
@@ -126,8 +126,6 @@ addon() {
 
   # dvb-scan files
   mkdir -p ${ADDON_BUILD}/${PKG_ADDON_ID}/dvb-scan
-  cp -r $(get_build_dir tvh-dtv-scan-tables)/atsc \
-        $(get_build_dir tvh-dtv-scan-tables)/dvb-* \
-        $(get_build_dir tvh-dtv-scan-tables)/isdb-t \
+  cp -r $(get_build_dir dtv-scan-tables)/.install_pkg/usr/share/dvbv5/* \
         ${ADDON_BUILD}/${PKG_ADDON_ID}/dvb-scan
 }
