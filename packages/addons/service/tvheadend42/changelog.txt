@@ -1,3 +1,6 @@
+127
+- add libxml2 support for ffmpegx
+
 126
 - replace tvh-dtv-scan-tables package with dtv-scan-tables
 
