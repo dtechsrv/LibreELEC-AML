@@ -3,13 +3,13 @@
 # Copyright (C) 2022-present Gabor Dee (dee.gabor@gmail.com)
 
 PKG_NAME="makemkv"
-PKG_VERSION="1.18.1"
-PKG_SHA256="dc47eefb1e68f7d539e4b079bb93ce64144104ad233de56818939810ecd03b7b"
-PKG_REV="102"
+PKG_VERSION="1.18.2"
+PKG_SHA256="b9497f5555c257f5d3c7f18b6ab03c74cff3ea4437e80349d618d115bf5fa445"
+PKG_REV="103"
 PKG_ARCH="x86_64 arm aarch64"
 PKG_LICENSE="OSS"
-PKG_SITE="http://makemkv.com/"
-PKG_URL="http://www.makemkv.com/download/makemkv-oss-${PKG_VERSION}.tar.gz"
+PKG_SITE="https://www.makemkv.com/"
+PKG_URL="https://www.makemkv.com/download/makemkv-oss-${PKG_VERSION}.tar.gz"
 PKG_MAINTAINER="dtech(.hu)"
 PKG_DEPENDS_TARGET="toolchain makemkv-bin openssl expat ffmpeg zlib"
 PKG_SECTION="service"
