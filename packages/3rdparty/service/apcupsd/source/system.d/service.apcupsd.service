@@ -1,0 +1,13 @@
+[Unit]
+Description=APC UPS Daemon
+After=network-online.target
+
+[Service]
+ExecStart=/bin/sh -c "exec sh /storage/.kodi/addons/service.apcupsd/bin/apcupsd.start"
+TimeoutStopSec=2
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=kodi.target
+Alias=apcupsd.service
