@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# SPDX-License-Identifier: GPL-2.0
+# Copyright (C) 2016-2020 Team LibreELEC (https://libreelec.tv)
+# Copyright (C) 2021-present Gabor Dee (dee.gabor@gmail.com)
+
+. /etc/profile
+
+oe_setup_addon service.apcupsd
+
+chmod a+x $ADDON_DIR/bin/*
+
+if [ ! -f "${ADDON_HOME}/apcupsd.conf" ]; then
+  cp ${ADDON_DIR}/config/apcupsd.conf ${ADDON_HOME}/apcupsd.conf
+fi
+
+exec apcupsd -f ${ADDON_HOME}/apcupsd.conf -b
