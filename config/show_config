@@ -108,6 +108,7 @@ show_config() {
   config_message="$config_message\n - Bootloader:\t\t\t\t $BOOTLOADER"
   config_message="$config_message\n - UDevil support:\t\t\t $UDEVIL"
   config_message="$config_message\n - Installer support:\t\t\t $INSTALLER_SUPPORT"
+  config_message="$config_message\n - Entware support:\t\t\t $ENTWARE_SUPPORT"
   for config_package in $ADDITIONAL_PACKAGES; do
     config_message="$config_message\n - Include package:\t\t\t $config_package"
   done

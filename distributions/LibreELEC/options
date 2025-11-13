@@ -179,6 +179,9 @@
 # build with installer (yes / no)
   INSTALLER_SUPPORT="yes"
 
+# build with entware installer (yes / no)
+  ENTWARE_SUPPORT="yes"
+
 # Testpackages for development (yes / no)
   TESTING="no"
 
