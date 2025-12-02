@@ -1,0 +1,68 @@
+diff --git a/drivers/amlogic/cpu_version/meson64_cpu.c b/drivers/amlogic/cpu_version/meson64_cpu.c
+index cadc88b..f06b8e8 100644
+--- a/drivers/amlogic/cpu_version/meson64_cpu.c
++++ b/drivers/amlogic/cpu_version/meson64_cpu.c
+@@ -64,6 +64,7 @@ int __init meson_cpu_version_init(void)
+ {
+ 	unsigned int ver;
+ 	struct device_node *cpu_version;
++	const char *meson_family, *meson_model, *meson_submodel;
+ 	cpu_version = of_find_node_by_path("/cpu_version");
+ 	if (cpu_version)
+ 		assist_hw_rev = of_iomap(cpu_version, 0);
+@@ -85,6 +86,55 @@ int __init meson_cpu_version_init(void)
+ 		meson_cpu_version[MESON_CPU_VERSION_LVL_PACK],
+ 		meson_cpu_version[MESON_CPU_VERSION_LVL_MISC]
+ 		);
++
++	if (meson_cpu_version[MESON_CPU_VERSION_LVL_MAJOR] == MESON_CPU_MAJOR_ID_GXL) {
++		switch (meson_cpu_version[MESON_CPU_VERSION_LVL_PACK] & 0xf0) {
++		case 0x00:
++			meson_submodel = "S905D";
++			break;
++		case 0x80:
++			meson_submodel = "S905X";
++			break;
++		case 0xA0:
++			meson_submodel = "S905W";
++			break;
++		case 0xC0:
++			meson_submodel = "S905L";
++			break;
++		case 0xE0:
++			meson_submodel = "S905M2";
++			break;
++		case 0x30:
++			meson_submodel = "S805X";
++			break;
++		case 0xB0:
++			meson_submodel = "S805L";
++			break;
++		default:
++			meson_submodel = "N/A";
++		}
++	}
++
++	switch (meson_cpu_version[MESON_CPU_VERSION_LVL_MAJOR]) {
++	case MESON_CPU_MAJOR_ID_GXBB:
++		meson_family = "GXBB";
++		meson_model = "S905";
++		break;
++	case MESON_CPU_MAJOR_ID_GXL:
++		meson_family = "GXL";
++		meson_model = meson_submodel;
++		break;
++	case MESON_CPU_MAJOR_ID_GXM:
++		meson_family = "GXM";
++		meson_model = "S912";
++		break;
++	default:
++		meson_family = "unknown";
++		meson_model = "N/A";
++	}
++
++	pr_info("Detected CPU: Amlogic %s (%s)\n", meson_model, meson_family);
++
+ 	return 0;
+ }
+ early_initcall(meson_cpu_version_init);

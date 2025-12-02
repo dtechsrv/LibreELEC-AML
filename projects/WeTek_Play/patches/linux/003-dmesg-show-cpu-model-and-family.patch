@@ -1,0 +1,90 @@
+diff --git a/arch/arm/mach-meson6/cpu.c b/arch/arm/mach-meson6/cpu.c
+index dd76f06..f5bc0f0 100755
+--- a/arch/arm/mach-meson6/cpu.c
++++ b/arch/arm/mach-meson6/cpu.c
+@@ -31,6 +31,7 @@ int __init meson_cpu_version_init(void)
+ {
+ 	unsigned int ver=0xa;
+ 	unsigned int  *version_map;
++	const char *meson_name;
+ 
+ 	meson_cpu_version[MESON_CPU_VERSION_LVL_MAJOR] =
+ 		aml_read_reg32(P_ASSIST_HW_REV);
+@@ -46,6 +47,16 @@ int __init meson_cpu_version_init(void)
+ 		meson_cpu_version[MESON_CPU_VERSION_LVL_MISC]
+ 		);
+ 
++	switch (meson_cpu_version[MESON_CPU_VERSION_LVL_MAJOR]) {
++	case MESON_CPU_MAJOR_ID_M6:
++		meson_name = "AML8726-MX (M6)";
++		break;
++	default:
++		meson_name = "unknown (N/A)";
++	}
++
++	pr_info("Detected CPU: Amlogic %s\n", meson_name);
++
+ 	return 0;
+ }
+ EXPORT_SYMBOL(meson_cpu_version_init);
+diff --git a/arch/arm/mach-meson8/cpu.c b/arch/arm/mach-meson8/cpu.c
+index 6c2b724..98a0953 100755
+--- a/arch/arm/mach-meson8/cpu.c
++++ b/arch/arm/mach-meson8/cpu.c
+@@ -38,6 +38,7 @@ int __init meson_cpu_version_init(void)
+ #ifndef CONFIG_MESON_TRUSTZONE
+ 	unsigned int  *version_map;
+ #endif
++	const char *meson_name;
+ 
+ 	meson_cpu_version[MESON_CPU_VERSION_LVL_MAJOR] =
+ 		aml_read_reg32(P_ASSIST_HW_REV);
+@@ -74,6 +75,19 @@ int __init meson_cpu_version_init(void)
+ 		meson_cpu_version[MESON_CPU_VERSION_LVL_MISC]
+ 		);
+ 
++	switch (meson_cpu_version[MESON_CPU_VERSION_LVL_MAJOR]) {
++	case MESON_CPU_MAJOR_ID_M8M2:
++		meson_name = "S812 (M8M2)";
++		break;
++	case MESON_CPU_MAJOR_ID_M8:
++		meson_name = "S802 (M8)";
++		break;
++	default:
++		meson_name = "unknown (N/A)";
++	}
++
++	pr_info("Detected CPU: Amlogic %s\n", meson_name);
++
+ 	return 0;
+ }
+ EXPORT_SYMBOL(meson_cpu_version_init);
+diff --git a/arch/arm/mach-meson8b/cpu.c b/arch/arm/mach-meson8b/cpu.c
+index 32d9655..4f75288 100755
+--- a/arch/arm/mach-meson8b/cpu.c
++++ b/arch/arm/mach-meson8b/cpu.c
+@@ -38,6 +38,7 @@ int __init meson_cpu_version_init(void)
+ #ifndef CONFIG_MESON_TRUSTZONE
+ 	unsigned int  *version_map;
+ #endif
++	const char *meson_name;
+ 
+ 	meson_cpu_version[MESON_CPU_VERSION_LVL_MAJOR] =
+ 		aml_read_reg32(P_ASSIST_HW_REV);
+@@ -66,6 +67,16 @@ int __init meson_cpu_version_init(void)
+ 		meson_cpu_version[MESON_CPU_VERSION_LVL_MISC]
+ 		);
+ 
++	switch (meson_cpu_version[MESON_CPU_VERSION_LVL_MAJOR]) {
++	case MESON_CPU_MAJOR_ID_M8B:
++		meson_name = "S805 (M8B)";
++		break;
++	default:
++		meson_name = "unknown (N/A)";
++	}
++
++	pr_info("Detected CPU: Amlogic %s\n", meson_name);
++
+ 	return 0;
+ }
+ EXPORT_SYMBOL(meson_cpu_version_init);
