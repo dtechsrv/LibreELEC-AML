@@ -1,0 +1,24 @@
+diff --git a/arch/arm/kernel/devtree.c b/arch/arm/kernel/devtree.c
+index 592216e..e6a9929 100755
+--- a/arch/arm/kernel/devtree.c
++++ b/arch/arm/kernel/devtree.c
+@@ -194,7 +194,7 @@ struct machine_desc * __init setup_machine_fdt(unsigned int dt_phys)
+ 	struct machine_desc *mdesc, *mdesc_best = NULL;
+ 	unsigned int score, mdesc_score = ~1;
+ 	unsigned long dt_root;
+-	const char *model;
++	const char *model, *aml_dt_id;
+ 
+ #ifdef CONFIG_ARCH_MULTIPLATFORM
+ 	DT_MACHINE_START(GENERIC_DT, "Generic DT based system")
+@@ -247,6 +247,10 @@ struct machine_desc * __init setup_machine_fdt(unsigned int dt_phys)
+ 		model = "<unknown>";
+ 	pr_info("Machine: %s, model: %s\n", mdesc_best->name, model);
+ 
++	aml_dt_id = of_get_flat_dt_prop(dt_root, "amlogic-dt-id", NULL);
++	if (aml_dt_id)
++		pr_info("Amlogic device tree ID: %s\n", aml_dt_id);
++
+ 	/* Retrieve various information from the /chosen node */
+ 	of_scan_flat_dt(early_init_dt_scan_chosen, boot_command_line);
+ 	/* Initialize {size,address}-cells info */

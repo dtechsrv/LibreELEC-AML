@@ -1,0 +1,56 @@
+diff --git a/arch/arm64/kernel/setup.c b/arch/arm64/kernel/setup.c
+index 6524f40..1d53a21 100644
+--- a/arch/arm64/kernel/setup.c
++++ b/arch/arm64/kernel/setup.c
+@@ -283,6 +283,8 @@ static void __init setup_processor(void)
+ 
+ static void __init setup_machine_fdt(phys_addr_t dt_phys)
+ {
++	const char *le_dt_id;
++
+ 	if (!dt_phys || !early_init_dt_scan(phys_to_virt(dt_phys))) {
+ 		early_print("\n"
+ 			"Error: invalid device tree blob at physical address 0x%p (virtual address 0x%p)\n"
+@@ -295,6 +297,12 @@ static void __init setup_machine_fdt(phys_addr_t dt_phys)
+ 	}
+ 
+ 	machine_name = of_flat_dt_get_machine_name();
++	if (machine_name)
++		pr_info("Machine model: %s\n", machine_name);
++
++	le_dt_id = of_flat_dt_get_le_dt_id();
++	if (le_dt_id)
++		pr_info("LibreELEC device tree ID: %s\n", le_dt_id);
+ }
+ 
+ /*
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index e8e3ef8..9cc6e77 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -593,6 +593,13 @@ const char * __init of_flat_dt_get_machine_name(void)
+ 	return name;
+ }
+ 
++const char * __init of_flat_dt_get_le_dt_id(void)
++{
++	unsigned long dt_root = of_get_flat_dt_root();
++
++	return of_get_flat_dt_prop(dt_root, "le-dt-id", NULL);
++}
++
+ /**
+  * of_flat_dt_match_machine - Iterate match tables to find matching machine.
+  *
+diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+index 19dd1d4..e7f1159 100644
+--- a/include/linux/of_fdt.h
++++ b/include/linux/of_fdt.h
+@@ -129,6 +129,7 @@ extern int early_init_dt_scan_root(unsigned long node, const char *uname,
+ extern bool early_init_dt_scan(void *params);
+ 
+ extern const char *of_flat_dt_get_machine_name(void);
++extern const char *of_flat_dt_get_le_dt_id(void);
+ extern const void *of_flat_dt_match_machine(const void *default_match,
+ 		const void * (*get_next_compat)(const char * const**));
+ 
