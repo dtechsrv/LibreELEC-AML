@@ -10,6 +10,18 @@ index f57752a..5da750d 100644
  	model = "Amlogic";
  	amlogic-dt-id = "gxb_p200_1g";
  	compatible = "amlogic, Gxbb";
+diff --git a/arch/arm64/boot/dts/amlogic/gxbb_p200_1G_wetek_hub.dts b/arch/arm64/boot/dts/amlogic/gxbb_p200_1G_wetek_hub.dts
+index 73caccb..e1358fd 100644
+--- a/arch/arm64/boot/dts/amlogic/gxbb_p200_1G_wetek_hub.dts
++++ b/arch/arm64/boot/dts/amlogic/gxbb_p200_1G_wetek_hub.dts
+@@ -14,6 +14,7 @@
+ #include <dt-bindings/pwm/meson.h>
+ #include "mesongxbb.dtsi"
+ / {
++	le-dt-id = "gxbb_p200_1G_wetek_hub";
+ 	model = "Amlogic";
+ 	amlogic-dt-id = "gxb_p200_1g";
+ 	compatible = "amlogic, Gxbb";
 diff --git a/arch/arm64/boot/dts/amlogic/gxbb_p200_2G.dts b/arch/arm64/boot/dts/amlogic/gxbb_p200_2G.dts
 index 50fb930..05a0df8 100644
 --- a/arch/arm64/boot/dts/amlogic/gxbb_p200_2G.dts
@@ -19,6 +31,18 @@ index 50fb930..05a0df8 100644
  #include "mesongxbb.dtsi"
  / {
 +	le-dt-id = "gxb_p200_2g";
+ 	model = "Amlogic";
+ 	amlogic-dt-id = "gxb_p200_2g";
+ 	compatible = "amlogic, Gxbb";
+diff --git a/arch/arm64/boot/dts/amlogic/gxbb_p200_2G_wetek_play_2.dts b/arch/arm64/boot/dts/amlogic/gxbb_p200_2G_wetek_play_2.dts
+index b5a1353..f5b8b01 100644
+--- a/arch/arm64/boot/dts/amlogic/gxbb_p200_2G_wetek_play_2.dts
++++ b/arch/arm64/boot/dts/amlogic/gxbb_p200_2G_wetek_play_2.dts
+@@ -14,6 +14,7 @@
+ #include <dt-bindings/pwm/meson.h>
+ #include "mesongxbb.dtsi"
+ / {
++	le-dt-id = "gxbb_p200_2G_wetek_play_2";
  	model = "Amlogic";
  	amlogic-dt-id = "gxb_p200_2g";
  	compatible = "amlogic, Gxbb";
