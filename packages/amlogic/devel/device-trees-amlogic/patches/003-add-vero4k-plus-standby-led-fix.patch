@@ -1,0 +1,20 @@
+diff --git a/gxl_p230_vero4k_plus.dts b/gxl_p230_vero4k_plus.dts
+new file mode 100644
+index 0000000..683fa61
+--- /dev/null
++++ b/gxl_p230_vero4k_plus.dts
+@@ -0,0 +1,14 @@
++#include "gxl_p230_2g.dts"
++
++/{
++	le-dt-id = "gxl_p230_vero4k_plus";
++	gpio_leds {
++		compatible = "gpio-leds";
++
++		standby {
++			label = "red:standby";
++			gpios = <&gpio_ao GPIOAO_9 GPIO_ACTIVE_LOW>;
++			default-state = "off";
++		};
++	};
++};
