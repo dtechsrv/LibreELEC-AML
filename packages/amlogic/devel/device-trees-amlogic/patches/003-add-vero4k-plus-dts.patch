@@ -1,0 +1,41 @@
+diff --git a/gxl_p230_vero4k_plus.dts b/gxl_p230_vero4k_plus.dts
+new file mode 100644
+index 0000000..a893a07
+--- /dev/null
++++ b/gxl_p230_vero4k_plus.dts
+@@ -0,0 +1,35 @@
++#include "gxl_p230_2g.dts"
++
++/{
++	le-dt-id = "gxl_p230_vero4k_plus";
++	gpio_leds {
++		compatible = "gpio-leds";
++
++		standby {
++			label = "red:standby";
++			gpios = <&gpio_ao GPIOAO_9 GPIO_ACTIVE_LOW>;
++			default-state = "off";
++		};
++	};
++
++	ethmac: ethernet@0xc9410000 {
++			compatible = "amlogic, gxbb-rgmii-dwmac";
++			reg = <0x0 0xc9410000 0x0 0x10000
++			0x0 0xc8834540 0x0 0x8
++			0x0 0xc8834558 0x0 0xc>;
++			interrupts = <0 8 4>;
++			phy-mode= "rgmii-txid";
++			pinctrl-names = "external_eth_pins";
++			pinctrl-0 = <&external_eth_pins>;
++			rst_pin-gpios = <&gpio GPIOZ_14 0>;
++			GPIOZ4_pin-gpios = <&gpio GPIOZ_4 0>;
++			GPIOZ5_pin-gpios = <&gpio GPIOZ_5 0>;
++			mc_val = <0x1621>;
++			resets = <&clock GCLK_IDX_ETHERNET>;
++			reset-names = "ethpower";
++			interrupt-names = "macirq";
++			clocks = <&clock CLK_81>;
++			clock-names = "ethclk81";
++			internal_phy=<0>;
++	};
++};
