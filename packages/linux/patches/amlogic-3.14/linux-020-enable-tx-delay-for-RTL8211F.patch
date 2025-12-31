@@ -1,0 +1,36 @@
+diff --git a/drivers/net/phy/realtek.c b/b/drivers/net/phy/realtek.c
+index 6db788d..1c24043 100644
+--- a/drivers/net/phy/realtek.c
++++ b/drivers/net/phy/realtek.c
+@@ -24,6 +24,7 @@
+ #define RTL821x_INSR		0x13
+ #define RTL8211F_MMD_CTRL   0x0D
+ #define RTL8211F_MMD_DATA   0x0E
++#define RTL8211F_TX_DELAY	0x100
+ #define RTL821x_PHYCR2		0x19
+ #define RTL821x_CLKOUT_EN	0x1
+ #define RTL821x_EPAGSR		0x1f
+@@ -39,6 +40,7 @@ static int rtl8211f_config_init(struct phy_device *phydev)
+ {
+ 	int val;
+ 	int bmcr = 0;
++	u16 reg;
+ 
+ 	/* close CLOCK output */
+ 	val = phy_read(phydev, RTL821x_PHYCR2);
+@@ -64,6 +66,15 @@ static int rtl8211f_config_init(struct phy_device *phydev)
+ 	phy_write(phydev, RTL8211F_MMD_CTRL, 0x4007);
+ 	phy_write(phydev, RTL8211F_MMD_DATA, 0x0);
+ 
++	/* enable TX-delay for rgmii-id and rgmii-txid */
++	if (phydev->interface == PHY_INTERFACE_MODE_RGMII_ID ||
++	    phydev->interface == PHY_INTERFACE_MODE_RGMII_TXID) {
++		phy_write(phydev, RTL821x_EPAGSR, 0xd08);
++		reg = phy_read(phydev, 0x11);
++		reg |= RTL8211F_TX_DELAY;
++		phy_write(phydev, 0x11, reg);
++	}
++
+ 	/* disable 1000m adv*/
+ 	val = phy_read(phydev, 0x9);
+ 	phy_write(phydev, 0x9, val&(~(1<<9)));
