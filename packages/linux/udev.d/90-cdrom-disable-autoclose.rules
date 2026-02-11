@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (C) 2026-present Gabor Dee (dee.gabor@gmail.com)
+
+ACTION!="add", GOTO="end"
+
+# This fixes the drive tray retraction bug when the cdrom is present as a module
+SUBSYSTEM=="module", KERNEL=="cdrom", RUN+="/bin/sh -c 'echo 0 > /proc/sys/dev/cdrom/autoclose'"
+
+LABEL="end"
