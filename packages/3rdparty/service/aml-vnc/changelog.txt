@@ -1,3 +1,6 @@
+102
+- Update aml-vnc-server to 1.2.2
+
 101
 - Update aml-vnc-server to 1.2.1
 
