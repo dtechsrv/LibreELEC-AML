@@ -24,6 +24,9 @@ make_target() {
   cd $PKG_BUILD
 
   case $TARGET_ARCH in
+    i386)
+      INSTALLER_URL="http://sundtek.de/media/netinst/32bit/installer.tar.gz"
+      ;;
     x86_64)
       INSTALLER_URL="http://sundtek.de/media/netinst/64bit/installer.tar.gz"
       ;;

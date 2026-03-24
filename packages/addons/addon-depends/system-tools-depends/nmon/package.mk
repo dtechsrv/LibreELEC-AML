@@ -13,6 +13,9 @@ PKG_TOOLCHAIN="manual"
 
 make_target() {
   case $ARCH in
+    i386)
+      arch="X86"
+      ;;
     x86_64)
       arch="X86"
       ;;

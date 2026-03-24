@@ -10,7 +10,7 @@ PKG_URL="http://repo.or.cz/x264.git/snapshot/$PKG_VERSION.tar.gz"
 PKG_DEPENDS_TARGET="toolchain"
 PKG_LONGDESC="x264 codec"
 
-if [ "$TARGET_ARCH" = "x86_64" ]; then
+if [ "$TARGET_ARCH" = "i386" -o "$TARGET_ARCH" = "x86_64" ]; then
   PKG_DEPENDS_TARGET+=" nasm:host"
 fi
 
@@ -18,7 +18,7 @@ pre_configure_target() {
   cd $PKG_BUILD
   rm -rf .$TARGET_NAME
 
-  if [ "$TARGET_ARCH" = "x86_64" ]; then
+  if [ "$TARGET_ARCH" = "i386" -o "$TARGET_ARCH" = "x86_64" ]; then
     export AS="$TOOLCHAIN/bin/nasm"
   else
     PKG_X264_ASM="--disable-asm"

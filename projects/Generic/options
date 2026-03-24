@@ -5,6 +5,17 @@
   # The TARGET_CPU variable controls which processor should be targeted for
   # generated code.
     case $TARGET_ARCH in
+      i386)
+        # (AMD CPUs)    k8 k8-sse3 opteron opteron-sse3 athlon64 athlon64-sse3
+        #               athlon-fx athlon-mp athlon-xp athlon-4
+        #               athlon-tbird athlon k6-3 k6-2 k6 geode
+        # (Intel CPUs)  atom core2 nocona prescott pentium4[m] pentium3[m]
+        #               pentium-m pentium2 pentiumpro pentium-mmx pentium
+        #               i686 i586 i486 i386
+        # (VIA CPUs)    c3 c3-2
+        #
+        TARGET_CPU="i686"
+        ;;
       x86_64)
         # (AMD CPUs)    k8 k8-sse3 opteron opteron-sse3 athlon64 athlon64-sse3
         #               athlon-fx amdfam10 barcelona
@@ -80,7 +91,7 @@
   # for a list of additional drivers see packages/linux-drivers
   # Space separated list is supported,
   # e.g. ADDITIONAL_DRIVERS="DRIVER1 DRIVER2"
-    ADDITIONAL_DRIVERS="$ADDITIONAL_DRIVERS bcm_sta intel_nuc_led"
+    ADDITIONAL_DRIVERS="$ADDITIONAL_DRIVERS intel_nuc_led"
 
   # build and install driver addons (yes / no)
     DRIVER_ADDONS_SUPPORT="yes"
@@ -92,3 +103,10 @@
 
   # Default size of the ova image, in MB, eg. 4096
     OVA_SIZE="4096"
+
+  # Addon Server Url
+    ADDON_SERVER_URL="https://libreelec.dtech.hu/packages"
+
+  # set the addon dirs
+    ADDON_PATH="$ADDON_VERSION/$PROJECT/$TARGET_ARCH"
+    ADDON_URL="$ADDON_SERVER_URL/$ADDON_PATH"

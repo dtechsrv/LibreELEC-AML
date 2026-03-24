@@ -28,7 +28,7 @@ else
   PKG_CMAKE_OPTS_TARGET+=" -DWITH_SIMD=OFF"
 fi
 
-if [ $TARGET_ARCH = "x86_64" ]; then
+if [ $TARGET_ARCH = "i386" -o $TARGET_ARCH = "x86_64" ]; then
   PKG_DEPENDS_HOST+=" nasm:host"
   PKG_DEPENDS_TARGET+=" nasm:host"
 fi

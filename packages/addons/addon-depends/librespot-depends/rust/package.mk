@@ -20,6 +20,9 @@ make_target() {
     arm)
       RUST_TARGET_TRIPLE="arm-unknown-linux-gnueabihf"
       ;;
+    i386)
+      RUST_TARGET_TRIPLE="i686-unknown-linux-gnu"
+      ;;
     x86_64)
       RUST_TARGET_TRIPLE="x86_64-unknown-linux-gnu"
       ;;

@@ -4,7 +4,7 @@
 PKG_NAME="digital_devices"
 PKG_VERSION="040a1c58b660781297acc5eda09d934ced245c5e"
 PKG_SHA256="a0d7e8e78bc9e56b014d61585506dcb5fef4fa8b31d5f5e5aeaabb98343a3611"
-PKG_ARCH="x86_64"
+PKG_ARCH="i386 x86_64"
 PKG_LICENSE="GPL"
 PKG_SITE="https://github.com/DigitalDevices/dddvb/"
 PKG_URL="https://github.com/DigitalDevices/dddvb/archive/${PKG_VERSION}.tar.gz"

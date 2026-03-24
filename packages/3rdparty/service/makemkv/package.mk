@@ -6,7 +6,7 @@ PKG_NAME="makemkv"
 PKG_VERSION="1.18.3"
 PKG_SHA256="bc8bb084ae3aabcd503d5bb93efc273e046e4fd4663d39a9836ce0c047fee823"
 PKG_REV="104"
-PKG_ARCH="x86_64 arm aarch64"
+PKG_ARCH="any"
 PKG_LICENSE="OSS"
 PKG_SITE="https://www.makemkv.com/"
 PKG_URL="https://www.makemkv.com/download/makemkv-oss-${PKG_VERSION}.tar.gz"
@@ -23,6 +23,9 @@ PKG_ADDON_TYPE="xbmc.service"
 PKG_CONFIGURE_OPTS_TARGET="--disable-gui"
 
 case "${TARGET_ARCH}" in
+  i386)
+    BIN_ARCH="i386"
+    ;;
   x86_64)
     BIN_ARCH="amd64"
     ;;

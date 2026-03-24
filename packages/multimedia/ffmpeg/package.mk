@@ -72,7 +72,7 @@ else
   PKG_FFMPEG_FPU="--disable-neon"
 fi
 
-if [ "$TARGET_ARCH" = "x86_64" ]; then
+if [ "$TARGET_ARCH" = "i386" -o "$TARGET_ARCH" = "x86_64" ]; then
   PKG_DEPENDS_TARGET+=" nasm:host"
 fi
 

@@ -22,7 +22,7 @@ esac
 PKG_NAME="dotnet-runtime"
 PKG_VERSION="3.1.5"
 PKG_REV="110"
-PKG_ARCH="any"
+PKG_ARCH="x86_64 arm aarch64"
 PKG_LICENSE="MIT"
 PKG_SITE="https://dotnet.github.io/"
 PKG_DEPENDS_TARGET="toolchain curl curl3 krb5 lttng-ust"

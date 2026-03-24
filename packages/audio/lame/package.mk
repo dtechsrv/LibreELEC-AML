@@ -30,3 +30,7 @@ PKG_CONFIGURE_OPTS_TARGET="--enable-static \
                            --with-gnu-ld \
                            --with-fileio=lame \
                            GTK_CONFIG=no"
+
+if [ "${TARGET_ARCH}" = "i386" ]; then
+  PKG_CONFIGURE_OPTS_TARGET+=" ac_cv_path_NASM=no"
+fi

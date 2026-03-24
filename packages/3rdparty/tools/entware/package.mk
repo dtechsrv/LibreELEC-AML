@@ -4,7 +4,7 @@
 
 PKG_NAME="entware"
 PKG_VERSION=""
-PKG_ARCH="x86_64 arm aarch64"
+PKG_ARCH="any"
 PKG_LICENSE="GPL"
 PKG_SITE="https://github.com/Entware/Entware"
 PKG_URL=""
@@ -14,6 +14,9 @@ PKG_LONGDESC="Entware: A software repository that offers various software progra
 PKG_TOOLCHAIN="manual"
 
 case "${TARGET_ARCH}" in
+  i386)
+    ENTWARE_ARCH="x86-k2.6"
+    ;;
   x86_64)
     ENTWARE_ARCH="x64-k3.2"
     ;;

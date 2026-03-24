@@ -23,7 +23,7 @@ configure_package() {
     SMB_AVAHI="--disable-avahi"
   fi
 
-  if [ "$TARGET_ARCH" = x86_64 ]; then
+  if [ "$TARGET_ARCH" = "x86_64" ]; then
     SMB_AESNI="--accel-aes=intelaesni"
   else
     SMB_AESNI="--accel-aes=none"

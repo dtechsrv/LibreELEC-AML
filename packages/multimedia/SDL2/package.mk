@@ -12,7 +12,7 @@ PKG_DEPENDS_TARGET="toolchain alsa-lib systemd dbus"
 PKG_LONGDESC="A cross-platform multimedia library designed to provide fast access to the graphics framebuffer and audio device. "
 PKG_BUILD_FLAGS="+pic"
 
-if [ "$TARGET_ARCH" = "x86_64" ]; then
+if [ "$TARGET_ARCH" = "i386" -o "$TARGET_ARCH" = "x86_64" ]; then
   PKG_DEPENDS_TARGET+=" nasm:host"
   PKG_SDL2_X86ASM="-DASSEMBLY=ON"
 else
