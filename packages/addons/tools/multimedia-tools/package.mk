@@ -27,7 +27,7 @@ PKG_DEPENDS_TARGET="toolchain \
                     tsdecrypt \
                     tstools"
 
-if [ "$TARGET_ARCH" = "x86_64" ]; then
+if [ "$TARGET_ARCH" = "i386" -o "$TARGET_ARCH" = "x86_64" ]; then
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET mesa-demos"
 fi
 

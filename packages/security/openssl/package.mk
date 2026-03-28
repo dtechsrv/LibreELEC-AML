@@ -58,6 +58,9 @@ pre_configure_target() {
   cp -a ${PKG_BUILD}/* ${PKG_BUILD}/.${TARGET_NAME}/
 
   case ${TARGET_ARCH} in
+    i386)
+      OPENSSL_TARGET=linux-elf
+      ;;
     x86_64)
       OPENSSL_TARGET=linux-x86_64
       PLATFORM_FLAGS=enable-ec_nistp_64_gcc_128

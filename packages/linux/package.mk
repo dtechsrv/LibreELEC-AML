@@ -49,6 +49,7 @@ case "${LINUX}" in
     PKG_SHA256="8a3e55be3e788700836db6f75875b4d3b824a581d1eacfc2fcd29ed4e727ba3e"
     PKG_URL="https://www.kernel.org/pub/linux/kernel/v5.x/${PKG_NAME}-${PKG_VERSION}.tar.xz"
     PKG_PATCH_DIRS="default"
+    PKG_BUILD_PERF="no"
     ;;
 esac
 
@@ -65,7 +66,7 @@ if [ "${PKG_BUILD_PERF}" != "no" ] && grep -q ^CONFIG_PERF_EVENTS= ${PKG_KERNEL_
   PKG_DEPENDS_TARGET="${PKG_DEPENDS_TARGET} binutils elfutils libunwind zlib openssl"
 fi
 
-if [ "${TARGET_ARCH}" = "x86_64" ]; then
+if [ "${TARGET_ARCH}" = "i386" -o "${TARGET_ARCH}" = "x86_64" ]; then
   PKG_DEPENDS_TARGET="${PKG_DEPENDS_TARGET} intel-ucode:host kernel-firmware elfutils:host pciutils"
 fi
 
@@ -148,7 +149,7 @@ makeinstall_host() {
 }
 
 pre_make_target() {
-  if [ "${TARGET_ARCH}" = "x86_64" ]; then
+  if [ "${TARGET_ARCH}" = "i386" -o "${TARGET_ARCH}" = "x86_64" ]; then
     # copy some extra firmware to linux tree
     mkdir -p ${PKG_BUILD}/external-firmware
       cp -a $(get_build_dir kernel-firmware)/{amdgpu,amd-ucode,i915,radeon,e100,rtl_nic} ${PKG_BUILD}/external-firmware
@@ -178,6 +179,9 @@ make_target() {
 
       # arch specific perf build args
       case "${TARGET_ARCH}" in
+        i386)
+          PERF_BUILD_ARGS="ARCH=x86"
+          ;;
         x86_64)
           PERF_BUILD_ARGS="ARCH=x86"
           ;;

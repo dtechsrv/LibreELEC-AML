@@ -32,6 +32,9 @@ configure_target() {
   export PATH=${PATH}:${GOROOT}/bin
 
   case $TARGET_ARCH in
+    i386)
+      export GOARCH=386
+      ;;
     x86_64)
       export GOARCH=amd64
       ;;

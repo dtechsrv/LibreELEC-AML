@@ -49,7 +49,7 @@ configure_package() {
 
   get_graphicdrivers
 
-  if [ "$TARGET_ARCH" = "x86_64" ]; then
+  if [ "$TARGET_ARCH" = "i386" -o "$TARGET_ARCH" = "x86_64" ]; then
     PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET pciutils"
   fi
 
@@ -194,7 +194,7 @@ configure_package() {
     KODI_VAAPI="-DENABLE_VAAPI=OFF"
   fi
 
-  if [ "$TARGET_ARCH" = "x86_64" ]; then
+  if [ "$TARGET_ARCH" = "i386" -o "$TARGET_ARCH" = "x86_64" ]; then
     KODI_ARCH="-DWITH_CPU=$TARGET_ARCH"
   else
     KODI_ARCH="-DWITH_ARCH=$TARGET_ARCH"

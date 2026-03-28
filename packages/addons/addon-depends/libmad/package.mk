@@ -13,7 +13,7 @@ PKG_TOOLCHAIN="autotools"
 
 # package specific configure options
 PKG_CONFIGURE_OPTS_TARGET="--enable-static --disable-shared"
-if [ "$TARGET_ARCH" = "x86_64" ] ; then
+if [ "$TARGET_ARCH" = "i386" -o "$TARGET_ARCH" = "x86_64" ]; then
   PKG_CONFIGURE_OPTS_TARGET="$PKG_CONFIGURE_OPTS_TARGET --enable-accuracy --enable-fpm=64bit"
 fi
 

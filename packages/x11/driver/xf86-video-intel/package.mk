@@ -5,7 +5,7 @@
 PKG_NAME="xf86-video-intel"
 PKG_VERSION="6afed33b2d673d88674f0c76efe500ae414e8e1b"
 PKG_SHA256="d492fffa561b215b94e403011144165b80a84cf8ee2109ce243f4939c0943681"
-PKG_ARCH="x86_64"
+PKG_ARCH="i386 x86_64"
 PKG_LICENSE="OSS"
 PKG_SITE="http://intellinuxgraphics.org/"
 PKG_URL="https://cgit.freedesktop.org/xorg/driver/xf86-video-intel/snapshot/$PKG_VERSION.tar.xz"
