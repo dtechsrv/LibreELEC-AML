@@ -99,7 +99,7 @@ pre_configure_target() {
   export LDFLAGS="$LDFLAGS -lreadline"
 
 # support 64-bit offsets and seeks on 32-bit platforms
-  if [ "$TARGET_ARCH" = "arm" ]; then
+  if [ "$TARGET_ARCH" = "arm" -o "$TARGET_ARCH" = "i386" ]; then
     export CFLAGS+=" -D_FILE_OFFSET_BITS=64 -D_OFF_T_DEFINED_ -Doff_t=off64_t -Dlseek=lseek64"
   fi
 }
