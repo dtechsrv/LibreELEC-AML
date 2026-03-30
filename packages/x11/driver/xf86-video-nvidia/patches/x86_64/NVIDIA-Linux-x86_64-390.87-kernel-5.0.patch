@@ -1,0 +1,475 @@
+diff --git a/kernel/common/inc/nv.h b/kernel/common/inc/nv.h
+index d52c2a1..4acebe4 100644
+--- a/kernel/common/inc/nv.h
++++ b/kernel/common/inc/nv.h
+@@ -605,31 +605,31 @@ typedef NV_STATUS (*nvPmaEvictRangeCallback)(void *, NvU64, NvU64);
+ 
+ #define NV_TIMERCMP(a, b, CMP)                                              \
+     (((a)->tv_sec == (b)->tv_sec) ?                                         \
+-        ((a)->tv_usec CMP (b)->tv_usec) : ((a)->tv_sec CMP (b)->tv_sec))
++        ((a)->tv_nsec CMP (b)->tv_nsec) : ((a)->tv_sec CMP (b)->tv_sec))
+ 
+ #define NV_TIMERADD(a, b, result)                                           \
+     {                                                                       \
+         (result)->tv_sec = (a)->tv_sec + (b)->tv_sec;                       \
+-        (result)->tv_usec = (a)->tv_usec + (b)->tv_usec;                    \
+-        if ((result)->tv_usec >= 1000000)                                   \
++        (result)->tv_nsec = (a)->tv_nsec + (b)->tv_nsec;                    \
++        if ((result)->tv_nsec >= NSEC_PER_SEC)                              \
+         {                                                                   \
+             ++(result)->tv_sec;                                             \
+-            (result)->tv_usec -= 1000000;                                   \
++            (result)->tv_nsec -= NSEC_PER_SEC;                              \
+         }                                                                   \
+     }
+ 
+ #define NV_TIMERSUB(a, b, result)                                           \
+     {                                                                       \
+         (result)->tv_sec = (a)->tv_sec - (b)->tv_sec;                       \
+-        (result)->tv_usec = (a)->tv_usec - (b)->tv_usec;                    \
+-        if ((result)->tv_usec < 0)                                          \
++        (result)->tv_nsec = (a)->tv_nsec - (b)->tv_nsec;                    \
++        if ((result)->tv_nsec < 0)                                          \
+         {                                                                   \
+           --(result)->tv_sec;                                               \
+-          (result)->tv_usec += 1000000;                                     \
++          (result)->tv_nsec += NSEC_PER_SEC;                                \
+         }                                                                   \
+     }
+ 
+-#define NV_TIMEVAL_TO_US(tv)    ((NvU64)(tv).tv_sec * 1000000 + (tv).tv_usec)
++#define NV_TIMEVAL_TO_US(tv)    ((NvU64)(tv).tv_sec * USEC_PER_SEC + (tv).tv_nsec/NSEC_PER_USEC)
+ 
+ #ifndef NV_ALIGN_UP
+ #define NV_ALIGN_UP(v,g) (((v) + ((g) - 1)) & ~((g) - 1))
+diff --git a/kernel/conftest.sh b/kernel/conftest.sh
+index 0ae7a26..593fc3e 100755
+--- a/kernel/conftest.sh
++++ b/kernel/conftest.sh
+@@ -1653,6 +1653,21 @@ compile_test() {
+             compile_check_conftest "$CODE" "NV_DRM_AVAILABLE" "" "generic"
+         ;;
+ 
++        drm_dev_put)
++            #
++            # Determine if drm_dev_put() is present.
++            #
++            CODE="
++            #if defined(NV_DRM_DRMP_H_PRESENT)
++            #include <drm/drmP.h>
++            #endif
++            void conftest_drm_dev_put(void) {
++                drm_dev_put();
++            }"
++
++            compile_check_conftest "$CODE" "NV_DRM_DEV_PUT_PRESENT" "" "functions"
++        ;;
++
+         drm_dev_unref)
+             #
+             # Determine if drm_dev_unref() is present.
+diff --git a/kernel/nvidia/nvlink_linux.c b/kernel/nvidia/nvlink_linux.c
+index c13b725..96e6844 100644
+--- a/kernel/nvidia/nvlink_linux.c
++++ b/kernel/nvidia/nvlink_linux.c
+@@ -502,43 +502,43 @@ void * NVLINK_API_CALL nvlink_memcpy(void *dest, void *src, NvLength size)
+ 
+ static NvBool nv_timer_less_than
+ (
+-    const struct timeval *a,
+-    const struct timeval *b
++    const struct timespec64 *a,
++    const struct timespec64 *b
+ )
+ {
+-    return (a->tv_sec == b->tv_sec) ? (a->tv_usec < b->tv_usec) 
++    return (a->tv_sec == b->tv_sec) ? (a->tv_nsec < b->tv_nsec) 
+                                     : (a->tv_sec < b->tv_sec);
+ }
+ 
+ static void nv_timeradd
+ (
+-    const struct timeval    *a,
+-    const struct timeval    *b,
+-    struct timeval          *result
++    const struct timespec64    *a,
++    const struct timespec64    *b,
++    struct timespec64          *result
+ )
+ {
+     result->tv_sec = a->tv_sec + b->tv_sec;
+-    result->tv_usec = a->tv_usec + b->tv_usec;
+-    while (result->tv_usec >= 1000000)
++    result->tv_nsec = a->tv_nsec + b->tv_nsec;
++    while (result->tv_nsec >= NSEC_PER_SEC)
+     {
+         ++result->tv_sec;
+-        result->tv_usec -= 1000000;
++        result->tv_nsec -= NSEC_PER_SEC;
+     }
+ }
+ 
+ static void nv_timersub
+ (
+-    const struct timeval    *a,
+-    const struct timeval    *b,
+-    struct timeval          *result
++    const struct timespec64    *a,
++    const struct timespec64    *b,
++    struct timespec64          *result
+ )
+ {
+     result->tv_sec = a->tv_sec - b->tv_sec;
+-    result->tv_usec = a->tv_usec - b->tv_usec;
+-    while (result->tv_usec < 0)
++    result->tv_nsec = a->tv_nsec - b->tv_nsec;
++    while (result->tv_nsec < 0)
+     {
+         --(result->tv_sec);
+-        result->tv_usec += 1000000;
++        result->tv_nsec += NSEC_PER_SEC;
+     }
+ }
+ 
+@@ -550,9 +550,9 @@ void NVLINK_API_CALL nvlink_sleep(unsigned int ms)
+     unsigned long us;
+     unsigned long jiffies;
+     unsigned long mdelay_safe_msec;
+-    struct timeval tm_end, tm_aux;
++    struct timespec64 ts_end, ts_aux;
+ 
+-    do_gettimeofday(&tm_aux);
++    ktime_get_real_ts64(&ts_aux);
+ 
+     if (in_irq() && (ms > NV_MAX_ISR_DELAY_MS))
+     {
+@@ -566,9 +566,9 @@ void NVLINK_API_CALL nvlink_sleep(unsigned int ms)
+     }
+ 
+     us = ms * 1000;
+-    tm_end.tv_usec = us;
+-    tm_end.tv_sec = 0;
+-    nv_timeradd(&tm_aux, &tm_end, &tm_end);
++    ts_end.tv_nsec = us*NSEC_PER_USEC;
++    ts_end.tv_sec = 0;
++    nv_timeradd(&ts_aux, &ts_end, &ts_end);
+ 
+     /* do we have a full jiffie to wait? */
+     jiffies = NV_USECS_TO_JIFFIES(us);
+@@ -585,11 +585,11 @@ void NVLINK_API_CALL nvlink_sleep(unsigned int ms)
+         do
+         {
+             schedule_timeout(jiffies);
+-            do_gettimeofday(&tm_aux);
+-            if (nv_timer_less_than(&tm_aux, &tm_end))
++            ktime_get_real_ts64(&ts_aux);
++            if (nv_timer_less_than(&ts_aux, &ts_end))
+             {
+-                nv_timersub(&tm_end, &tm_aux, &tm_aux);
+-                us = tm_aux.tv_usec + tm_aux.tv_sec * 1000000;
++                nv_timersub(&ts_end, &ts_aux, &ts_aux);
++                us = ts_aux.tv_nsec/NSEC_PER_USEC + ts_aux.tv_sec * USEC_PER_SEC;
+             }
+             else
+             {
+@@ -601,7 +601,7 @@ void NVLINK_API_CALL nvlink_sleep(unsigned int ms)
+ 
+     if (us > 1000)
+     {
+-        mdelay_safe_msec = us / 1000;
++        mdelay_safe_msec = us / USEC_PER_MSEC;
+         mdelay(mdelay_safe_msec);
+         us %= 1000;
+     }
+diff --git a/kernel/nvidia/os-interface.c b/kernel/nvidia/os-interface.c
+index d1c889f..39562d9 100644
+--- a/kernel/nvidia/os-interface.c
++++ b/kernel/nvidia/os-interface.c
+@@ -427,12 +427,12 @@ NV_STATUS NV_API_CALL os_get_current_time(
+     NvU32 *useconds
+ )
+ {
+-    struct timeval tm;
++    struct timespec64 ts;
+ 
+-    do_gettimeofday(&tm);
++    ktime_get_real_ts64(&ts);
+ 
+-    *seconds = tm.tv_sec;
+-    *useconds = tm.tv_usec;
++    *seconds = ts.tv_sec;
++    *useconds = ((uint64_t)(ts.tv_nsec / NSEC_PER_USEC));
+ 
+     return NV_OK;
+ }
+@@ -441,9 +441,9 @@ NV_STATUS NV_API_CALL os_get_current_time(
+ 
+ void NV_API_CALL os_get_current_tick(NvU64 *nseconds)
+ {
+-    struct timespec ts;
++    struct timespec64 ts;
+ 
+-    jiffies_to_timespec(jiffies, &ts);
++    jiffies_to_timespec64(jiffies, &ts);
+ 
+     *nseconds = ((NvU64)ts.tv_sec * NSEC_PER_SEC + (NvU64)ts.tv_nsec);
+ }
+@@ -499,9 +499,9 @@ NV_STATUS NV_API_CALL os_delay_us(NvU32 MicroSeconds)
+     unsigned long usec;
+ 
+ #ifdef NV_CHECK_DELAY_ACCURACY
+-    struct timeval tm1, tm2;
++    struct timespec64 ts1, ts2;
+ 
+-    do_gettimeofday(&tm1);
++    ktime_get_real_ts64(&ts1);
+ #endif
+ 
+     if (in_irq() && (MicroSeconds > NV_MAX_ISR_DELAY_US))
+@@ -516,9 +516,9 @@ NV_STATUS NV_API_CALL os_delay_us(NvU32 MicroSeconds)
+         udelay(usec);
+ 
+ #ifdef NV_CHECK_DELAY_ACCURACY
+-    do_gettimeofday(&tm2);
++    ktime_get_real_ts64(&ts2);
+     nv_printf(NV_DBG_ERRORS, "NVRM: osDelayUs %d: 0x%x 0x%x\n",
+-        MicroSeconds, tm2.tv_sec - tm1.tv_sec, tm2.tv_usec - tm1.tv_usec);
++        MicroSeconds, ts2.tv_sec - ts1.tv_sec, (ts2.tv_nsec - ts1.tv_nsec) / NSEC_PER_USEC);
+ #endif
+ 
+     return NV_OK;
+@@ -539,14 +539,14 @@ NV_STATUS NV_API_CALL os_delay(NvU32 MilliSeconds)
+     unsigned long MicroSeconds;
+     unsigned long jiffies;
+     unsigned long mdelay_safe_msec;
+-    struct timeval tm_end, tm_aux;
++    struct timespec64 ts_end, ts_aux;
+ #ifdef NV_CHECK_DELAY_ACCURACY
+-    struct timeval tm_start;
++    struct timespec64 ts_start;
+ #endif
+ 
+-    do_gettimeofday(&tm_aux);
++    ktime_get_real_ts64(&ts_aux);
+ #ifdef NV_CHECK_DELAY_ACCURACY
+-    tm_start = tm_aux;
++    ts_start = ts_aux;
+ #endif
+ 
+     if (in_irq() && (MilliSeconds > NV_MAX_ISR_DELAY_MS))
+@@ -558,10 +558,10 @@ NV_STATUS NV_API_CALL os_delay(NvU32 MilliSeconds)
+         return NV_OK;
+     }
+ 
+-    MicroSeconds = MilliSeconds * 1000;
+-    tm_end.tv_usec = MicroSeconds;
+-    tm_end.tv_sec = 0;
+-    NV_TIMERADD(&tm_aux, &tm_end, &tm_end);
++    MicroSeconds = MilliSeconds * USEC_PER_MSEC;
++    ts_end.tv_nsec = MicroSeconds * NSEC_PER_USEC;
++    ts_end.tv_sec = 0;
++    NV_TIMERADD(&ts_aux, &ts_end, &ts_end);
+ 
+     /* do we have a full jiffie to wait? */
+     jiffies = NV_USECS_TO_JIFFIES(MicroSeconds);
+@@ -578,11 +578,11 @@ NV_STATUS NV_API_CALL os_delay(NvU32 MilliSeconds)
+         do
+         {
+             schedule_timeout(jiffies);
+-            do_gettimeofday(&tm_aux);
+-            if (NV_TIMERCMP(&tm_aux, &tm_end, <))
++            ktime_get_real_ts64(&ts_aux);
++            if (NV_TIMERCMP(&ts_aux, &ts_end, <))
+             {
+-                NV_TIMERSUB(&tm_end, &tm_aux, &tm_aux);
+-                MicroSeconds = tm_aux.tv_usec + tm_aux.tv_sec * 1000000;
++                NV_TIMERSUB(&ts_end, &ts_aux, &ts_aux);
++                MicroSeconds = ts_aux.tv_nsec/NSEC_PER_USEC + ts_aux.tv_sec * USEC_PER_SEC;
+             }
+             else
+                 MicroSeconds = 0;
+@@ -600,10 +600,10 @@ NV_STATUS NV_API_CALL os_delay(NvU32 MilliSeconds)
+         udelay(MicroSeconds);
+     }
+ #ifdef NV_CHECK_DELAY_ACCURACY
+-    do_gettimeofday(&tm_aux);
+-    timersub(&tm_aux, &tm_start, &tm_aux);
++    ktime_get_real_ts64(&ts_aux);
++    timersub(&ts_aux, &ts_start, &ts_aux);
+     nv_printf(NV_DBG_ERRORS, "NVRM: osDelay %dmsec: %d.%06dsec\n",
+-        MilliSeconds, tm_aux.tv_sec, tm_aux.tv_usec);
++        MilliSeconds, ts_aux.tv_sec, ts_aux.tv_nsec/NSEC_PER_USEC);
+ #endif
+ 
+     return NV_OK;
+@@ -1898,11 +1898,11 @@ static NV_STATUS NV_API_CALL _os_ipmi_receive_resp
+ {
+     struct ipmi_recv_msg    *rx_msg;
+     int                     err_no;
+-    struct timeval          tv;
++    struct timespec64       ts;
+     NvU64                   start_time;
+ 
+-    do_gettimeofday(&tv);
+-    start_time = NV_TIMEVAL_TO_US(tv);
++    ktime_get_real_ts64(&ts);
++    start_time = NV_TIMEVAL_TO_US(ts);
+ 
+     err_no = -EAGAIN;
+     do
+@@ -1926,8 +1926,8 @@ static NV_STATUS NV_API_CALL _os_ipmi_receive_resp
+ 
+         spin_unlock_irqrestore(&p_priv->msg_lock, flags);
+         os_delay(NV_IPMI_SLEEP_MS);
+-        do_gettimeofday(&tv);
+-    } while (NV_TIMEVAL_TO_US(tv) < (start_time + NV_IPMI_READ_TIMEOUT_US));
++        ktime_get_real_ts64(&ts);
++    } while (NV_TIMEVAL_TO_US(ts) < (start_time + NV_IPMI_READ_TIMEOUT_US));
+ 
+     if (rx_msg != NULL)
+     {
+diff --git a/kernel/nvidia-drm/nvidia-drm-gem.h b/kernel/nvidia-drm/nvidia-drm-gem.h
+index f276588..b77a22c 100644
+--- a/kernel/nvidia-drm/nvidia-drm-gem.h
++++ b/kernel/nvidia-drm/nvidia-drm-gem.h
+@@ -79,7 +79,7 @@ static inline int nv_drm_gem_handle_create_drop_reference(
+ 
+     /* drop reference from allocate - handle holds it now */
+ 
+-    drm_gem_object_unreference_unlocked(&nv_gem->base);
++    drm_gem_object_put_unlocked(&nv_gem->base);
+ 
+     return ret;
+ }
+@@ -148,13 +148,13 @@ static inline struct nv_drm_gem_object *nv_drm_gem_object_lookup(
+ static inline void
+ nv_drm_gem_object_unreference_unlocked(struct nv_drm_gem_object *nv_gem)
+ {
+-    drm_gem_object_unreference_unlocked(&nv_gem->base);
++    drm_gem_object_put_unlocked(&nv_gem->base);
+ }
+ 
+ static inline void
+ nv_drm_gem_object_unreference(struct nv_drm_gem_object *nv_gem)
+ {
+-    drm_gem_object_unreference(&nv_gem->base);
++    drm_gem_object_put(&nv_gem->base);
+ }
+ 
+ static inline int nv_drm_gem_handle_create(struct drm_file *filp,
+diff --git a/kernel/nvidia-drm/nvidia-drm-helper.c b/kernel/nvidia-drm/nvidia-drm-helper.c
+index 4ccf819..429f346 100644
+--- a/kernel/nvidia-drm/nvidia-drm-helper.c
++++ b/kernel/nvidia-drm/nvidia-drm-helper.c
+@@ -149,12 +149,12 @@ void nv_drm_atomic_clean_old_fb(struct drm_device *dev,
+         if (ret == 0) {
+             struct drm_framebuffer *new_fb = plane->state->fb;
+             if (new_fb)
+-                drm_framebuffer_reference(new_fb);
++                drm_framebuffer_get(new_fb);
+             plane->fb = new_fb;
+             plane->crtc = plane->state->crtc;
+ 
+             if (plane->old_fb)
+-                drm_framebuffer_unreference(plane->old_fb);
++                drm_framebuffer_put(plane->old_fb);
+        }
+        plane->old_fb = NULL;
+    }
+diff --git a/kernel/nvidia-drm/nvidia-drm-helper.h b/kernel/nvidia-drm/nvidia-drm-helper.h
+index efecc4a..2a0c3bb 100644
+--- a/kernel/nvidia-drm/nvidia-drm-helper.h
++++ b/kernel/nvidia-drm/nvidia-drm-helper.h
+@@ -36,7 +36,9 @@
+  */
+ static inline void nv_drm_dev_free(struct drm_device *dev)
+ {
+-#if defined(NV_DRM_DEV_UNREF_PRESENT)
++#if defined(NV_DRM_DEV_PUT_PRESENT)
++    drm_dev_put(dev);
++#elif defined(NV_DRM_DEV_UNREF_PRESENT)
+     drm_dev_unref(dev);
+ #else
+     drm_dev_free(dev);
+diff --git a/kernel/nvidia-drm/nvidia-drm-linux.c b/kernel/nvidia-drm/nvidia-drm-linux.c
+index 5a2bbc1..1dbec9d 100644
+--- a/kernel/nvidia-drm/nvidia-drm-linux.c
++++ b/kernel/nvidia-drm/nvidia-drm-linux.c
+@@ -151,11 +151,11 @@ void nv_drm_vunmap(void *address)
+ 
+ uint64_t nv_drm_get_time_usec(void)
+ {
+-    struct timeval tv;
++    struct timespec64 ts;
+ 
+-    do_gettimeofday(&tv);
++    ktime_get_real_ts64(&ts);
+ 
+-    return (((uint64_t)tv.tv_sec) * 1000000) + tv.tv_usec;
++    return (((uint64_t)ts.tv_sec) * USEC_PER_SEC) + (((uint64_t)ts.tv_nsec) / NSEC_PER_USEC);
+ }
+ 
+ #endif /* NV_DRM_AVAILABLE */
+diff --git a/kernel/nvidia-drm/nvidia-drm.Kbuild b/kernel/nvidia-drm/nvidia-drm.Kbuild
+index 466b515..bcf8aff 100644
+--- a/kernel/nvidia-drm/nvidia-drm.Kbuild
++++ b/kernel/nvidia-drm/nvidia-drm.Kbuild
+@@ -53,6 +53,7 @@ NV_CONFTEST_GENERIC_COMPILE_TESTS += drm_atomic_modeset_nonblocking_commit_avail
+ NV_CONFTEST_GENERIC_COMPILE_TESTS += is_export_symbol_gpl_refcount_inc
+ NV_CONFTEST_GENERIC_COMPILE_TESTS += is_export_symbol_gpl_refcount_dec_and_test
+ 
++NV_CONFTEST_FUNCTION_COMPILE_TESTS += drm_dev_put
+ NV_CONFTEST_FUNCTION_COMPILE_TESTS += drm_dev_unref
+ NV_CONFTEST_FUNCTION_COMPILE_TESTS += drm_reinit_primary_mode_group
+ NV_CONFTEST_FUNCTION_COMPILE_TESTS += drm_atomic_set_mode_for_crtc
+diff --git a/kernel/nvidia-modeset/nvidia-modeset-linux.c b/kernel/nvidia-modeset/nvidia-modeset-linux.c
+index 1b9148e..7511f28 100644
+--- a/kernel/nvidia-modeset/nvidia-modeset-linux.c
++++ b/kernel/nvidia-modeset/nvidia-modeset-linux.c
+@@ -210,11 +210,11 @@ void NVKMS_API_CALL nvkms_usleep(NvU64 usec)
+ 
+ NvU64 NVKMS_API_CALL nvkms_get_usec(void)
+ {
+-    struct timeval tv;
++    struct timespec64 ts;
+ 
+-    do_gettimeofday(&tv);
++    ktime_get_real_ts64(&ts);
+ 
+-    return (((NvU64)tv.tv_sec) * 1000000) + tv.tv_usec;
++    return (((NvU64)ts.tv_sec) * 1000000) + ts.tv_nsec/NSEC_PER_USEC;
+ }
+ 
+ int NVKMS_API_CALL nvkms_copyin(void *kptr, NvU64 uaddr, size_t n)
+diff --git a/kernel/nvidia-uvm/uvm_linux.h b/kernel/nvidia-uvm/uvm_linux.h
+index 8707ac0..17c52cc 100644
+--- a/kernel/nvidia-uvm/uvm_linux.h
++++ b/kernel/nvidia-uvm/uvm_linux.h
+@@ -320,12 +320,12 @@ static inline uint64_t NV_DIV64(uint64_t dividend, uint64_t divisor, uint64_t *r
+ /* Return a nanosecond-precise value */
+ static inline NvU64 NV_GETTIME(void)
+ {
+-    struct timespec ts = {0};
++    struct timespec64 ts = {0};
+ 
+-    getrawmonotonic(&ts);
++    ktime_get_raw_ts64(&ts);
+ 
+     /* Wraps around every 583 years */
+-    return (ts.tv_sec * 1000000000ULL + ts.tv_nsec);
++    return (ts.tv_sec * NSEC_PER_SEC + ts.tv_nsec);
+ }
+ #else
+ /* We can only return a microsecond-precise value with the
+@@ -334,9 +334,9 @@ static inline NvU64 NV_GETTIME(void)
+ {
+     struct timeval tv = {0};
+ 
+-    do_gettimeofday(&tv);
++    ktime_get_real_ts64(&tv);
+ 
+-    return (tv.tv_sec * 1000000000ULL + tv.tv_usec * 1000ULL);
++    return (tv.tv_sec * 1000000000ULL + (tv.tv_nsec/NSEC_PER_USEC) * 1000ULL);
+ }
+ #endif
+ 
