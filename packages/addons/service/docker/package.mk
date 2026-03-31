@@ -6,7 +6,7 @@ PKG_NAME="docker"
 PKG_VERSION="18.09.7"
 PKG_SHA256="f05dc15f5c11635472534c3aaf759c39c1bba842dd1ac23059431c2fd1ae1795"
 PKG_REV="128"
-PKG_ARCH="x86_64 arm aarch64"
+PKG_ARCH="any"
 PKG_LICENSE="ASL"
 PKG_SITE="http://www.docker.com/"
 PKG_URL="https://github.com/docker/docker-ce/archive/v${PKG_VERSION}.tar.gz"
@@ -28,6 +28,9 @@ configure_target() {
                            journald"
 
   case ${TARGET_ARCH} in
+    i386)
+      export GOARCH=386
+      ;;
     x86_64)
       export GOARCH=amd64
       ;;

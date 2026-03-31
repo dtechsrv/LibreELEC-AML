@@ -14,6 +14,9 @@ PKG_TOOLCHAIN="manual"
 
 pre_make_target() {
   case $TARGET_ARCH in
+    i386)
+      export GOARCH=386
+      ;;
     x86_64)
       export GOARCH=amd64
       ;;
