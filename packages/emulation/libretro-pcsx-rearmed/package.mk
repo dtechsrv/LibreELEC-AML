@@ -33,7 +33,7 @@ make_target() {
     arm)
       make -f Makefile.libretro DYNAREC=ari64 GIT_VERSION=$PKG_VERSION
       ;;
-    x86_64)
+    i386|x86_64)
       make -f Makefile.libretro DYNAREC=lightrec GIT_VERSION=$PKG_VERSION
       ;;
   esac

@@ -35,7 +35,7 @@ make_target() {
         make platform=armv7-neon-hardfloat-cortex-a9
       fi
       ;;
-    x86-64)
+    i686|x86-64)
       make
       ;;
   esac
