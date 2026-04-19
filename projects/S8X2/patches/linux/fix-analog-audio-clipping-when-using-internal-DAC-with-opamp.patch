@@ -1,5 +1,5 @@
 diff --git a/sound/soc/aml/m8/aml_i2s.c b/sound/soc/aml/m8/aml_i2s.c
-index f48cd43..2b06a6a 100755
+index f48cd43..2ee9495 100755
 --- a/sound/soc/aml/m8/aml_i2s.c
 +++ b/sound/soc/aml/m8/aml_i2s.c
 @@ -702,21 +702,23 @@ static int aml_i2s_copy_playback(struct snd_pcm_runtime *runtime, int channel,
@@ -25,7 +25,7 @@ index f48cd43..2b06a6a 100755
 +                if (runtime->channels != 1)
 +                    right = to + align;
 +
-+                /* To avoid clipping use -12 dB attenuation / 2-bit shift for DIO2125 op-amp (PCM only) */
++                /* To avoid clipping on DIO2125/SGM8905 op-amp use -12 dB attenuation (2-bit shift) for PCM */
 +                *left = IEC958_mode_codec ? (*tfrom++) : ((*tfrom++) >> 2);
 +                if (runtime->channels != 1)
 +                    *right = IEC958_mode_codec ? (*tfrom++) : ((*tfrom++) >> 2);
@@ -44,7 +44,7 @@ index f48cd43..2b06a6a 100755
                  for (i = 0; i < 8; i++) {
 -                    *left++  = (*tfrom ++);
 -                    *right++  = (*tfrom ++);
-+                    /* To avoid clipping use -12 dB attenuation / 2-bit shift for DIO2125 op-amp (PCM only) */
++                    /* To avoid clipping on DIO2125/SGM8905 op-amp use -12 dB attenuation (2-bit shift) for PCM */
 +                    *left++  = IEC958_mode_codec ? (*tfrom++) : ((*tfrom++) >> 2);
 +                    *right++ = IEC958_mode_codec ? (*tfrom++) : ((*tfrom++) >> 2);
                  }
@@ -56,7 +56,7 @@ index f48cd43..2b06a6a 100755
                      for (i = 0; i < 8; i++) {
 -                        *left++  = (*tfrom ++) >> 8;
 -                        *right++  = (*tfrom ++) >> 8;
-+                        /* To avoid clipping use -12 dB attenuation / 2-bit shift for DIO2125 op-amp (PCM only) */
++                        /* To avoid clipping on DIO2125/SGM8905 op-amp use -12 dB attenuation (2-bit shift) for PCM */
 +                        *left++  = (IEC958_mode_codec ? (*tfrom++) : ((*tfrom++) >> 2)) >> 8;
 +                        *right++ = (IEC958_mode_codec ? (*tfrom++) : ((*tfrom++) >> 2)) >> 8;
                      }
