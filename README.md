@@ -1,6 +1,6 @@
-# LibreELEC-AML - Long-Term Support (LTS)
+# LibreELEC @ dtech - Long-Term Support (LTS)
 
-Unofficial community sources and firmware binaries for some Amlogic TV Boxes. This repository is based on [LibreELEC/LibreELEC.tv](https://github.com/LibreELEC/LibreELEC.tv).
+Community sources and binary images for some Amlogic TV boxes and x86 32-bit CPUs. This repository is based on [LibreELEC/LibreELEC.tv](https://github.com/LibreELEC/LibreELEC.tv).
 
 This project also maintains a binary addon repository and all the images are also available on the external website: [https://libreelec.dtech.hu/](https://libreelec.dtech.hu/).
 
@@ -26,6 +26,8 @@ The same copyright applies to the modifications I made as to the original projec
 Amlogic S905-H SoC, 2 GB RAM, 8 GB eMMC, 1 Gbps Ethernet (RTL8211F), AP6330 WiFi,
 - **WeTek Hub *(gxbb_p200_1G_wetek_hub)*:**<br />
 Amlogic S905-H SoC, 1 GB RAM, 8 GB eMMC, 1 Gbps Ethernet (RTL8211F), AP6255 WiFi,
+- **Odroid C2 *(gxbb_odroidc2_2g)*:**<br />
+Amlogic S905 SoC, 2 GB RAM, eMMC module, 1 Gbps Ethernet (RTL8211F), without onboard WiFi,
 - **Generic image for S905 *(gxbb\*)* and S905X/W/D boxes *(gxl\*)*:**<br />
 Amlogic S905x SoC, 1 or 2 GB RAM, 8 GB or more eMMC, multiple Ethernet and WiFi chips,
 - **Generic image for S912 boxes *(gxm\*)*:**<br />
@@ -40,8 +42,12 @@ Amlogic S805 SoC, 1 GB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet, Broadcom or R
 Amlogic S805 SoC, 512 MB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet, Broadcom or Realtek WiFi,
 - **Generic image for S805 boxes, with multi-dtb *(m8b_m201_1G, m8b_m201C_512M)*:**<br />
 Amlogic S805 SoC, 1 GB or 512 MB RAM, 8 GB NAND, 10/100 Mbps Ethernet, Broadcom or Realtek WiFi,
+- **Odroid C1/C1+ *(m8b_odroidc)*:**<br />
+Amlogic S805 SoC, 1 GB RAM, eMMC module, 1 Gbps Ethernet (RTL8211F), without onboard WiFi,
 - **WeTek Play *(AML8726-MX, meson6 without dt-id)*:**<br />
-Amlogic M6 SoC, 1 GB RAM, 4 GB NAND, 10/100 Mbps Ethernet (SMSC LAN8720A), AP6212 WiFi.
+Amlogic M6 SoC, 1 GB RAM, 4 GB NAND, 10/100 Mbps Ethernet (SMSC LAN8720A), AP6212 WiFi,
+- **x86 32-bit *(i386)*:**<br />
+Intel/AMD x86 32-bit CPUs with Intel/nVIDIA/AMD GPUs.
 
 ***NOTICE:** Images for 3rdParty devices are only available from here: [https://libreelec.dtech.hu/images/3rdParty/](https://libreelec.dtech.hu/images/3rdParty/).*
 
