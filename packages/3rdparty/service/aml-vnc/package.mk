@@ -3,9 +3,9 @@
 # Copyright (C) 2021-present Gabor Dee (dee.gabor@gmail.com)
 
 PKG_NAME="aml-vnc"
-PKG_VERSION="1.3.0"
-PKG_SHA256="5355d368dc5fa4c3618db57191a99bc49df1f630cd3318d1f4bf5f5e63838d15"
-PKG_REV="104"
+PKG_VERSION="1.4.0"
+PKG_SHA256="354ca6cd9bb6910ce20548ab057687f04251ab801b67469102f44cd77f92266d"
+PKG_REV="105"
 PKG_ARCH="arm aarch64"
 PKG_LICENSE="GPL"
 PKG_SITE="https://github.com/dtechsrv/aml-vnc-server"
