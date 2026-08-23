@@ -195,7 +195,7 @@
   CRON_SUPPORT="yes"
 
 # Distribution Specific source location
-  DISTRO_MIRROR="http://sources.libreelec.tv/mirror"
+  DISTRO_MIRROR="http://libreelec.dtech.hu/sources"
   DISTRO_SRC="http://sources.libreelec.tv/$LIBREELEC_VERSION"
 
 # Addon Server Url
