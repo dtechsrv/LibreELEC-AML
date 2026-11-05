@@ -3,12 +3,12 @@
 # Copyright (C) 2022-present Gabor Dee (dee.gabor@gmail.com)
 
 PKG_NAME="tvheadend43"
-PKG_VERSION="7cbe50c6e646e0d2443ef5bd73ba3c49c3c632c3"
-PKG_SHA256="803276477ec580250c2203c1bcf2b75de1ae8758693b279aa21b0aea3c094384"
-PKG_VERSION_NUMBER="4.3-2466"
-PKG_REV="104"
+PKG_VERSION="443f15ba063d95a1f4a3b74978c07d9d0a5ae9c5"
+PKG_SHA256="664b77760391777d62e6fa174302f44e53e5e68bb43b857605539017604ccd77"
+PKG_VERSION_NUMBER="4.3-2927"
+PKG_REV="105"
 PKG_ARCH="any"
-PKG_LICENSE="GPL"
+PKG_LICENSE="GPL-3.0-or-later"
 PKG_SITE="http://www.tvheadend.org"
 PKG_URL="https://github.com/tvheadend/tvheadend/archive/${PKG_VERSION}.tar.gz"
 PKG_MAINTAINER="dtech(.hu)"
@@ -56,7 +56,7 @@ else
 fi
 
 post_unpack() {
-  sed -e 's/VER="0.0.0~unknown"/VER="'${PKG_VERSION_NUMBER}' ~ LibreELEC Tvh-addon v'${ADDON_VERSION}'.'${PKG_REV}'"/g' -i ${PKG_BUILD}/support/version
+  sed -e 's/VER="0.0.0~unknown"/VER="'${PKG_VERSION_NUMBER}' - '${DISTRONAME}' add-on v'${ADDON_VERSION}'.'${PKG_REV}'"/g' -i ${PKG_BUILD}/support/version
   sed -e 's|'/usr/bin/pngquant'|'${TOOLCHAIN}/bin/pngquant'|g' -i ${PKG_BUILD}/support/mkbundle
 }
 
@@ -81,6 +81,7 @@ pre_configure_target() {
                              --disable-nvenc \
                              --disable-uriparser \
                              --enable-tvhcsa \
+                             --enable-vue_build \
                              --enable-trace \
                              --nowerror \
                              --disable-bintray_cache \

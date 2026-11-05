@@ -1,3 +1,8 @@
+105
+- Update to 4.3-2927
+- Enable Vue Web GUI
+- Convert some files from CRLF to LF line ending
+
 104
 - Update to 4.3-2466
 
