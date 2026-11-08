@@ -13,6 +13,10 @@ PROJECT=S905 DEVICE=WeTek_Hub ARCH=arm make amlpkg -j$(nproc)
 # Specs: Amlogic S905x SoC, 1 or 2 GB RAM, 8 GB or more eMMC, multiple Ethernet and WiFi chips.
 PROJECT=S905 DEVICE=Generic_S905 ARCH=arm make image -j$(nproc)
 
+# Odroid C2 (gxb_p200_odroidc2_2g)
+# Specs: Amlogic S905 SoC, 2 GB RAM, eMMC or SD card, Gigabit LAN, without integrated WiFi adapter.
+PROJECT=S905 DEVICE=Odroid_C2 ARCH=arm make image -j$(nproc)
+
 # Generic image for S912 boxes (gxm*)
 # Specs: Amlogic S912 SoC, 2 or 3 GB RAM, 8 GB or more eMMC, multiple Ethernet and WiFi chips.
 PROJECT=S912 DEVICE=Generic_S912 ARCH=arm make image -j$(nproc)
@@ -37,9 +41,16 @@ PROJECT=S805 DEVICE=m201d ARCH=arm make amlota -j$(nproc)
 # Specs: Amlogic S805 SoC, 1 GB or 512 MB RAM, 8 GB NAND Flash, 10/100 Mbps Ethernet, Broadcom or Realtek WiFi.
 PROJECT=S805 DEVICE=Generic_S805 ARCH=arm make amlota -j$(nproc)
 
+# Odroid C1/C1+ (m8b_odroidc_1g)
+# Specs: Amlogic S805 SoC, 1 GB RAM, eMMC or SD card, Gigabit LAN, without integrated WiFi adapter.
+PROJECT=Odroid_C1 ARCH=arm make image -j$(nproc)
+
 # WeTek Play (AML8726-MX, meson6 without dt-id)
 # Specs: Amlogic M6 SoC, 1 GB RAM, 4 GB NAND Flash, 10/100 Mbps Ethernet (SMSC LAN8720A), AP6210 WiFi.
 PROJECT=WeTek_Play ARCH=arm make amlpkg -j$(nproc)
+
+# Intel/AMD x86 32-bit CPUs with Intel/nVIDIA/AMD GPUs (i386/i686)
+PROJECT=Generic ARCH=i386 make image -j$(nproc)
 
 # Remove unnecessary files after the build process
 rm -rf target/*.kernel

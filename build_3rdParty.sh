@@ -25,17 +25,6 @@ PROJECT=Minix-S8X2 DEVICE=X8-X8H ARCH=arm make image -j$(nproc)
 # Specs: Amlogic S812-H SoC, 2 GB RAM, Gigabit LAN, AP6335e WiFi
 PROJECT=Minix-S8X2 DEVICE=X8H-Plus ARCH=arm make image -j$(nproc)
 
-# Odroid C1/C1+
-# Specs: Amlogic S805 SoC, 1 GB RAM, Gigabit LAN, without WiFi
-PROJECT=Odroid_C1 ARCH=arm make image -j$(nproc)
-
-# Odroid C2
-# Specs: Amlogic S905 SoC, 2 GB RAM, Gigabit LAN, without WiFi
-PROJECT=S905 DEVICE=Odroid_C2 ARCH=arm make image -j$(nproc)
-
-# x86 (i386/i686) @ 32-bit
-PROJECT=Generic ARCH=i386 make image -j$(nproc)
-
 # Remove unnecessary files after the build process
 rm -rf target/*.kernel
 rm -rf target/*.system

@@ -1,8 +1,15 @@
 diff --git a/arch/arm/boot/dts/meson8b_odroidc.dts b/arch/arm/boot/dts/meson8b_odroidc.dts
-index 52f3e5f..5147f0e 100644
+index 52f3e5f..626d6b5 100644
 --- a/arch/arm/boot/dts/meson8b_odroidc.dts
 +++ b/arch/arm/boot/dts/meson8b_odroidc.dts
-@@ -94,7 +94,7 @@
+@@ -1,5 +1,6 @@
+ /dts-v1/;
+ /{
++        amlogic-dt-id = "m8b_odroidc_1g";
+         compatible = "AMLOGIC,8726_M8B";
+         model = "AMLOGIC";
+         interrupt-parent = <&gic>;
+@@ -94,7 +95,7 @@
                  vmode = <0>; /**0:VMODE_720P 1:VMODE_LCD  2:VMODE_LVDS_1080P 3:VMODE_1080P*/
                  scale_mode = <1>; /*0:default 1:new*/
                  4k2k_fb = <0>;
@@ -11,7 +18,7 @@ index 52f3e5f..5147f0e 100644
          };
  
          mesonstream{
-@@ -474,6 +474,7 @@
+@@ -474,6 +475,7 @@
          compatible = "amlogic,aml-spdif-codec";
          dev_name = "spdif-dit.0";
          pinctrl-names = "aml_audio_spdif";
@@ -19,7 +26,7 @@ index 52f3e5f..5147f0e 100644
          status = "okay";
      };
  
-@@ -515,14 +516,13 @@
+@@ -515,14 +517,13 @@
                  status = "okay";
          };
  
@@ -40,7 +47,7 @@ index 52f3e5f..5147f0e 100644
          };
  
      spi@cc000000{
-@@ -952,9 +952,10 @@
+@@ -952,9 +953,10 @@
                  };
  
          audio_spdif_pins:audio_pin1{
