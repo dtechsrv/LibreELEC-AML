@@ -1,3 +1,6 @@
+106
+- Update aml-vnc-server to 1.4.1
+
 105
 - Update aml-vnc-server to 1.4.0
 - Change addon icon
