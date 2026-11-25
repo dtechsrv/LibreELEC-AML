@@ -1,0 +1,62 @@
+diff --git a/drivers/amlogic/hdmi/hdmi_tx/hdmi_cec_key.c b/drivers/amlogic/hdmi/hdmi_tx/hdmi_cec_key.c
+index 2cd45cc..4ee6875 100644
+--- a/drivers/amlogic/hdmi/hdmi_tx/hdmi_cec_key.c
++++ b/drivers/amlogic/hdmi/hdmi_tx/hdmi_cec_key.c
+@@ -152,24 +152,6 @@ void cec_user_control_released(cec_rx_message_t* pcec_message)
+     cec_send_event(pcec_message);
+ }
+ 
+-
+-/*
+- * STANDBY: get STANDBY command from TV
+- */
+-void cec_standby(cec_rx_message_t* pcec_message)
+-{
+-    if(hdmitx_device->cec_func_config & (1 << CEC_FUNC_MSAK)) {
+-        if(hdmitx_device->cec_func_config & (1 << ONE_TOUCH_STANDBY_MASK)) {
+-            hdmi_print(INF, CEC  ": System will be in standby mode\n");
+-            input_event(cec_global_info.remote_cec_dev, EV_KEY, KEY_POWER, 1);
+-            input_sync(cec_global_info.remote_cec_dev);
+-            input_event(cec_global_info.remote_cec_dev, EV_KEY, KEY_POWER, 0);
+-            input_sync(cec_global_info.remote_cec_dev);
+-            cec_disable_irq();
+-        }
+-    }
+-}
+-
+ void cec_key_init(void)
+ {
+     extern hdmitx_dev_t * get_hdmitx_device(void);
+diff --git a/drivers/amlogic/hdmi/hdmi_tx/hdmi_tx_cec.c b/drivers/amlogic/hdmi/hdmi_tx/hdmi_tx_cec.c
+index f571393..9c53f48 100644
+--- a/drivers/amlogic/hdmi/hdmi_tx/hdmi_tx_cec.c
++++ b/drivers/amlogic/hdmi/hdmi_tx/hdmi_tx_cec.c
+@@ -121,7 +121,7 @@ static void hdmitx_cec_early_suspend(struct early_suspend *h)
+             rc_long_press_pwr_key = 0;
+         }
+     }
+-    cec_disable_irq();
++    return;
+ }
+ 
+ static void hdmitx_cec_late_resume(struct early_suspend *h)
+@@ -669,7 +669,10 @@ static irqreturn_t cec_isr_handler(int irq, void *dev_instance)
+ #if MESON_CPU_TYPE >= MESON_CPU_TYPE_MESON8
+     unsigned int intr_stat = 0;
+     intr_stat = aml_read_reg32(P_AO_CEC_INTR_STAT);
+-    hdmi_print(INF, CEC "aocec irq %x\n", intr_stat);
++    if (cec_msg_dbg_en  == 1)
++    {
++        hdmi_print(INF, CEC "aocec irq %x\n", intr_stat);
++    }
+ 
+     if(intr_stat & (1<<1)) { // aocec tx intr
+         tx_irq_handle();
+@@ -1171,7 +1174,6 @@ void cec_handle_message(cec_rx_message_t* pcec_message)
+             break;
+         case CEC_OC_STANDBY:
+             cec_inactive_source_rx(pcec_message);
+-            cec_standby(pcec_message);
+             break;
+         case CEC_OC_SET_STREAM_PATH:
+             cec_set_stream_path(pcec_message);

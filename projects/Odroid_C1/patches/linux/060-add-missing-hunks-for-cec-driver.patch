@@ -1,0 +1,93 @@
+diff --git a/include/linux/amlogic/hdmi_tx/hdmi_tx_cec.h b/include/linux/amlogic/hdmi_tx/hdmi_tx_cec.h
+index 51a7190f4d18da..c0ca8cc556cc61 100644
+--- a/include/linux/amlogic/hdmi_tx/hdmi_tx_cec.h
++++ b/include/linux/amlogic/hdmi_tx/hdmi_tx_cec.h
+@@ -598,6 +598,8 @@ void cec_send_event(cec_rx_message_t* pcec_message);
+ void cec_user_control_pressed(cec_rx_message_t* pcec_message);
+ void cec_user_control_released(cec_rx_message_t* pcec_message);  
+ void cec_standby(cec_rx_message_t* pcec_message);
++void cec_send_simplink_alive(cec_rx_message_t *pcec_message);
++void cec_send_simplink_ack(cec_rx_message_t *pcec_message);
+ extern void cec_key_init(void);
+ 
+ extern __u16 cec_key_map[];
+diff --git a/arch/arm/boot/dts/meson8b_odroidc.dts b/arch/arm/boot/dts/meson8b_odroidc.dts
+index 3bef0b258971df..e01a67ca6d140d 100755
+--- a/arch/arm/boot/dts/meson8b_odroidc.dts
++++ b/arch/arm/boot/dts/meson8b_odroidc.dts
+@@ -672,7 +672,6 @@
+             vendor_id = <0x000000>;                 /* Refer to http://standards.ieee.org/develop/regauth/oui/oui.txt   */
+             product_desc = "ODROID-C1";        /* Max Chars: 16    */
+             cec_osd_string = "ODROID-C1";        /* Max Chars: 14    */
+-            cec_config = <0x00000f>;
+             ao_cec = <0x000001>;
+         };
+ 
+diff --git a/include/linux/amlogic/hdmi_tx/hdmi_tx_cec.h b/include/linux/amlogic/hdmi_tx/hdmi_tx_cec.h
+index 51a7190f4d18da..72794b6a77c9ce 100644
+--- a/include/linux/amlogic/hdmi_tx/hdmi_tx_cec.h
++++ b/include/linux/amlogic/hdmi_tx/hdmi_tx_cec.h
+@@ -441,6 +441,7 @@ typedef struct {
+     cec_node_info_t cec_node_info[MAX_NUM_OF_DEV];
+     cec_rx_msg_buf_t cec_rx_msg_buf;
+     hdmitx_dev_t* hdmitx_device;
++    cec_power_status_e tv_power_status;
+ } cec_global_info_t;
+ 
+ typedef struct {
+diff --git a/arch/arm/mach-meson8b/pm.c b/arch/arm/mach-meson8b/pm.c
+index 28550084e5f4b4..a5b111f935a290 100755
+--- a/arch/arm/mach-meson8b/pm.c
++++ b/arch/arm/mach-meson8b/pm.c
+@@ -56,9 +56,8 @@ static int early_suspend_flag = 0;
+ #define ON  1
+ #define OFF 0
+ 
+-static unsigned int  cec_config;       // 4 bytes: use to control cec switch on/off,distinguish between Mbox and Tablet. bit[0]:1:Mbox; 0:Tablet
++static unsigned int  cec_config = 0;       // 4 bytes: use to control cec switch on/off,distinguish between Mbox and Tablet. bit[0]:1:Mbox; 0:Tablet
+ static struct meson_pm_config *pdata;
+-static struct device_node *cec_np = NULL;
+ 
+ #define CLK(addr)  \
+ { \
+@@ -246,7 +245,10 @@ int run_arc_program(void)
+ 	unsigned vaddr2,v;
+ 	unsigned* pbuffer;
+ 	vaddr2 = IO_SRAM_BASE;
+-	
++
++	/* Get the cec_config from DEBUG register. */
++	cec_config = aml_read_reg32(P_AO_DEBUG_REG0);
++
+ 	if(cec_config & 0x1)// 4 bytes: use to control cec switch on/off,distinguish between Mbox and Tablet. bit[0]:1:Mbox; 0:Tablet
+     {
+     	aml_write_reg32(P_AO_REMAP_REG0,0);
+@@ -449,16 +451,6 @@ static int __init meson_pm_probe(struct platform_device *pdev)
+ 	clk81 = clk_get_sys("clk81", NULL);
+ 	clkxtal = clk_get_sys("xtal", NULL);
+ 	
+-	cec_np = of_find_node_by_name(NULL, "vend_data");
+-	if(cec_np){
+-	    if(of_property_read_u32(cec_np, "cec_config", &cec_config))
+-	        cec_config = 0x0;
+-	}
+-	else
+-	{
+-	    cec_config = 0x0;
+-	}
+-
+ #ifdef CONFIG_AO_TRIG_CLK
+ 	return run_arc_program();
+ #else
+diff --git a/arch/arm/plat-meson/include/plat/hdmi_config.h b/arch/arm/plat-meson/include/plat/hdmi_config.h
+index 8590129e9f6712..f2196925e7900d 100755
+--- a/arch/arm/plat-meson/include/plat/hdmi_config.h
++++ b/arch/arm/plat-meson/include/plat/hdmi_config.h
+@@ -27,7 +27,6 @@ struct vendor_info_data {
+ 	unsigned int  vendor_id;	    // 3 Bytes, Refer to http://standards.ieee.org/develop/regauth/oui/oui.txt
+ 	unsigned char *product_desc;	// Max Chars: 16
+ 	unsigned char *cec_osd_string;	// Max Chars: 14
+-	unsigned int  cec_config;       // 4 bytes: use to control cec switch on/off
+ 	unsigned int  ao_cec;           //switch between ao-cec and ee-cec:: 1: ao-cec; 0: ee-cec
+ };
+ 
