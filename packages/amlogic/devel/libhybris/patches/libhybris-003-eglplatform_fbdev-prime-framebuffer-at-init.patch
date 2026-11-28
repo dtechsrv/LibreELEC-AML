@@ -1,0 +1,35 @@
+Subject: [PATCH] eglplatform_fbdev: open and prime the framebuffer in init_module
+
+The vendor (Mali/Amlogic) gralloc caches the fb geometry on the first
+framebuffer open/allocation. With the reopen-at-CreateWindow change this
+first open happened after the application had already switched to a small
+resolution (e.g. 720p), so switching up later gave wrong buffer offsets.
+Open and allocate/free one HW_FB buffer in init_module as well.
+---
+--- a/egl/platforms/fbdev/eglplatform_fbdev.cpp
++++ b/egl/platforms/fbdev/eglplatform_fbdev.cpp
+@@ -35,6 +35,24 @@
+ 		assert(0);
+ 	}
+ 	TRACE("** gralloc_open %p status=%s", gralloc, strerror(-err));
++
++	/*
++	 * The vendor gralloc caches the framebuffer geometry (and buffer layout)
++	 * when the framebuffer is opened/allocated for the first time in the
++	 * process. Do it here, while fb0 still has the size set by the
++	 * application before EGL initialization (largest GUI size), otherwise a
++	 * later switch to a larger resolution leaves wrong buffer offsets.
++	 * The framebuffer is re-opened in fbdevws_CreateWindow() as before.
++	 */
++	err = framebuffer_open((hw_module_t *) gralloc, &framebuffer);
++	if (err == 0 && framebuffer) {
++		buffer_handle_t handle = NULL;
++		int stride = 0;
++		if (alloc->alloc(alloc, framebuffer->width, framebuffer->height,
++				framebuffer->format, GRALLOC_USAGE_HW_FB, &handle, &stride) == 0)
++			alloc->free(alloc, handle);
++		TRACE("** framebuffer primed: %dx%d", framebuffer->width, framebuffer->height);
++	}
+ 	eglplatformcommon_init(egl_iface, gralloc, alloc);
+ }
+ 
